@@ -15,7 +15,7 @@ export const pool = new Pool({
   min: 5,  // 최소 연결 수 유지
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
-  acquireTimeoutMillis: 60000, // 연결 획득 타임아웃
+  // acquireTimeoutMillis: 60000, // 연결 획득 타임아웃 - Pool에서 지원하지 않음
   ssl: { rejectUnauthorized: false },
   application_name: 'exchangemart', // 디버깅용 앱 이름
   keepAlive: true, // Keep-alive 활성화
