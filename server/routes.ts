@@ -164,8 +164,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     path: '/ws',
     maxPayload: 16 * 1024, // 16KB max payload
     perMessageDeflate: false, // 압축 비활성화로 성능 향상
-    backlog: 511, // 대기열 크기 증가
-    maxConnections: 1000 // 최대 동시 연결 수
+    backlog: 511 // 대기열 크기 증가
+    // maxConnections는 WebSocketServer에서 지원하지 않음
   });
   
   const clients = new Map<string, WebSocket>();
@@ -192,7 +192,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (message.type === 'auth' && message.token) {
           const decoded = jwt.verify(message.token, JWT_SECRET) as any;
           userId = decoded.id;
-          clients.set(userId, ws);
+          if (userId) {
+            clients.set(userId, ws);
+          }
           clearTimeout(timeout);
           ws.send(JSON.stringify({ type: 'auth_success', userId }));
           
@@ -209,10 +211,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           currentRoomId = message.roomId;
-          if (!rooms.has(currentRoomId)) {
+          if (currentRoomId && !rooms.has(currentRoomId)) {
             rooms.set(currentRoomId, new Set());
           }
-          rooms.get(currentRoomId)!.add(userId);
+          if (currentRoomId && userId) {
+            rooms.get(currentRoomId)!.add(userId);
+          }
           
         } else if (message.type === 'leave_room' && userId && currentRoomId) {
           const room = rooms.get(currentRoomId);
@@ -762,7 +766,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error('❌ POST /api/exchange/update 오류:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
