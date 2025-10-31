@@ -1037,59 +1037,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Favorite & Report Routes
-  app.get('/api/favorites', authenticateToken, async (req, res) => res.json(await storage.getUserFavorites(req.user!.id)));
-  app.post('/api/favorites', authenticateToken, async (req, res) => res.status(201).json(await storage.addFavorite(req.user!.id, req.body.itemId)));
+  app.get('/api/favorites', authenticateToken, async (req, res) => {
+    try {
+      res.json(await storage.getUserFavorites(req.user!.id));
+    } catch (error) {
+      console.error('Database error in /api/favorites:', error);
+      res.status(500).json({ error: 'Failed to fetch favorites' });
+    }
+  });
+  
+  app.post('/api/favorites', authenticateToken, async (req, res) => {
+    try {
+      res.status(201).json(await storage.addFavorite(req.user!.id, req.body.itemId));
+    } catch (error) {
+      console.error('Database error in POST /api/favorites:', error);
+      res.status(500).json({ error: 'Failed to add favorite' });
+    }
+  });
+  
   app.delete('/api/favorites/:itemId', authenticateToken, async (req, res) => {
-    await storage.removeFavorite(req.user!.id, req.params.itemId);
-    res.status(204).send();
+    try {
+      await storage.removeFavorite(req.user!.id, req.params.itemId);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Database error in DELETE /api/favorites:', error);
+      res.status(500).json({ error: 'Failed to remove favorite' });
+    }
   });
+  
   app.post('/api/items/:id/toggle-like', authenticateToken, async (req, res) => {
-    res.json({ isLiked: await storage.toggleItemLike(req.params.id, req.user!.id) });
+    try {
+      res.json({ isLiked: await storage.toggleItemLike(req.params.id, req.user!.id) });
+    } catch (error) {
+      console.error('Database error in POST /api/items/:id/toggle-like:', error);
+      res.status(500).json({ error: 'Failed to toggle like' });
+    }
   });
+  
   app.post('/api/items/:id/report', authenticateToken, async (req, res) => {
-    const { reason, description } = req.body;
-    const report = await storage.createReport({ itemId: req.params.id, reason, description, reporterId: req.user!.id });
-    res.status(201).json({ message: '신고가 접수되었습니다', report });
+    try {
+      const { reason, description } = req.body;
+      const report = await storage.createReport({ itemId: req.params.id, reason, description, reporterId: req.user!.id });
+      res.status(201).json({ message: '신고가 접수되었습니다', report });
+    } catch (error) {
+      console.error('Database error in POST /api/items/:id/report:', error);
+      res.status(500).json({ error: 'Failed to create report' });
+    }
   });
 
   // Community Routes - 글 조회는 인증 없이 가능
   app.get('/api/community/posts', async (req, res) => {
-    const { category, country } = req.query;
-    // 모든 사용자가 커뮤니티 글 조회 가능
-    res.json(await storage.getCommunityPostsByQuery({ category: category as string, country: country as string }));
+    try {
+      const { category, country } = req.query;
+      // 모든 사용자가 커뮤니티 글 조회 가능
+      res.json(await storage.getCommunityPostsByQuery({ category: category as string, country: country as string }));
+    } catch (error) {
+      console.error('Database error in /api/community/posts:', error);
+      res.status(500).json({ error: 'Failed to fetch community posts' });
+    }
   });
 
   app.get('/api/community/posts/:id', async (req, res) => {
-    const post = await storage.getCommunityPost(req.params.id);
-    if (!post) return res.status(404).json({ error: 'Post not found' });
-    // 모든 사용자가 게시글 조회 가능하고 조회수 증가
-    await storage.incrementCommunityPostViews(req.params.id);
-    res.json(post);
+    try {
+      const post = await storage.getCommunityPost(req.params.id);
+      if (!post) return res.status(404).json({ error: 'Post not found' });
+      // 모든 사용자가 게시글 조회 가능하고 조회수 증가
+      await storage.incrementCommunityPostViews(req.params.id);
+      res.json(post);
+    } catch (error) {
+      console.error('Database error in /api/community/posts/:id:', error);
+      res.status(500).json({ error: 'Failed to fetch community post' });
+    }
   });
 
   app.post('/api/community/posts', authenticateToken, async (req, res) => {
-    const postData = insertCommunityPostSchema.parse({ ...req.body, authorId: req.user!.id });
-    const post = await storage.createCommunityPost(postData as InsertCommunityPost);
-    res.status(201).json(post);
+    try {
+      const postData = insertCommunityPostSchema.parse({ ...req.body, authorId: req.user!.id });
+      const post = await storage.createCommunityPost(postData as InsertCommunityPost);
+      res.status(201).json(post);
+    } catch (error) {
+      console.error('Database error in POST /api/community/posts:', error);
+      res.status(500).json({ error: 'Failed to create community post' });
+    }
   });
 
   app.get('/api/community/posts/:id/comments', authenticateToken, async (req, res) => {
-    // 로그인한 사용자만 댓글 조회 가능
-    res.json(await storage.getComments(req.params.id));
+    try {
+      // 로그인한 사용자만 댓글 조회 가능
+      res.json(await storage.getComments(req.params.id));
+    } catch (error) {
+      console.error('Database error in /api/community/posts/:id/comments:', error);
+      res.status(500).json({ error: 'Failed to fetch comments' });
+    }
   });
 
   app.post('/api/community/posts/:id/comments', authenticateToken, async (req, res) => {
-    const commentData = insertCommentSchema.parse({ ...req.body, postId: req.params.id, authorId: req.user!.id });
-    const comment = await storage.createComment(commentData as InsertComment & { authorId: string });
-    const post = await storage.getCommunityPost(req.params.id);
-    if (post && post.authorId !== req.user!.id) {
-      await storage.createNotification({
-        userId: post.authorId, type: 'new_comment',
-        content: `${req.user!.fullName}님이 게시글에 댓글을 남겼습니다.`,
-        link: `/community/post/${req.params.id}`
-      });
+    try {
+      const commentData = insertCommentSchema.parse({ ...req.body, postId: req.params.id, authorId: req.user!.id });
+      const comment = await storage.createComment(commentData as InsertComment & { authorId: string });
+      const post = await storage.getCommunityPost(req.params.id);
+      if (post && post.authorId !== req.user!.id) {
+        await storage.createNotification({
+          userId: post.authorId, type: 'new_comment',
+          content: `${req.user!.fullName}님이 게시글에 댓글을 남겼습니다.`,
+          link: `/community/post/${req.params.id}`
+        });
+      }
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error('Database error in POST /api/community/posts/:id/comments:', error);
+      res.status(500).json({ error: 'Failed to create comment' });
     }
-    res.status(201).json(comment);
   });
 
   // 캐시된 응답을 위한 메모리 저장소
