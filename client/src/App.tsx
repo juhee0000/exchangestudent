@@ -91,6 +91,7 @@ function Router() {
         <Route path="/auth/login" component={Login} />
         <Route path="/auth/email-login" component={EmailLogin} />
         <Route path="/auth/register" component={Register} />
+        <Route path="/register" component={Register} />
         <Route path="/auth/complete-registration" component={CompleteRegistration} />
         <Route path="/" component={Home} />
         <Route path="/search" component={SearchPage} />
