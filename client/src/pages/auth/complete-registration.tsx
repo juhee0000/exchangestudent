@@ -30,14 +30,14 @@ interface FormData {
 }
 
 export default function CompleteRegistration() {
-  const [currentStep, setCurrentStep] = useState<RegisterStep>('school');
+  const [currentStep, setCurrentStep] = useState<RegisterStep>('country');
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login, user } = useAuth();
 
-  const stepOrder: RegisterStep[] = ['school', 'country'];
+  const stepOrder: RegisterStep[] = ['country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
   const isLastStep = currentStepIndex === stepOrder.length - 1;
 
@@ -176,7 +176,7 @@ export default function CompleteRegistration() {
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'school': return '학교 입력';
+      case 'school': return '해외 교환학교 선택';
       case 'country': return '국가 선택';
       default: return '';
     }
@@ -219,7 +219,7 @@ export default function CompleteRegistration() {
                     </FormControl>
                     <FormMessage />
                     <p className="text-xs text-gray-500">
-                      현재 다니고 있는 학교나 대학교를 입력해주세요 (선택사항)
+                      학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
                     </p>
                   </FormItem>
                 )}
@@ -254,7 +254,7 @@ export default function CompleteRegistration() {
                     </Select>
                     <FormMessage />
                     <p className="text-xs text-gray-500">
-                      현재 거주하고 있는 국가를 선택해주세요 (선택사항)
+                      어느 나라로 교환학생을 가시나요?
                     </p>
                   </FormItem>
                 )}

@@ -29,18 +29,14 @@ const nicknameSchema = z.object({
   nickname: z.string()
     .min(2, "닉네임은 2글자 이상이어야 합니다")
     .max(15, "닉네임은 15글자 이하로 입력해주세요")
-    .regex(/^[가-힣a-zA-Z0-9]+$/, "한글, 영문, 숫자만 사용 가능합니다"),
+    .regex(/^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9]+$/, "한글, 영문, 숫자만 사용 가능합니다"),
 });
 
 const passwordSchema = z.object({
   password: z.string()
     .min(8, "비밀번호는 8글자 이상이어야 합니다")
     .max(20, "비밀번호는 20글자 이하로 입력해주세요")
-    .regex(/^(?=.*[a-z])(?=.*\d)/, "영문 소문자와 숫자를 포함해야 합니다")
-    .refine((password) => {
-      const consecutive = /(.)\1{3,}|0123|1234|2345|3456|4567|5678|6789|abcd|bcde|cdef/;
-      return !consecutive.test(password.toLowerCase());
-    }, "연속된 문자나 숫자는 사용할 수 없습니다"),
+    .regex(/^(?=.*[a-z])(?=.*\d)/, "영문 소문자와 숫자를 포함해야 합니다"),
   confirmPassword: z.string().min(1, "비밀번호 확인을 입력해주세요"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "비밀번호가 일치하지 않습니다",
@@ -78,7 +74,7 @@ export default function Register() {
   const { toast } = useToast();
   const { login } = useAuth();
 
-  const stepOrder: RegisterStep[] = ['email', 'nickname', 'password', 'school', 'country'];
+  const stepOrder: RegisterStep[] = ['email', 'nickname', 'password', 'country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
   const isLastStep = currentStepIndex === stepOrder.length - 1;
   const isOptionalStep = currentStep === 'school' || currentStep === 'country';
@@ -315,7 +311,7 @@ export default function Register() {
       case 'email': return '이메일 입력';
       case 'nickname': return '닉네임 입력';
       case 'password': return '비밀번호 설정';
-      case 'school': return '학교 입력';
+      case 'school': return '해외 교환학교 선택';
       case 'country': return '국가 선택';
       default: return '';
     }
@@ -449,7 +445,7 @@ export default function Register() {
                     </FormControl>
                     <FormMessage />
                     <p className="text-xs text-gray-500">
-                      2-15글자, 한글/영문/숫자만 사용 가능. 중복 허용
+                      2-15글자, 한글/영문/숫자만 사용 가능. 중복 허용 불가
                     </p>
                   </FormItem>
                 )}
@@ -507,7 +503,7 @@ export default function Register() {
                     </FormControl>
                     <FormMessage />
                     <p className="text-xs text-gray-500">
-                      8-20글자, 영문소문자+숫자 필수. 연속문자 금지
+                      8-20글자, 영문소문자+숫자 필수
                     </p>
                   </FormItem>
                 )}
