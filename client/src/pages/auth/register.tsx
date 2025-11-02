@@ -596,9 +596,6 @@ export default function Register() {
                       />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
-                      학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
-                    </p>
                   </FormItem>
                 )}
               />
@@ -650,9 +647,6 @@ export default function Register() {
                       </SelectContent>
                     </Select>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
-                      어느 나라로 교환학생을 가시나요?
-                    </p>
                   </FormItem>
                 )}
               />
@@ -686,9 +680,14 @@ export default function Register() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             {getStepTitle()}
           </h1>
-          {isOptionalStep && (
+          {currentStep === 'country' && (
             <p className="text-gray-600">
-              선택 사항입니다. 나중에 설정할 수 있어요.
+              어느 나라로 교환학생을 가시나요?
+            </p>
+          )}
+          {currentStep === 'school' && (
+            <p className="text-gray-600">
+              학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
             </p>
           )}
         </div>

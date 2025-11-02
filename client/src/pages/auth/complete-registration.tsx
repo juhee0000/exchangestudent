@@ -218,9 +218,6 @@ export default function CompleteRegistration() {
                       />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
-                      학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
-                    </p>
                   </FormItem>
                 )}
               />
@@ -253,9 +250,6 @@ export default function CompleteRegistration() {
                       </SelectContent>
                     </Select>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
-                      어느 나라로 교환학생을 가시나요?
-                    </p>
                   </FormItem>
                 )}
               />
@@ -311,9 +305,16 @@ export default function CompleteRegistration() {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             환영합니다, {user.fullName}님!
           </h2>
-          <p className="text-gray-600">
-            거래를 시작하기 위해 추가 정보를 입력해주세요.
-          </p>
+          {currentStep === 'country' && (
+            <p className="text-gray-600">
+              어느 나라로 교환학생을 가시나요?
+            </p>
+          )}
+          {currentStep === 'school' && (
+            <p className="text-gray-600">
+              학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
+            </p>
+          )}
         </div>
 
         {getCurrentForm()}
