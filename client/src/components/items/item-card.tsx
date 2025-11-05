@@ -139,10 +139,9 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
   if (variant === "grid") {
     return (
       <Card className={cn(
-        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative",
-        isInactive && "opacity-60"
+        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative"
       )} onClick={handleCardClick}>
-        <div className={cn("p-4", isInactive && "grayscale")}>
+        <div className="p-4">
           {/* 상단 이미지 */}
           <div className="relative mb-3">
             <img
@@ -211,10 +210,9 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
   return (
     <div className="px-4 mb-3">
       <Card className={cn(
-        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative",
-        isInactive && "opacity-60"
+        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative"
       )} onClick={handleCardClick}>
-        <div className={cn("p-4", isInactive && "grayscale")}>
+        <div className="p-4">
           <div className="flex space-x-4">
             {/* 왼쪽 이미지 */}
             <div className="relative flex-shrink-0">

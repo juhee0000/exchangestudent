@@ -15,6 +15,18 @@ export default function Home() {
   const [onlyAvailable, setOnlyAvailable] = useState(false);
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const [showSchoolPrompt, setShowSchoolPrompt] = useState(false);
+
+  // 국가별 필터 선택 시 사용자 국가를 디폴트로 설정
+  useEffect(() => {
+    if (filter === "country") {
+      if (user?.country) {
+        setSelectedCountry(user.country);
+      } else {
+        setSelectedCountry("all");
+      }
+    }
+  }, [filter, user?.country]);
 
   const {
     data,
@@ -94,6 +106,23 @@ export default function Home() {
     navigate("/items/create");
   };
 
+  const handleFilterChange = (newFilter: string) => {
+    // "내 학교" 필터 클릭 시 로직
+    if (newFilter === "school") {
+      if (!user) {
+        // 로그인 전: 로그인 페이지로 이동
+        navigate("/auth/login");
+        return;
+      } else if (!user.school) {
+        // 로그인 후 학교명 없음: 프롬프트 표시
+        setShowSchoolPrompt(true);
+        return;
+      }
+    }
+    setFilter(newFilter);
+    setShowSchoolPrompt(false);
+  };
+
   const handleToggleFavorite = async (itemId: string) => {
     if (!user) {
       navigate("/auth/login");
@@ -139,7 +168,7 @@ export default function Home() {
       <Header title="중고물품" />
       <FilterBar 
         filter={filter} 
-        onFilterChange={setFilter}
+        onFilterChange={handleFilterChange}
         selectedCountry={selectedCountry}
         onCountryChange={setSelectedCountry}
         onlyAvailable={onlyAvailable}
@@ -148,7 +177,17 @@ export default function Home() {
       />
       
       <main className="pb-20 pt-4">
-        {items.length === 0 ? (
+        {showSchoolPrompt ? (
+          <div className="text-center py-12 px-6">
+            <p className="text-gray-700 text-lg mb-6">학교명을 입력하면 내 학교 물품들만 편하게 볼 수 있어요!</p>
+            <Button 
+              onClick={() => navigate("/my")} 
+              className="marketplace-button-primary"
+            >
+              프로필 수정하기
+            </Button>
+          </div>
+        ) : items.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">등록된 상품이 없습니다</p>
             <Button onClick={handleCreatePost} className="marketplace-button-primary">
