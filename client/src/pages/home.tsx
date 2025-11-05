@@ -157,7 +157,7 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {items.map((item) => (
+            {items.map((item: Item) => (
               <ItemCard
                 key={item.id}
                 item={item}
