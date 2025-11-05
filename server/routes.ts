@@ -687,54 +687,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 검색 전처리 함수: 소문자 변환, 특수문자 제거, 공백 기준 단어 분리
-  const preprocessSearchKeyword = (keyword: string): string[] => {
-    // 소문자 변환
-    const lowercased = keyword.toLowerCase();
-    // 특수문자 제거 (한글, 영문, 숫자, 공백만 남김)
-    const cleaned = lowercased.replace(/[^가-힣a-z0-9\s]/g, '');
-    // 공백 기준으로 단어 분리 후 빈 문자열 제거
-    const words = cleaned.split(/\s+/).filter(word => word.length > 0);
-    return words;
-  };
-
-  // 검색 API 엔드포인트 (의사 Full-text 검색)
-  app.get('/api/items/search', async (req, res) => {
-    try {
-      const searchQuery = req.query.q as string;
-      
-      if (!searchQuery || !searchQuery.trim()) {
-        return res.json([]);
-      }
-
-      // 키워드 전처리
-      const keywords = preprocessSearchKeyword(searchQuery);
-      
-      if (keywords.length === 0) {
-        return res.json([]);
-      }
-
-      // 모든 아이템 가져오기
-      const allItems = await storage.getItemsWithFilters({});
-      
-      // 검색 로직: title과 description에서 키워드 포함 여부 확인
-      const matchedItems = allItems.filter(item => {
-        const titleLower = (item.title || '').toLowerCase().replace(/[^가-힣a-z0-9\s]/g, '');
-        const descLower = (item.description || '').toLowerCase().replace(/[^가-힣a-z0-9\s]/g, '');
-        
-        // 모든 키워드 중 하나라도 title 또는 description에 포함되어 있으면 매칭
-        return keywords.some(keyword => 
-          titleLower.includes(keyword) || descLower.includes(keyword)
-        );
-      });
-
-      res.json(matchedItems);
-    } catch (error) {
-      console.log('Database error in /api/items/search:', (error as Error).message);
-      res.json([]); // Return empty array if database is not available
-    }
-  });
-
   app.get('/api/items/:id', async (req, res) => {
     const item = await storage.getItem(req.params.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });

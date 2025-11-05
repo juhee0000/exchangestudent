@@ -15,41 +15,33 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    try {
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
-      const newSocket = new WebSocket(wsUrl);
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    const newSocket = new WebSocket(wsUrl);
 
-      newSocket.onopen = () => {
-        setIsConnected(true);
-        // Authenticate with token
-        const token = localStorage.getItem("token");
-        if (token) {
-          newSocket.send(JSON.stringify({ type: "auth", token }));
-        }
-      };
+    newSocket.onopen = () => {
+      setIsConnected(true);
+      // Authenticate with token
+      const token = localStorage.getItem("token");
+      if (token) {
+        newSocket.send(JSON.stringify({ type: "auth", token }));
+      }
+    };
 
-      newSocket.onclose = () => {
-        setIsConnected(false);
-      };
-
-      newSocket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setIsConnected(false);
-      };
-
-      setSocket(newSocket);
-
-      return () => {
-        if (newSocket.readyState === WebSocket.OPEN || newSocket.readyState === WebSocket.CONNECTING) {
-          newSocket.close();
-        }
-      };
-    } catch (error) {
-      console.error("WebSocket initialization error:", error);
+    newSocket.onclose = () => {
       setIsConnected(false);
-    }
+    };
+
+    newSocket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.close();
+    };
   }, []);
 
   return (

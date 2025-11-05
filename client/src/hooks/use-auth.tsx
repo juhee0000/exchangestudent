@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 import { setGlobalLogoutHandler } from "@/lib/queryClient";
@@ -20,36 +20,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [, navigate] = useLocation();
 
-  const logout = useCallback(() => {
+  const logout = () => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/auth/login");
-  }, [navigate]);
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
     
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse user data:", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-      }
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
     
     setIsLoading(false);
     
     // 글로벌 로그아웃 핸들러 설정
     setGlobalLogoutHandler(logout);
-  }, [logout]);
+  }, []);
 
-  const login = useCallback((newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User) => {
     // Clear all previous session data to prevent conflicts
     localStorage.clear();
     
@@ -58,12 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
     // 자동 페이지 이동 제거 - App.tsx에서 처리
-  }, []);
+  };
 
-  const updateUser = useCallback((userData: User) => {
+  const updateUser = (userData: User) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-  }, []);
+  };
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, updateUser, isLoading }}>
