@@ -398,6 +398,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/auth/check-nickname', async (req, res) => {
+    try {
+      const { nickname } = req.body;
+      if (!nickname) return res.status(400).json({ error: 'Nickname is required' });
+      const existingUser = await storage.getUserByUsername(nickname);
+      res.json({ available: !existingUser });
+    } catch (error) {
+      console.log('Database error in /api/auth/check-nickname:', (error as Error).message);
+      res.status(500).json({ error: 'Nickname check failed. Please try again later.' });
+    }
+  });
+
   // === 회원가입 API ===
   // 클라이언트에서 온 회원가입 데이터를 처리합니다
   app.post('/api/auth/register', async (req, res) => {

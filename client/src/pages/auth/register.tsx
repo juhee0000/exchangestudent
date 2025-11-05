@@ -70,6 +70,8 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
+  const [checkingNickname, setCheckingNickname] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
@@ -175,7 +177,8 @@ export default function Register() {
           return isEmailValid && !checkingEmail && emailAvailable === true;
         case 'nickname':
           const nicknameValue = nicknameForm.watch('nickname');
-          return nicknameSchema.safeParse({ nickname: nicknameValue }).success;
+          const isNicknameValid = nicknameSchema.safeParse({ nickname: nicknameValue }).success;
+          return isNicknameValid && !checkingNickname && nicknameAvailable === true;
         case 'password':
           const passwordValue = passwordForm.watch('password');
           const confirmPasswordValue = passwordForm.watch('confirmPassword');
@@ -226,6 +229,33 @@ export default function Register() {
       setEmailAvailable(true);
     } finally {
       setCheckingEmail(false);
+    }
+  };
+
+  // 닉네임 중복 확인
+  const checkNicknameAvailability = async (nickname: string) => {
+    if (!nickname || !nicknameSchema.safeParse({ nickname }).success) return;
+    
+    setCheckingNickname(true);
+    try {
+      const response = await fetch('/api/auth/check-nickname', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNicknameAvailable(data.available);
+      } else {
+        console.error('Nickname check failed - server error');
+        setNicknameAvailable(true);
+      }
+    } catch (error) {
+      console.error('Nickname check failed:', error);
+      setNicknameAvailable(true);
+    } finally {
+      setCheckingNickname(false);
     }
   };
 
@@ -407,43 +437,59 @@ export default function Register() {
                   <FormItem>
                     <FormLabel className="text-sm text-blue-500 font-medium">{getStepLabel()}</FormLabel>
                     <FormControl>
-                      {/* 🐛 디버깅이 가능한 닉네임 입력 필드 */}
-                      <Input 
-                        placeholder={getStepPlaceholder()} 
-                        value={field.value || ""} // 현재 값 표시
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          
-                          // === 닉네임 입력값 처리 ===
-                          // 🔧 3단계 강력한 폼 업데이트 시스템으로 입력 문제 해결
-                          try {
-                            // 1️⃣ react-hook-form 기본 방식
+                      <div className="relative">
+                        <Input 
+                          placeholder={getStepPlaceholder()} 
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const newValue = e.target.value;
                             field.onChange(newValue);
+                            setNicknameAvailable(null);
                             
-                            // 2️⃣ 강제 값 설정 (상태 충돌 방지)
-                            nicknameForm.setValue('nickname', newValue, { 
-                              shouldValidate: true,  // 즉시 유효성 검사
-                              shouldDirty: true,     // 폼 수정 상태로 표시
-                              shouldTouch: true      // 필드 터치 상태로 표시
-                            });
-                            
-                            // 3️⃣ 폼 재렌더링 강제 실행 (UI 업데이트 보장)
-                            nicknameForm.trigger('nickname');
-                            
-                          } catch (error) {
-                            console.error('❌ 닉네임 입력 처리 실패:', error);
-                          }
-                        }}
-                        onBlur={field.onBlur}
-                        name="nickname"
-                        className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
-                        data-testid="input-nickname"
-                        autoComplete="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                      />
+                            try {
+                              nicknameForm.setValue('nickname', newValue, { 
+                                shouldValidate: true,
+                                shouldDirty: true,
+                                shouldTouch: true 
+                              });
+                              nicknameForm.trigger('nickname');
+                            } catch (error) {
+                              console.error('❌ 닉네임 입력 처리 실패:', error);
+                            }
+                          }}
+                          onBlur={(e) => {
+                            field.onBlur();
+                            if (e.target.value) {
+                              checkNicknameAvailability(e.target.value);
+                            }
+                          }}
+                          name="nickname"
+                          className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0 pr-12"
+                          data-testid="input-nickname"
+                          autoComplete="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                        />
+                        {checkingNickname && (
+                          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                          </div>
+                        )}
+                        {nicknameAvailable === true && (
+                          <Check className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-green-500" />
+                        )}
+                        {nicknameAvailable === false && (
+                          <X className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-red-500" />
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
+                    {nicknameAvailable === false && (
+                      <p className="text-sm text-red-500">이미 사용 중인 닉네임입니다</p>
+                    )}
+                    {nicknameAvailable === true && (
+                      <p className="text-sm text-green-500">사용 가능한 닉네임입니다</p>
+                    )}
                     <p className="text-xs text-gray-500">
                       2-15글자, 한글/영문/숫자만 사용 가능. 중복 허용 불가
                     </p>
