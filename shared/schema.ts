@@ -183,25 +183,25 @@ export const insertFavoriteSchema = createInsertSchema(favorites);
 export const insertNotificationSchema = createInsertSchema(notifications);
 export const insertReportSchema = createInsertSchema(reports);
 
-// Types inferred from Zod schemas
-export type User = z.infer<typeof selectUserSchema>;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Item = z.infer<typeof selectItemSchema>;
+// Types inferred from Drizzle schemas
+export type User = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+export type Item = typeof items.$inferSelect;
 export type InsertItem = z.infer<typeof insertItemSchema>;
-export type Favorite = z.infer<typeof selectFavoriteSchema> & { item?: Item };
-export type ChatRoom = z.infer<typeof selectChatRoomSchema>;
-export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
-export type Message = z.infer<typeof selectMessageSchema>;
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type CommunityPost = z.infer<typeof selectCommunityPostSchema>;
-export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
-export type Comment = z.infer<typeof selectCommentSchema>;
-export type InsertComment = z.infer<typeof insertCommentSchema>;
-export type Notification = z.infer<typeof selectNotificationSchema>;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type Report = z.infer<typeof selectReportSchema>;
-export type InsertReport = z.infer<typeof insertReportSchema>;
-export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
+export type Favorite = typeof favorites.$inferSelect & { item?: Item };
+export type ChatRoom = typeof chatRooms.$inferSelect;
+export type InsertChatRoom = typeof chatRooms.$inferInsert;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
+export type CommunityPost = typeof communityPosts.$inferSelect;
+export type InsertCommunityPost = typeof communityPosts.$inferInsert;
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = typeof comments.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+export type Report = typeof reports.$inferSelect;
+export type InsertReport = typeof reports.$inferInsert;
+export type InsertFavorite = typeof favorites.$inferInsert;
 
 // Auth schemas
 export const loginSchema = z.object({
