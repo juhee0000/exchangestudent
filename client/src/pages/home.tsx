@@ -165,7 +165,7 @@ export default function Home() {
 
   return (
     <>
-      <Header title="중고물품" />
+      <Header title="교환마켓" />
       <FilterBar 
         filter={filter} 
         onFilterChange={handleFilterChange}
@@ -179,12 +179,15 @@ export default function Home() {
       <main className="pb-20 pt-4">
         {showSchoolPrompt ? (
           <div className="text-center py-12 px-6">
-            <p className="text-gray-700 text-lg mb-6">학교명을 입력하면 내 학교 물품들만 편하게 볼 수 있어요!</p>
+            <p className="text-gray-700 text-lg mb-6">
+              학교명을 입력하고<br />
+              내 학교 물품들만 편하게 보세요!
+            </p>
             <Button 
               onClick={() => navigate("/my")} 
               className="marketplace-button-primary"
             >
-              프로필 수정하기
+              학교명 입력하러 가기
             </Button>
           </div>
         ) : items.length === 0 ? (

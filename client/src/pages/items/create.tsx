@@ -328,27 +328,23 @@ export default function CreateItem() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-center relative">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="text-gray-600"
+            className="text-gray-600 absolute left-0"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             뒤로
           </Button>
-          <h1 className="text-lg font-semibold">상품 등록</h1>
-          <div className="w-16" />
+          <h1 className="text-lg font-semibold">내 물품 팔기</h1>
         </div>
       </header>
 
       <main className="pb-20 pt-4 px-4">
         <Card>
-          <CardHeader>
-            <CardTitle>상품 정보</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Image Upload */}
@@ -595,7 +591,7 @@ export default function CreateItem() {
                       </div>
                       
                       <p className="text-xs text-gray-500">
-                        한국 원화로 자동 환산됩니다
+                        원화로 자동 환산되어 보여집니다
                       </p>
                     </>
                   )}
@@ -603,38 +599,13 @@ export default function CreateItem() {
 
 
 
-                <FormField
-                  control={form.control}
-                  name="condition"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>상품 상태</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="상품 상태를 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {conditions.map((condition) => (
-                            <SelectItem key={condition} value={condition}>
-                              {condition}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Country Selection */}
                 <FormField
                   control={form.control}
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>거래 국가</FormLabel>
+                      <FormLabel>해당 국가</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -734,7 +705,7 @@ export default function CreateItem() {
 
                 {/* Available Period - 단일 달력으로 범위 선택 */}
                 <div className="space-y-4">
-                  <label className="text-sm font-medium">거래가능기간</label>
+                  <label className="text-sm font-medium">거래 가능 기간</label>
                   <div className="space-y-2">
                     <Popover>
                       <PopoverTrigger asChild>
@@ -755,7 +726,7 @@ export default function CreateItem() {
                             } else if (fromDate) {
                               return `${format(fromDate, "yyyy-MM-dd")} ~ 종료일 선택`;
                             } else {
-                              return "거래가능기간 선택";
+                              return "거래 가능 기간 선택";
                             }
                           })()}
                         </Button>
@@ -802,7 +773,7 @@ export default function CreateItem() {
                     </Popover>
                   </div>
                   <p className="text-xs text-gray-500">
-                    거래가능기간을 설정하지 않으면 상품이 계속 거래 가능한 상태로 유지됩니다.
+                    거래 가능 기간을 설정하지 않을 경우 계속 거래 가능한 상태로 유지됩니다.
                   </p>
                 </div>
 
@@ -817,7 +788,7 @@ export default function CreateItem() {
                     console.log('Form errors:', form.formState.errors);
                   }}
                 >
-                  {isLoading || createItemMutation.isPending ? "등록 중..." : "상품 등록"}
+                  {isLoading || createItemMutation.isPending ? "등록 중..." : "작성 완료"}
                 </Button>
               </form>
             </Form>
