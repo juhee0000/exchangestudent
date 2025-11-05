@@ -1,10 +1,10 @@
 import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "./hooks/use-auth";
-import { WebSocketProvider } from "./hooks/use-websocket";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { WebSocketProvider } from "@/hooks/use-websocket";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, lazy } from "react";
 
