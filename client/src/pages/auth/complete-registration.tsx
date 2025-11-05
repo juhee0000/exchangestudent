@@ -11,6 +11,57 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { COUNTRIES } from "@/lib/countries";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
+
+// 학교명 약칭 → 정식명칭 매핑
+const SCHOOL_NAME_MAPPING: Record<string, string> = {
+  "서울대": "서울대학교",
+  "연세대": "연세대학교",
+  "고려대": "고려대학교",
+  "성균관대": "성균관대학교",
+  "경희대": "경희대학교",
+  "중앙대": "중앙대학교",
+  "한양대": "한양대학교",
+  "이화여대": "이화여자대학교",
+  "홍익대": "홍익대학교",
+  "건국대": "건국대학교",
+  "동국대": "동국대학교",
+  "국민대": "국민대학교",
+  "숙명여대": "숙명여자대학교",
+  "서강대": "서강대학교",
+  "카이스트": "한국과학기술원",
+  "KAIST": "한국과학기술원",
+  "포스텍": "포항공과대학교",
+  "POSTECH": "포항공과대학교",
+  "도쿄대": "도쿄대학교",
+  "교토대": "교토대학교",
+  "와세다대": "와세다대학교",
+  "게이오대": "게이오대학교",
+  "베이징대": "베이징대학교",
+  "칭화대": "칭화대학교"
+};
+
+// 학교명 정규화 함수
+const normalizeSchoolName = (input: string): string => {
+  if (!input) return "";
+  
+  // 1. 띄어쓰기와 특수문자 제거
+  let normalized = input.replace(/[\s\-_.,;:!?()[\]{}'"]/g, "");
+  
+  // 2. 약칭 → 정식명칭 변환 (대소문자 구분 없이)
+  const upperNormalized = normalized.toUpperCase();
+  for (const [key, value] of Object.entries(SCHOOL_NAME_MAPPING)) {
+    if (key.toUpperCase() === upperNormalized || key === normalized) {
+      normalized = value;
+      break;
+    }
+  }
+  
+  // 3. 한글만 남기기 (정규화 후에는 한글만 저장)
+  normalized = normalized.replace(/[^가-힣]/g, "");
+  
+  return normalized;
+};
 
 // 대학교 입력 단계별 스키마
 const schoolSchema = z.object({
@@ -36,6 +87,14 @@ export default function CompleteRegistration() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login, user } = useAuth();
+  const [schoolInput, setSchoolInput] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // 자주 입력된 학교명 조회
+  const { data: popularSchools = [] } = useQuery<string[]>({
+    queryKey: ['/api/schools/popular'],
+    enabled: currentStep === 'school',
+  });
 
   const stepOrder: RegisterStep[] = ['country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
@@ -138,6 +197,10 @@ export default function CompleteRegistration() {
     }
 
     const submitData = finalFormData || formData;
+    
+    // 학교명 정규화 처리
+    const normalizedSchool = submitData.school ? normalizeSchoolName(submitData.school) : "";
+    
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/complete-oauth-registration', {
@@ -147,7 +210,7 @@ export default function CompleteRegistration() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          school: submitData.school || "",
+          school: normalizedSchool,
           country: submitData.country || "",
         }),
       });
@@ -172,6 +235,14 @@ export default function CompleteRegistration() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 자동완성 필터링
+  const getFilteredSuggestions = () => {
+    if (!schoolInput || !popularSchools) return [];
+    return popularSchools.filter(school => 
+      school.includes(schoolInput) || schoolInput.includes(school.substring(0, 2))
+    ).slice(0, 5);
   };
 
   const getStepTitle = () => {
@@ -201,6 +272,7 @@ export default function CompleteRegistration() {
   const getCurrentForm = () => {
     switch (currentStep) {
       case 'school':
+        const filteredSuggestions = getFilteredSuggestions();
         return (
           <Form {...schoolForm}>
             <form onSubmit={schoolForm.handleSubmit(handleNext)} className="space-y-8">
@@ -211,13 +283,51 @@ export default function CompleteRegistration() {
                   <FormItem>
                     <FormLabel className="text-sm text-blue-500 font-medium">{getStepLabel()}</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder={getStepPlaceholder()}
-                        {...field}
-                        className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder={getStepPlaceholder()}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // 한글과 영문 모두 입력 가능 (약칭 지원을 위해)
+                            const filtered = value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z]/g, "");
+                            field.onChange(filtered);
+                            setSchoolInput(filtered);
+                            setShowSuggestions(filtered.length > 0);
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setShowSuggestions(false), 200);
+                          }}
+                          onFocus={() => {
+                            if (schoolInput.length > 0) setShowSuggestions(true);
+                          }}
+                          className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
+                          data-testid="input-school"
+                        />
+                        {showSuggestions && filteredSuggestions.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg">
+                            {filteredSuggestions.map((school, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  field.onChange(school);
+                                  setSchoolInput(school);
+                                  setShowSuggestions(false);
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-blue-50 first:rounded-t-xl last:rounded-b-xl transition-colors"
+                              >
+                                {school}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-gray-500">
+                      한글명으로 작성해주세요
+                    </p>
                   </FormItem>
                 )}
               />

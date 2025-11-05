@@ -89,6 +89,9 @@ export interface IStorage {
   createReport(insertReport: InsertReport & { reporterId: string }): Promise<Report>;
   getUserReports(userId: string): Promise<Report[]>;
   
+  // School methods
+  getPopularSchools(): Promise<string[]>;
+  
   // Statistics methods
   getUserStats(userId: string): Promise<{
     itemsPosted: number;
@@ -924,6 +927,27 @@ export class DatabaseStorage implements IStorage {
       soldStat: itemsSoldResult.count,   // 판매완료
       purchasedStat: chatRoomsWithCompletedItems[0]?.count || 0, // 구매완료
     };
+  }
+
+  async getPopularSchools(): Promise<string[]> {
+    // 학교명이 있는 사용자들의 학교를 카운트하고 상위 20개 반환
+    const result = await db
+      .select({
+        school: users.school,
+        count: count()
+      })
+      .from(users)
+      .where(
+        and(
+          sql`${users.school} IS NOT NULL`,
+          sql`${users.school} != ''`
+        )
+      )
+      .groupBy(users.school)
+      .orderBy(desc(count()))
+      .limit(20);
+
+    return result.map(r => r.school!).filter(s => s);
   }
 }
 

@@ -679,6 +679,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // School Routes
+  // 자주 입력된 학교명 조회 (자동완성용)
+  app.get('/api/schools/popular', async (req, res) => {
+    try {
+      const popularSchools = await storage.getPopularSchools();
+      res.json(popularSchools);
+    } catch (error) {
+      console.log('Database error in /api/schools/popular:', (error as Error).message);
+      res.json([]); // Return empty array if database is not available
+    }
+  });
+
   // Item Routes
   app.get('/api/items', async (req, res) => {
     try {
