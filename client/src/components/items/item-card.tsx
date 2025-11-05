@@ -109,12 +109,13 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
 
     try {
       if (isItemFavorited) {
-        await removeFavorite(item.id);
+        // 이미 관심 상품에 추가된 경우 안내 메시지만 표시
         toast({
-          title: "관심 상품에서 제거되었습니다",
+          title: "이미 관심 상품에 추가되어 있습니다",
           variant: "default",
         });
       } else {
+        // 관심 상품에 추가
         await addFavorite(item.id);
         toast({
           title: "관심 상품에 추가되었습니다",
