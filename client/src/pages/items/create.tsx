@@ -66,6 +66,7 @@ export default function CreateItem() {
       description: "",
       price: "",
       condition: "",
+      category: "",
       images: [],
       sellerId: user?.id || "", // sellerId 기본값 추가
       school: user?.school || "",
@@ -73,6 +74,7 @@ export default function CreateItem() {
       location: user?.school || "",
       deliveryMethod: "",
       customDeliveryMethod: "",
+      openChatLink: "",
       availableFrom: undefined,
       availableTo: undefined,
       isAvailable: true,
@@ -309,6 +311,7 @@ export default function CreateItem() {
         location: data.location || user?.school || "",
         deliveryMethod: data.deliveryMethod || "",
         customDeliveryMethod: data.deliveryMethod === "기타" ? data.customDeliveryMethod : "",
+        openChatLink: data.openChatLink || "",
         availableFrom: data.availableFrom ? new Date(data.availableFrom) : null,
         availableTo: data.availableTo ? new Date(data.availableTo) : null,
         currency: selectedCurrency.code,
@@ -349,7 +352,7 @@ export default function CreateItem() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Image Upload */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">상품 사진</label>
+                  <label className="text-sm font-medium">상품 사진 <span className="text-red-500">*</span></label>
                   
                   {/* Upload Area */}
                   {images.length === 0 ? (
@@ -504,9 +507,9 @@ export default function CreateItem() {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>제목</FormLabel>
+                      <FormLabel>제목 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="상품 제목을 입력하세요" {...field} />
+                        <Input placeholder="상품 제목을 입력하세요" {...field} data-testid="input-title" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -518,12 +521,13 @@ export default function CreateItem() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>설명</FormLabel>
+                      <FormLabel>설명 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="상품에 대한 자세한 설명을 입력하세요"
                           rows={4}
-                          {...field} 
+                          {...field}
+                          data-testid="input-description"
                         />
                       </FormControl>
                       <FormMessage />
@@ -531,9 +535,62 @@ export default function CreateItem() {
                   )}
                 />
 
+                {/* Category */}
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>카테고리 <span className="text-red-500">*</span></FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-category">
+                            <SelectValue placeholder="카테고리를 선택하세요" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="전자기기">전자기기</SelectItem>
+                          <SelectItem value="가구">가구</SelectItem>
+                          <SelectItem value="의류">의류</SelectItem>
+                          <SelectItem value="도서">도서</SelectItem>
+                          <SelectItem value="생활용품">생활용품</SelectItem>
+                          <SelectItem value="기타">기타</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Condition */}
+                <FormField
+                  control={form.control}
+                  name="condition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>상태 <span className="text-red-500">*</span></FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-condition">
+                            <SelectValue placeholder="상태를 선택하세요" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>
+                              {condition}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Price with Currency Selection */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">가격</label>
+                  <label className="text-sm font-medium">가격 <span className="text-red-500">*</span></label>
                   
                   {/* Original Currency Price */}
                   <div className="flex gap-2">
@@ -605,10 +662,10 @@ export default function CreateItem() {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>해당 국가</FormLabel>
+                      <FormLabel>해당 국가 <span className="text-red-500">*</span></FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger data-testid="select-country">
                             <SelectValue placeholder="거래할 국가를 선택하세요" />
                           </SelectTrigger>
                         </FormControl>
@@ -695,6 +752,7 @@ export default function CreateItem() {
                               setCustomDeliveryMethod(e.target.value);
                               field.onChange(e.target.value);
                             }}
+                            data-testid="input-custom-delivery"
                           />
                         </FormControl>
                         <FormMessage />
@@ -702,6 +760,25 @@ export default function CreateItem() {
                     )}
                   />
                 )}
+
+                {/* Open Chat Link */}
+                <FormField
+                  control={form.control}
+                  name="openChatLink"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>오픈채팅 링크</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="오픈채팅 링크를 입력하세요 (선택)"
+                          {...field}
+                          data-testid="input-openchat-link"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* Available Period - 단일 달력으로 범위 선택 */}
                 <div className="space-y-4">
