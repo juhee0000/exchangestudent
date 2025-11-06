@@ -108,7 +108,9 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
             {/* 위치 정보 */}
             <div className="flex items-center text-xs text-gray-600 mb-2">
               <MapPin className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
-              <span className="text-primary font-medium text-xs">{item.school}</span>
+              <span className="text-primary font-medium text-xs">
+                {item.location ? `${item.country}, ${item.location}` : item.country}
+              </span>
             </div>
             
             {/* 상태 배지가 없을 때: 가격을 위치 정보 아래에 */}
@@ -169,13 +171,15 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
               {/* 제목 */}
               <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">{item.title}</h3>
               
-              {/* 대학교 */}
+              {/* 위치 정보 */}
               <div className="flex items-center text-xs text-gray-600 mb-1">
                 <MapPin className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
-                <span className="truncate text-xs">{item.school}</span>
+                <span className="truncate text-xs">
+                  {item.location ? `${item.country}, ${item.location}` : item.country}
+                </span>
               </div>
               
-              {/* 상태 배지가 없을 때: 가격을 대학교 아래에 */}
+              {/* 상태 배지가 없을 때: 가격을 위치 정보 아래에 */}
               {itemStatus === "거래가능" && (
                 <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
               )}
