@@ -292,14 +292,6 @@ export default function ItemDetail() {
             뒤로
           </Button>
           <div className="flex space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
-              onClick={handleChatStart}
-            >
-              <MessageCircle className="h-5 w-5" />
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -396,26 +388,27 @@ export default function ItemDetail() {
               <p className="text-gray-700 whitespace-pre-wrap">{item.description}</p>
             </div>
 
-            <div className="border-t pt-4 mt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-500">상품 상태</span>
-                  <p className="font-medium">{item.condition}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">거래 방식</span>
-                  <p className="font-medium">{item.deliveryMethod || "직거래"}</p>
-                </div>
+            <div className="border-t pt-4 mt-4 space-y-3 text-sm">
+              <div className="flex">
+                <span className="text-gray-500 w-32 flex-shrink-0">거래 방법</span>
+                <p className="font-medium">{item.deliveryMethod || '-'}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm mt-4">
-                <div>
-                  <span className="text-gray-500">거래 국가</span>
-                  <p className="font-medium">{item.country}</p>
-                </div>
-                <div>
-                  <span className="text-gray-500">거래 장소</span>
-                  <p className="font-medium">{item.location}</p>
-                </div>
+              <div className="flex">
+                <span className="text-gray-500 w-32 flex-shrink-0">거래 희망 장소</span>
+                <p className="font-medium">{item.location || '-'}</p>
+              </div>
+              <div className="flex">
+                <span className="text-gray-500 w-32 flex-shrink-0">오픈채팅 링크</span>
+                <p className="font-medium break-all">{item.openChatLink || '-'}</p>
+              </div>
+              <div className="flex">
+                <span className="text-gray-500 w-32 flex-shrink-0">거래 가능 기간</span>
+                <p className="font-medium">
+                  {item.availableFrom && item.availableTo 
+                    ? `${new Date(item.availableFrom).toLocaleDateString()} ~ ${new Date(item.availableTo).toLocaleDateString()}`
+                    : '-'
+                  }
+                </p>
               </div>
             </div>
           </Card>
@@ -475,11 +468,20 @@ export default function ItemDetail() {
           <Button 
             size="lg"
             className="w-full h-12 marketplace-button-primary"
-            onClick={handleChatStart}
-            disabled={createChatRoomMutation.isPending}
+            onClick={() => {
+              if (item.openChatLink) {
+                window.open(item.openChatLink, '_blank');
+              } else {
+                toast({
+                  title: "오픈채팅 링크 없음",
+                  description: "판매자가 오픈채팅 링크를 등록하지 않았습니다.",
+                  variant: "destructive"
+                });
+              }
+            }}
           >
             <MessageCircle className="w-5 h-5 mr-2" />
-            {createChatRoomMutation.isPending ? "채팅방 생성 중..." : "채팅하기"}
+            오픈채팅 하러가기
           </Button>
         </div>
       </div>

@@ -38,7 +38,7 @@ export const items = pgTable("items", {
   location: text("location"),
   deliveryMethod: text("delivery_method"),
   customDeliveryMethod: text("custom_delivery_method"),
-  openChatLink: text("open_chat_link"),
+  openChatLink: text("open_chat_link").notNull(),
   availableFrom: timestamp("available_from"),
   availableTo: timestamp("available_to"),
   status: text("status").default("거래가능").notNull(),
@@ -146,7 +146,7 @@ export const insertItemSchema = z.object({
   location: z.string().optional(),
   deliveryMethod: z.string().optional(),
   customDeliveryMethod: z.string().optional(),
-  openChatLink: z.string().optional(),
+  openChatLink: z.string().min(1, "오픈채팅 링크를 입력하세요"),
   availableFrom: z.union([
     z.date(),
     z.string().transform((val) => val ? new Date(val) : null),

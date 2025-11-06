@@ -731,7 +731,7 @@ export default function CreateItem() {
                   name="openChatLink"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>오픈채팅 링크</FormLabel>
+                      <FormLabel>오픈채팅 링크 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="오픈채팅 링크를 입력하세요"
