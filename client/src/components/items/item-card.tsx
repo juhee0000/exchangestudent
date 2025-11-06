@@ -50,7 +50,7 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
   // 상품 상태 확인
   const getItemStatus = (item: Item) => {
     if (item.status === "거래완료") return "거래완료";
-    if (item.status === "거래기간만료") return "거래기간만료";
+    if (item.status === "기간만료") return "기간만료";
     
     // 거래 기간 만료 자동 확인
     if (item.availableTo) {
