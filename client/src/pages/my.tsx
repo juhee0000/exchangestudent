@@ -77,44 +77,7 @@ export default function MyPage() {
       </div>
 
       <div className="p-4 space-y-4">
-        {/* 활동 통계 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">활동 현황</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              <button 
-                className="text-center hover:bg-gray-50 rounded p-2 transition-colors"
-                onClick={() => navigate("/my/items?status=selling")}
-              >
-                <div className="text-2xl font-bold text-primary">
-                  {isStatsLoading ? "..." : stats?.sellingStat || 0}
-                </div>
-                <div className="text-sm text-gray-600">판매중</div>
-              </button>
-              <button 
-                className="text-center hover:bg-gray-50 rounded p-2 transition-colors"
-                onClick={() => navigate("/my/items?status=sold")}
-              >
-                <div className="text-2xl font-bold text-green-600">
-                  {isStatsLoading ? "..." : stats?.soldStat || 0}
-                </div>
-                <div className="text-sm text-gray-600">판매완료</div>
-              </button>
-              <button 
-                className="text-center hover:bg-gray-50 rounded p-2 transition-colors"
-                onClick={() => navigate("/my/items?status=purchased")}
-              >
-                <div className="text-2xl font-bold text-purple-600">
-                  {isStatsLoading ? "..." : stats?.purchasedStat || 0}
-                </div>
-                <div className="text-sm text-gray-600">구매완료</div>
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-
+       
         {/* 메뉴 */}
         <Card>
           <CardContent className="p-0">
@@ -125,18 +88,7 @@ export default function MyPage() {
                 description="판매중인 상품과 거래 내역"
                 onClick={() => navigate("/my/items")}
               />
-              <MenuItem
-                icon={MessageSquare}
-                title="채팅 내역"
-                description="구매자/판매자와의 대화"
-                onClick={() => navigate("/chat")}
-              />
-              <MenuItem
-                icon={Star}
-                title="리뷰 관리"
-                description="받은 리뷰와 작성한 리뷰"
-                onClick={() => navigate("/my/reviews")}
-              />
+              
             </div>
           </CardContent>
         </Card>
