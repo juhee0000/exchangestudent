@@ -1,4 +1,4 @@
-import { Home, Users, User } from "lucide-react";
+import { Home, MessageSquare, Users, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,8 @@ export default function BottomNav() {
 
   const navItems = [
     { path: "/", icon: Home, label: "홈" },
-    { path: "/community", icon: Users, label: "커뮤니티" },
+    { path: "/community", icon: MessageSquare, label: "커뮤니티" },
+    { path: "/meetings", icon: Users, label: "모임방" },
     { path: "/my", icon: User, label: "MY" },
   ];
 

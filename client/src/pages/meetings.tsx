@@ -1,24 +1,23 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, MessageSquare, Search, Eye } from "lucide-react";
+import { Plus, MessageSquare, Search, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import type { CommunityPost } from "@shared/schema";
 import { COUNTRIES } from "@/lib/countries";
 
-export default function Community() {
+export default function Meetings() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
-    queryKey: ["/api/community/posts", "이야기방", selectedCountry],
+    queryKey: ["/api/community/posts", "모임방", selectedCountry],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append("category", "이야기방");
+      params.append("category", "모임방");
       if (selectedCountry !== "전체") {
         params.append("country", selectedCountry);
       }
@@ -38,18 +37,8 @@ export default function Community() {
     },
   });
 
-  const formatTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return "방금 전";
-    if (diffInHours < 24) return `${diffInHours}시간 전`;
-    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}일 전`;
-    return `${Math.floor(diffInHours / 168)}주 전`;
-  };
-
   const handleCreatePost = () => {
-    navigate("/community/create?category=이야기방");
+    navigate("/community/create?category=모임방");
   };
 
   if (isLoading) {
@@ -60,12 +49,26 @@ export default function Community() {
     );
   }
 
+  const getCountryColor = (country: string) => {
+    const colorMap: { [key: string]: string } = {
+      "독일": "bg-red-200 text-red-800",
+      "영국": "bg-green-200 text-green-800", 
+      "미국": "bg-blue-200 text-blue-800",
+      "일본": "bg-orange-200 text-orange-800",
+      "중국": "bg-purple-200 text-purple-800",
+      "한국": "bg-pink-200 text-pink-800",
+      "프랑스": "bg-indigo-200 text-indigo-800",
+      "스페인": "bg-yellow-200 text-yellow-800",
+    };
+    return colorMap[country] || "bg-gray-200 text-gray-800";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50 h-16">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">이야기방</h1>
+            <h1 className="text-xl font-bold text-gray-900">모임방</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" className="text-gray-600 hover:text-primary" data-testid="button-search">
@@ -84,6 +87,7 @@ export default function Community() {
                 ? "bg-gray-900 text-white" 
                 : "bg-gray-100 text-gray-700"
             }`}
+            data-testid="filter-전체"
           >
             전체
           </button>
@@ -96,6 +100,7 @@ export default function Community() {
                   ? "bg-gray-900 text-white" 
                   : "bg-gray-100 text-gray-700"
               }`}
+              data-testid={`filter-${country}`}
             >
               {country}
             </button>
@@ -106,9 +111,9 @@ export default function Community() {
       <main className="pb-20">
         {posts.length === 0 ? (
           <div className="text-center py-12">
-            <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">
-              아직 이야기방에 게시글이 없습니다
+              아직 모임방에 게시글이 없습니다
             </p>
             <Button onClick={handleCreatePost} className="bg-blue-500 hover:bg-blue-600 text-white" data-testid="button-create-first">
               첫 번째 게시글 작성하기
@@ -116,39 +121,29 @@ export default function Community() {
           </div>
         ) : (
           <div className="px-4 py-4">
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               {posts.map((post) => (
                 <Card 
                   key={post.id} 
                   onClick={() => navigate(`/community/post/${post.id}`)}
-                  className="p-4 bg-white cursor-pointer hover:bg-gray-50"
-                  data-testid={`card-story-${post.id}`}
+                  className={`cursor-pointer hover:shadow-md transition-shadow relative ${getCountryColor(post.country)}`}
+                  data-testid={`card-meeting-${post.id}`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900 text-base">{post.title}</h3>
-                    {post.images && post.images.length > 0 && (
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg ml-3 flex-shrink-0">
-                        <img 
-                          src={post.images[0]} 
-                          alt="Post image" 
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {post.content}
-                  </p>
-                  
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    <span className="mr-4">{post.commentsCount || 0}</span>
+                  <div className="p-4">
+                    <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-white bg-opacity-80">
+                      {post.country}
+                    </div>
                     
-                    <span className="mr-4">{formatTimeAgo(new Date(post.createdAt))}</span>
-                    
-                    <Eye className="w-4 h-4 mr-1" />
-                    <span>{post.views || 0}</span>
+                    <div className="absolute top-2 right-2 flex items-center space-x-1 text-xs">
+                      <MessageSquare className="w-3 h-3" />
+                      <span>{post.commentsCount || 0}</span>
+                    </div>
+
+                    <div className="mt-8 mb-2">
+                      <div className="text-sm font-medium mb-1">{post.semester || "25-2"}</div>
+                      <div className="text-sm text-gray-700 mb-1">{post.school}</div>
+                      <h3 className="font-semibold text-sm">{post.title}</h3>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -157,10 +152,10 @@ export default function Community() {
         )}
       </main>
 
-      {/* Floating Action Button */}
       <Button 
         onClick={handleCreatePost}
         className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg z-50"
+        data-testid="button-create-post"
       >
         <Plus className="h-6 w-6" />
       </Button>

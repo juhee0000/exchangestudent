@@ -12,6 +12,7 @@ import Home from "@/pages/home";
 import Chat from "@/pages/chat";
 import ChatRoom from "@/pages/chat-room";
 import Community from "@/pages/community";
+import Meetings from "@/pages/meetings";
 import MyPage from "@/pages/my";
 import Profile from "@/pages/profile";
 import Login from "@/pages/auth/login";
@@ -97,6 +98,7 @@ function Router() {
         <Route path="/chat" component={Chat} />
         <Route path="/chat/:roomId" component={ChatRoom} />
         <Route path="/community" component={Community} />
+        <Route path="/meetings" component={Meetings} />
         <Route path="/community-create" component={CommunityCreate} />
         <Route path="/community/post/:id" component={CommunityDetail} />
         <Route path="/community/create" component={CommunityCreate} />
