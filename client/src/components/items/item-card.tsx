@@ -1,20 +1,13 @@
-import { Heart, Eye, Camera, MapPin } from "lucide-react";
+import { Eye, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
-import { useFavorites } from "@/hooks/use-favorites";
 import { useExchangeRates } from "@/hooks/use-exchange";
-import { useToast } from "@/hooks/use-toast";
 import type { Item } from "@shared/schema";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/currency";
 
 interface ItemCardProps {
   item: Item;
-  isFavorite?: boolean;
-  onToggleFavorite?: (itemId: string) => void;
   variant?: "default" | "grid"; // grid variant for search results
   onItemClick?: () => void;
 }
@@ -32,32 +25,27 @@ const formatTimeAgo = (date: Date) => {
 };
 
 
-interface ItemCardProps {
-  item: Item;
-  isFavorite?: boolean;
-  onToggleFavorite?: (itemId: string) => void;
-  variant?: "default" | "grid";
-  onItemClick?: () => void;
-}
-
-export default function ItemCard({ item, isFavorite = false, onToggleFavorite, variant = "default", onItemClick }: ItemCardProps) {
+export default function ItemCard({ item, variant = "default", onItemClick }: ItemCardProps) {
   const [, navigate] = useLocation();
-  const { user } = useAuth();
-  const { formatPrice } = useExchangeRates();
-  const { toast } = useToast();
-  const { 
-    isFavorited, 
-    addFavorite, 
-    removeFavorite, 
-    isAddingFavorite, 
-    isRemovingFavorite 
-  } = useFavorites();
+  const { rates } = useExchangeRates();
   
-  // 가격 표시 (환율 서비스 사용)
-  const displayPrice = formatPrice(parseFloat(item.price), (item as any).currency || 'KRW');
+  // 가격 표시 (원화 환산 포함)
+  const currency = (item as any).currency || 'KRW';
+  const price = parseFloat(item.price);
   
-  // 내부 관심 상품 상태
-  const isItemFavorited = isFavorite || isFavorited(item.id);
+  let displayPrice = '';
+  if (currency === 'KRW') {
+    displayPrice = `₩${price.toLocaleString()}`;
+  } else {
+    const rate = rates[currency] || 1;
+    const krwPrice = Math.round(price * rate);
+    const currencySymbols: Record<string, string> = {
+      'USD': '$', 'EUR': '€', 'JPY': '¥', 'CNY': '¥', 
+      'GBP': '£', 'AUD': 'A$', 'CAD': 'C$', 'CHF': 'Fr'
+    };
+    const symbol = currencySymbols[currency] || currency;
+    displayPrice = `${symbol}${price.toLocaleString()}(₩${krwPrice.toLocaleString()})`;
+  }
 
   // 상품 상태 확인
   const getItemStatus = (item: Item) => {
@@ -95,52 +83,12 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
     navigate(`/items/${item.id}`);
   };
 
-  const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    if (!user) {
-      toast({
-        title: "로그인 필요",
-        description: "관심 상품 기능을 사용하려면 로그인하세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      if (isItemFavorited) {
-        // 이미 관심 상품에 추가된 경우 안내 메시지만 표시
-        toast({
-          title: "이미 관심 상품에 추가되어 있습니다",
-          variant: "default",
-        });
-      } else {
-        // 관심 상품에 추가
-        await addFavorite(item.id);
-        toast({
-          title: "관심 상품에 추가되었습니다",
-          variant: "default",
-        });
-      }
-      
-      // Also call external handler if provided
-      onToggleFavorite?.(item.id);
-    } catch (error) {
-      console.error('Favorite toggle error:', error);
-      toast({
-        title: "오류가 발생했습니다",
-        description: error instanceof Error ? error.message : "잠시 후 다시 시도해주세요.",
-        variant: "destructive",
-      });
-    }
-  };
-
 
   // Grid variant for search results
   if (variant === "grid") {
     return (
       <Card className={cn(
-        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative"
+        "marketplace-card cursor-pointer hover:shadow-md transition-shadow"
       )} onClick={handleCardClick}>
         <div className="p-4">
           {/* 상단 이미지 */}
@@ -150,21 +98,6 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
               alt={item.title}
               className="w-full h-56 object-cover rounded-lg"
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 text-gray-600 hover:text-red-500 p-1 bg-white rounded-full shadow-sm"
-              onClick={handleFavoriteClick}
-              disabled={isAddingFavorite || isRemovingFavorite}
-            >
-              <Heart 
-                className={cn(
-                  "h-4 w-4",
-                  isItemFavorited ? "fill-red-500 text-red-500" : "fill-none",
-                  (isAddingFavorite || isRemovingFavorite) && "opacity-50"
-                )} 
-              />
-            </Button>
           </div>
 
           {/* 하단 정보 */}
@@ -172,8 +105,18 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
             {/* 제목 */}
             <h3 className="font-semibold text-gray-900 text-xs mb-2 line-clamp-2 leading-tight">{item.title}</h3>
             
-            {/* 가격 */}
-            <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+            {/* 상태 배지 + 가격 */}
+            <div className="flex items-center gap-2 mb-2">
+              {itemStatus !== "거래가능" && (
+                <Badge className={cn(
+                  "text-xs px-2 py-0.5",
+                  getStatusBadgeColor(itemStatus)
+                )}>
+                  {itemStatus}
+                </Badge>
+              )}
+              <p className="text-base font-bold text-gray-900">{displayPrice}</p>
+            </div>
             
             {/* 위치 정보 */}
             <div className="flex items-center text-xs text-gray-600 mb-2">
@@ -182,27 +125,15 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
             </div>
             
             {/* 메타 정보 - 하단에 고정 */}
-            <div className="flex items-center justify-between mt-auto">
-              <div className="flex items-center space-x-2 text-gray-500 text-xs">
-                <span className="flex items-center">
-                  <Eye className="w-3 h-3 mr-1" />
-                  {item.views}
-                </span>
-                <span>{formatTimeAgo(new Date(item.createdAt || new Date()))}</span>
-              </div>
+            <div className="flex items-center space-x-2 text-gray-500 text-xs mt-auto">
+              <span className="flex items-center">
+                <Eye className="w-3 h-3 mr-1" />
+                {item.views}
+              </span>
+              <span>{formatTimeAgo(new Date(item.createdAt || new Date()))}</span>
             </div>
           </div>
         </div>
-        
-        {/* 상태 배지 - 오른쪽 아래 */}
-        {itemStatus !== "거래가능" && (
-          <Badge className={cn(
-            "absolute bottom-2 right-2 text-xs px-2 py-1",
-            getStatusBadgeColor(itemStatus)
-          )}>
-            {itemStatus}
-          </Badge>
-        )}
       </Card>
     );
   }
@@ -211,7 +142,7 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
   return (
     <div className="px-4 mb-3">
       <Card className={cn(
-        "marketplace-card cursor-pointer hover:shadow-md transition-shadow relative"
+        "marketplace-card cursor-pointer hover:shadow-md transition-shadow"
       )} onClick={handleCardClick}>
         <div className="p-4">
           <div className="flex space-x-4">
@@ -222,21 +153,6 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
                 alt={item.title}
                 className="w-32 h-32 object-cover rounded-lg"
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute -top-2 -right-2 text-gray-600 hover:text-red-500 p-1 bg-white rounded-full shadow-sm"
-                onClick={handleFavoriteClick}
-                disabled={isAddingFavorite || isRemovingFavorite}
-              >
-                <Heart 
-                  className={cn(
-                    "h-4 w-4",
-                    isItemFavorited ? "fill-red-500 text-red-500" : "fill-none",
-                    (isAddingFavorite || isRemovingFavorite) && "opacity-50"
-                  )} 
-                />
-              </Button>
             </div>
 
             {/* 오른쪽 정보 */}
@@ -250,32 +166,30 @@ export default function ItemCard({ item, isFavorite = false, onToggleFavorite, v
                 <span className="truncate text-xs">{item.school}</span>
               </div>
               
-              {/* 가격 */}
-              <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+              {/* 상태 배지 + 가격 */}
+              <div className="flex items-center gap-2 mb-2">
+                {itemStatus !== "거래가능" && (
+                  <Badge className={cn(
+                    "text-xs px-2 py-0.5",
+                    getStatusBadgeColor(itemStatus)
+                  )}>
+                    {itemStatus}
+                  </Badge>
+                )}
+                <p className="text-base font-bold text-gray-900">{displayPrice}</p>
+              </div>
               
               {/* 하단 메타 정보 - 하단에 고정 */}
-              <div className="flex items-center justify-between mt-auto">
-                <div className="flex items-center space-x-2 text-gray-500 text-xs">
-                  <span className="flex items-center">
-                    <Eye className="w-3 h-3 mr-1" />
-                    {item.views}
-                  </span>
-                  <span>{formatTimeAgo(new Date(item.createdAt))}</span>
-                </div>
+              <div className="flex items-center space-x-2 text-gray-500 text-xs mt-auto">
+                <span className="flex items-center">
+                  <Eye className="w-3 h-3 mr-1" />
+                  {item.views}
+                </span>
+                <span>{formatTimeAgo(new Date(item.createdAt))}</span>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* 상태 배지 - 오른쪽 아래 */}
-        {itemStatus !== "거래가능" && (
-          <Badge className={cn(
-            "absolute bottom-2 right-2 text-xs px-2 py-1",
-            getStatusBadgeColor(itemStatus)
-          )}>
-            {itemStatus}
-          </Badge>
-        )}
       </Card>
     </div>
   );

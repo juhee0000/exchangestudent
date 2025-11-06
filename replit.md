@@ -16,7 +16,7 @@ This is a modern mobile-first marketplace web application designed for students 
 - **Comprehensive Item Status System (January 5, 2025)**:
   - Added status field to items with three states: 거래가능/거래완료/거래기간만료
   - Implemented visual status indicators with graying effect for inactive items
-  - Added status badges positioned in bottom-right corner of item cards
+  - Status badges repositioned before price in item cards for better visibility
   - Created seller-only status management in item detail pages
   - Implemented automatic expiration based on trading period dates
   - Added test data with various statuses and realistic product images
@@ -24,9 +24,11 @@ This is a modern mobile-first marketplace web application designed for students 
   - Implemented multi-currency support with automatic KRW conversion
   - Added currency field to items schema and database
   - Created formatCurrency utility function for price display
-  - Prices display as "12¥ (₩xxx)" format showing original currency converted to KRW
+  - Enhanced price display format: €12(19,758원) showing original currency with KRW conversion
   - Applied currency conversion to homepage item cards and detail pages
   - Fixed /items/create page with currency selection and conversion preview
+  - Implemented automatic exchange rate service with daily updates via cron jobs
+  - Added fallback rates for exchange service reliability
 - **Community Feature Implementation (January 9, 2025)**:
   - Created comprehensive community system with "이야기방" and "모임방" tabs
   - Added semester field to community posts schema for meeting posts
@@ -35,14 +37,15 @@ This is a modern mobile-first marketplace web application designed for students 
   - Created meeting creation form with semester selection (year + semester dropdown)
   - Built story posts with traditional list layout showing images, views, and comments
   - Added database seeding for community test data with both story and meeting posts
-- **Favorites System and Exchange Rate Implementation (January 21, 2025)**:
-  - Added complete favorites system with database schema, API endpoints, and React hooks
-  - Implemented automatic exchange rate service with daily updates via cron jobs
-  - Enhanced ItemCard component with heart functionality and real-time currency conversion
-  - Created dedicated favorites page with search and complete CRUD operations
-  - Added My page integration for accessing favorites
-  - Fixed authentication issues in favorites API calls with proper JWT token handling
-  - Implemented fallback rates for exchange service reliability
+- **UI/UX Improvements and Feature Removals (November 2025)**:
+  - Removed favorites/likes feature completely from all pages (home, MY, item detail)
+  - Made registration mandatory: country and school inputs now required, removed skip button
+  - Enhanced ItemCard layout: status badges moved before price, view count and timestamp moved to bottom
+  - Fixed country filter behavior: defaults to "전체 국가" for unauthenticated users, user's country when logged in
+  - Removed likes count display from item cards and detail pages
+  - Streamlined MY page by removing favorites menu option
+  - Removed heart/like button from item detail bottom action bar
+  - Deleted favorites-related pages (/favorites, /my/favorites) and hooks (use-favorites)
 
 # User Preferences
 

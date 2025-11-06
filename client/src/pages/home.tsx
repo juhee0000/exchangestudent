@@ -123,30 +123,6 @@ export default function Home() {
     setShowSchoolPrompt(false);
   };
 
-  const handleToggleFavorite = async (itemId: string) => {
-    if (!user) {
-      navigate("/auth/login");
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/items/${itemId}/toggle-like`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
-      
-      if (response.ok) {
-        // Refetch items to update like count
-        // In a real app, you'd want to optimistically update the UI
-      }
-    } catch (error) {
-      console.error("Failed to toggle favorite:", error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -199,11 +175,10 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {items.map((item) => (
+            {items.map((item: Item) => (
               <ItemCard
                 key={item.id}
                 item={item}
-                onToggleFavorite={handleToggleFavorite}
                 onItemClick={saveScrollPosition}
               />
             ))}

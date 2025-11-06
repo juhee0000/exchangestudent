@@ -65,12 +65,12 @@ const normalizeSchoolName = (input: string): string => {
 
 // 대학교 입력 단계별 스키마
 const schoolSchema = z.object({
-  school: z.string().optional(),
+  school: z.string().min(1, "학교명을 입력해주세요"),
 });
 
 // 국가 선택 단계별 스키마  
 const countrySchema = z.object({
-  country: z.string().optional(),
+  country: z.string().min(1, "국가를 선택해주세요"),
 });
 
 type RegisterStep = 'school' | 'country';
@@ -175,14 +175,6 @@ export default function CompleteRegistration() {
       setCurrentStep(stepOrder[currentStepIndex - 1]);
     } else {
       navigate('/auth/login');
-    }
-  };
-
-  const handleSkip = () => {
-    if (!isLastStep) {
-      setCurrentStep(stepOrder[currentStepIndex + 1]);
-    } else {
-      handleSubmit(formData);
     }
   };
 
@@ -430,7 +422,7 @@ export default function CompleteRegistration() {
         {getCurrentForm()}
 
         {/* 버튼 영역 */}
-        <div className="mt-8 space-y-3">
+        <div className="mt-8">
           <Button
             type="submit"
             disabled={isLoading}
@@ -453,15 +445,6 @@ export default function CompleteRegistration() {
                 <ChevronRight className="w-5 h-5" />
               </>
             )}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleSkip}
-            className="w-full h-12 text-gray-600 hover:text-gray-900 text-base"
-          >
-            건너뛰기
           </Button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart, MessageCircle, Share, Eye, MapPin, Flag, MoreVertical, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, MessageCircle, Share, Eye, MapPin, Flag, MoreVertical, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,7 +33,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useExchangeRates } from "@/hooks/use-exchange";
-import { useFavorites } from "@/hooks/use-favorites";
 import { apiRequest } from "@/lib/queryClient";
 import type { Item } from "@shared/schema";
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -53,7 +52,7 @@ export default function ItemDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { user } = useAuth();
-  const { formatPrice } = useExchangeRates();
+  const { rates } = useExchangeRates();
   const queryClient = useQueryClient();
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
@@ -125,15 +124,6 @@ export default function ItemDetail() {
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [item?.id]);
-  
-  // Favorites functionality
-  const { 
-    isFavorited, 
-    addFavorite, 
-    removeFavorite, 
-    isAddingFavorite, 
-    isRemovingFavorite 
-  } = useFavorites();
 
   // 상품 상태 확인
   const getItemStatus = (item: Item) => {
@@ -160,45 +150,6 @@ export default function ItemDetail() {
         return "bg-red-500 text-white";
       default:
         return "bg-green-500 text-white";
-    }
-  };
-
-  // Handle favorite toggle
-  const handleFavoriteClick = async () => {
-    if (!user) {
-      toast({
-        title: "로그인 필요",
-        description: "관심 상품 기능을 사용하려면 로그인하세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!id) return;
-
-    try {
-      const isCurrentlyFavorited = isFavorited(id);
-      
-      if (isCurrentlyFavorited) {
-        await removeFavorite(id);
-        toast({
-          title: "관심 상품에서 제거되었습니다",
-          variant: "default",
-        });
-      } else {
-        await addFavorite(id);
-        toast({
-          title: "관심 상품에 추가되었습니다",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.error('Favorite toggle error:', error);
-      toast({
-        title: "오류가 발생했습니다",
-        description: error instanceof Error ? error.message : "잠시 후 다시 시도해주세요.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -404,20 +355,34 @@ export default function ItemDetail() {
                   {getItemStatus(item)}
                 </Badge>
               </div>
-              <div className="flex items-center text-gray-500 text-sm space-x-3">
+              <div className="flex items-center text-gray-500 text-sm">
                 <span className="flex items-center">
                   <Eye className="w-4 h-4 mr-1" />
                   {item.views}
-                </span>
-                <span className="flex items-center">
-                  <Heart className="w-4 h-4 mr-1" />
-                  {item.likes}
                 </span>
               </div>
             </div>
             
             <h1 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h1>
-            <p className="text-3xl font-bold text-primary mb-3">{formatPrice(parseFloat(item.price), (item as any).currency || 'KRW')}</p>
+            <p className="text-3xl font-bold text-primary mb-3">
+              {(() => {
+                const currency = (item as any).currency || 'KRW';
+                const price = parseFloat(item.price);
+                
+                if (currency === 'KRW') {
+                  return `₩${price.toLocaleString()}`;
+                } else {
+                  const rate = rates[currency] || 1;
+                  const krwPrice = Math.round(price * rate);
+                  const currencySymbols: Record<string, string> = {
+                    'USD': '$', 'EUR': '€', 'JPY': '¥', 'CNY': '¥', 
+                    'GBP': '£', 'AUD': 'A$', 'CAD': 'C$', 'CHF': 'Fr'
+                  };
+                  const symbol = currencySymbols[currency] || currency;
+                  return `${symbol}${price.toLocaleString()}(₩${krwPrice.toLocaleString()})`;
+                }
+              })()}
+            </p>
             
             <div className="flex items-center text-gray-600 text-sm mb-4">
               <MapPin className="w-4 h-4 mr-1" />
@@ -506,23 +471,10 @@ export default function ItemDetail() {
 
       {/* Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-        <div className="max-w-md mx-auto flex space-x-3">
-          <Button 
-            variant="outline" 
-            size="lg"
-            className="flex-1 h-12"
-            onClick={handleFavoriteClick}
-            disabled={isAddingFavorite || isRemovingFavorite}
-          >
-            <Heart className={cn(
-              "w-5 h-5 mr-2",
-              id && isFavorited(id) ? "fill-red-500 text-red-500" : "fill-none"
-            )} />
-            {id && isFavorited(id) ? "찜 해제" : "찜하기"}
-          </Button>
+        <div className="max-w-md mx-auto">
           <Button 
             size="lg"
-            className="flex-1 h-12 marketplace-button-primary"
+            className="w-full h-12 marketplace-button-primary"
             onClick={handleChatStart}
             disabled={createChatRoomMutation.isPending}
           >

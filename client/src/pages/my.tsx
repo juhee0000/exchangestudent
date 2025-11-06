@@ -1,4 +1,4 @@
-import { User, Settings, Heart, MessageSquare, Package, Star, LogOut, Edit } from "lucide-react";
+import { User, Settings, MessageSquare, Package, Star, LogOut, Edit } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -124,12 +124,6 @@ export default function MyPage() {
                 title="내 상품 관리"
                 description="판매중인 상품과 거래 내역"
                 onClick={() => navigate("/my/items")}
-              />
-              <MenuItem
-                icon={Heart}
-                title="관심 상품"
-                description="찜한 상품 목록"
-                onClick={() => navigate("/my/favorites")}
               />
               <MenuItem
                 icon={MessageSquare}

@@ -27,10 +27,8 @@ import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import CommunityCreate from "@/pages/community-create";
 import CommunityDetail from "@/pages/community-detail";
-import Favorites from "@/pages/favorites";
 import NotificationsPage from "@/pages/notifications";
 import MyItems from "@/pages/my/items";
-import MyFavorites from "@/pages/my/favorites"; 
 import MyReviews from "@/pages/my/reviews";
 import SettingsPage from "@/pages/settings";
 
@@ -104,11 +102,9 @@ function Router() {
         <Route path="/community/create" component={CommunityCreate} />
         <Route path="/my" component={MyPage} />
         <Route path="/my/items" component={MyItems} />
-        <Route path="/my/favorites" component={MyFavorites} />
         <Route path="/my/reviews" component={MyReviews} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/profile" component={Profile} />
-        <Route path="/favorites" component={Favorites} />
         <Route path="/notifications" component={NotificationsPage} />
         <Route path="/items/create" component={CreateItem} />
         <Route path="/items/:id" component={ItemDetail} />
