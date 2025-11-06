@@ -179,32 +179,6 @@ export default function Settings() {
           </div>
         </Card>
 
-       
-        {/* 보안 및 개인정보 */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4 flex items-center">
-            <Shield className="w-5 h-5 mr-2" />
-            보안 및 개인정보
-          </h3>
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
-              <Shield className="w-4 h-4 mr-2" />
-              비밀번호 변경
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Shield className="w-4 h-4 mr-2" />
-              2단계 인증
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Shield className="w-4 h-4 mr-2" />
-              개인정보 처리방침
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
-          </div>
-        </Card>
-
         {/* 기타 */}
         <Card className="p-4">
           <h3 className="font-semibold mb-4">기타</h3>
