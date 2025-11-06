@@ -109,7 +109,7 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
             <div className="flex items-center text-xs text-gray-600 mb-2">
               <MapPin className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
               <span className="text-primary font-medium text-xs">
-                {item.location ? `${item.country}, ${item.location}` : item.country}
+                {item.school ? `${item.country}, ${item.school}` : item.country}
               </span>
             </div>
             
@@ -175,7 +175,7 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
               <div className="flex items-center text-xs text-gray-600 mb-1">
                 <MapPin className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
                 <span className="truncate text-xs">
-                  {item.location ? `${item.country}, ${item.location}` : item.country}
+                  {item.school ? `${item.country}, ${item.school}` : item.country}
                 </span>
               </div>
               
