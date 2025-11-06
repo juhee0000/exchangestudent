@@ -629,6 +629,24 @@ export default function CreateItem() {
 
                 <FormField
                   control={form.control}
+                  name="school"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>해당 학교</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="학교를 입력하세요"
+                          {...field} 
+                          data-testid="input-school"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="location"
                   render={({ field }) => (
                     <FormItem>
@@ -637,6 +655,7 @@ export default function CreateItem() {
                         <Input 
                           placeholder="거래를 희망하는 장소를 입력하세요"
                           {...field} 
+                          data-testid="input-location"
                         />
                       </FormControl>
                       <FormMessage />
