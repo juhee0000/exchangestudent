@@ -57,7 +57,7 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
       const now = new Date();
       const availableTo = new Date(item.availableTo);
       if (now > availableTo) {
-        return "거래기간만료";
+        return "기간만료";
       }
     }
     
@@ -71,7 +71,7 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
     switch (status) {
       case "거래완료":
         return "bg-gray-500 text-white";
-      case "거래기간만료":
+      case "기간만료":
         return "bg-red-500 text-white";
       default:
         return "bg-green-500 text-white";
