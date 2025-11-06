@@ -65,8 +65,6 @@ export default function CreateItem() {
       title: "",
       description: "",
       price: "",
-      condition: "",
-      category: "",
       images: [],
       sellerId: user?.id || "", // sellerId 기본값 추가
       school: user?.school || "",
@@ -530,59 +528,6 @@ export default function CreateItem() {
                           data-testid="input-description"
                         />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Category */}
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>카테고리 <span className="text-red-500">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-category">
-                            <SelectValue placeholder="카테고리를 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="전자기기">전자기기</SelectItem>
-                          <SelectItem value="가구">가구</SelectItem>
-                          <SelectItem value="의류">의류</SelectItem>
-                          <SelectItem value="도서">도서</SelectItem>
-                          <SelectItem value="생활용품">생활용품</SelectItem>
-                          <SelectItem value="기타">기타</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Condition */}
-                <FormField
-                  control={form.control}
-                  name="condition"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>상태 <span className="text-red-500">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-condition">
-                            <SelectValue placeholder="상태를 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {conditions.map((condition) => (
-                            <SelectItem key={condition} value={condition}>
-                              {condition}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

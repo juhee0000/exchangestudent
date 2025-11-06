@@ -105,27 +105,36 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
             {/* 제목 */}
             <h3 className="font-semibold text-gray-900 text-xs mb-2 line-clamp-2 leading-tight">{item.title}</h3>
             
-            {/* 상태 배지 + 가격 */}
-            <div className="flex items-center gap-2 mb-2">
-              {itemStatus !== "거래가능" && (
-                <Badge className={cn(
-                  "text-xs px-2 py-0.5",
-                  getStatusBadgeColor(itemStatus)
-                )}>
-                  {itemStatus}
-                </Badge>
-              )}
-              <p className="text-base font-bold text-gray-900">{displayPrice}</p>
-            </div>
-            
             {/* 위치 정보 */}
             <div className="flex items-center text-xs text-gray-600 mb-2">
               <MapPin className="w-2.5 h-2.5 mr-1 flex-shrink-0" />
               <span className="text-primary font-medium text-xs">{item.school}</span>
             </div>
             
-            {/* 메타 정보 - 하단에 고정 */}
-            <div className="flex items-center space-x-2 text-gray-500 text-xs mt-auto">
+            {/* 상태 배지가 없을 때: 가격을 위치 정보 아래에 */}
+            {itemStatus === "거래가능" && (
+              <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+            )}
+            
+            {/* 상태 배지가 있을 때: 배지만 표시 */}
+            {itemStatus !== "거래가능" && (
+              <div className="mb-2">
+                <Badge className={cn(
+                  "text-xs px-2 py-0.5",
+                  getStatusBadgeColor(itemStatus)
+                )}>
+                  {itemStatus}
+                </Badge>
+              </div>
+            )}
+            
+            {/* 상태 배지가 있을 때: 가격을 아래에 */}
+            {itemStatus !== "거래가능" && (
+              <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+            )}
+            
+            {/* 메타 정보 - 오른쪽 아래에 고정 */}
+            <div className="flex items-center justify-end space-x-2 text-gray-500 text-xs mt-auto">
               <span className="flex items-center">
                 <Eye className="w-3 h-3 mr-1" />
                 {item.views}
@@ -166,21 +175,30 @@ export default function ItemCard({ item, variant = "default", onItemClick }: Ite
                 <span className="truncate text-xs">{item.school}</span>
               </div>
               
-              {/* 상태 배지 + 가격 */}
-              <div className="flex items-center gap-2 mb-2">
-                {itemStatus !== "거래가능" && (
+              {/* 상태 배지가 없을 때: 가격을 대학교 아래에 */}
+              {itemStatus === "거래가능" && (
+                <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+              )}
+              
+              {/* 상태 배지가 있을 때: 배지만 표시 */}
+              {itemStatus !== "거래가능" && (
+                <div className="mb-2">
                   <Badge className={cn(
                     "text-xs px-2 py-0.5",
                     getStatusBadgeColor(itemStatus)
                   )}>
                     {itemStatus}
                   </Badge>
-                )}
-                <p className="text-base font-bold text-gray-900">{displayPrice}</p>
-              </div>
+                </div>
+              )}
               
-              {/* 하단 메타 정보 - 하단에 고정 */}
-              <div className="flex items-center space-x-2 text-gray-500 text-xs mt-auto">
+              {/* 상태 배지가 있을 때: 가격을 아래에 */}
+              {itemStatus !== "거래가능" && (
+                <p className="text-base font-bold text-gray-900 mb-2">{displayPrice}</p>
+              )}
+              
+              {/* 하단 메타 정보 - 오른쪽 아래에 고정 */}
+              <div className="flex items-center justify-end space-x-2 text-gray-500 text-xs mt-auto">
                 <span className="flex items-center">
                   <Eye className="w-3 h-3 mr-1" />
                   {item.views}
