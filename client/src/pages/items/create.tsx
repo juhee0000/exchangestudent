@@ -715,7 +715,7 @@ export default function CreateItem() {
                       <FormLabel>오픈채팅 링크</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="오픈채팅 링크를 입력하세요 (선택)"
+                          placeholder="오픈채팅 링크를 입력하세요"
                           {...field}
                           data-testid="input-openchat-link"
                         />
