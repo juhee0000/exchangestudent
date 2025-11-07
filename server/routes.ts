@@ -749,15 +749,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!ensureDataSeparation(req, res, item.sellerId)) return;
       
       console.log(`📋 아이템 수정 시작: ${req.user!.id} -> ${req.params.id}`);
-      console.log(`📋 수정 데이터:`, { 
-        title: req.body.title,
-        price: req.body.price,
-        priceType: typeof req.body.price,
-        currency: req.body.currency 
-      });
       
       const updates = req.body as Partial<InsertItem>;
-      const updatedItem = await storage.updateItem(req.params.id, updates);
+      
+      // 날짜 필드 처리: 문자열을 Date 객체로 변환 또는 null로 설정
+      const processedUpdates = {
+        ...updates,
+        availableFrom: updates.availableFrom ? new Date(updates.availableFrom) : null,
+        availableTo: updates.availableTo ? new Date(updates.availableTo) : null,
+      };
+      
+      const updatedItem = await storage.updateItem(req.params.id, processedUpdates);
       
       if (!updatedItem) {
         return res.status(404).json({ error: 'Failed to update item' });
