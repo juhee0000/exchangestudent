@@ -110,9 +110,7 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={NotificationsPage} />
         <Route path="/items/create" component={CreateItem} />
-        <Route path="/items/:id/edit">
-          <EditItem />
-        </Route>
+        <Route path="/items/:id/edit" component={EditItem} />
         <Route path="/items/:id" component={ItemDetail} />
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />

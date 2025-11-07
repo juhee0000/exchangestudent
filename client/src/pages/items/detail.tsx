@@ -311,8 +311,14 @@ export default function ItemDetail() {
   };
 
   const handleEdit = () => {
-    navigate(`/items/${id}/edit`);
+    try {
+      console.log("🧩 Edit 버튼 클릭됨. id 값:", id);
+      navigate(`/items/${id}/edit`);
+    } catch (error) {
+      console.error("🚨 handleEdit 실행 중 오류:", error);
+    }
   };
+  
 
   if (isLoading) {
     return (
