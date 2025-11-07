@@ -15,10 +15,10 @@ export default function Community() {
   const [, navigate] = useLocation();
 
   const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
-    queryKey: ["/api/community/posts", "이야기방", selectedCountry],
+    queryKey: ["/api/community/posts", "자유게시판", selectedCountry],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append("category", "이야기방");
+      params.append("category", "자유게시판");
       if (selectedCountry !== "전체") {
         params.append("country", selectedCountry);
       }
@@ -49,7 +49,7 @@ export default function Community() {
   };
 
   const handleCreatePost = () => {
-    navigate("/community/create?category=이야기방");
+    navigate("/community/create?category=자유게시판");
   };
 
   if (isLoading) {
@@ -65,7 +65,7 @@ export default function Community() {
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50 h-16">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">이야기방</h1>
+            <h1 className="text-xl font-bold text-gray-900">자유게시판</h1>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" className="text-gray-600 hover:text-primary" data-testid="button-search">
@@ -108,7 +108,7 @@ export default function Community() {
           <div className="text-center py-12">
             <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">
-              아직 이야기방에 게시글이 없습니다
+              아직 자유게시판에 게시글이 없습니다
             </p>
             <Button onClick={handleCreatePost} className="bg-blue-500 hover:bg-blue-600 text-white" data-testid="button-create-first">
               첫 번째 게시글 작성하기
@@ -141,14 +141,18 @@ export default function Community() {
                     {post.content}
                   </p>
                   
-                  <div className="flex items-center text-sm text-gray-500">
-                    <MessageSquare className="w-4 h-4 mr-1" />
-                    <span className="mr-4">{post.commentsCount || 0}</span>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      <span className="mr-4">{post.commentsCount || 0}</span>
+                      
+                      <span>{formatTimeAgo(new Date(post.createdAt))}</span>
+                    </div>
                     
-                    <span className="mr-4">{formatTimeAgo(new Date(post.createdAt))}</span>
-                    
-                    <Eye className="w-4 h-4 mr-1" />
-                    <span>{post.views || 0}</span>
+                    <div className="flex items-center">
+                      <Eye className="w-4 h-4 mr-1" />
+                      <span>{post.views || 0}</span>
+                    </div>
                   </div>
                 </Card>
               ))}
