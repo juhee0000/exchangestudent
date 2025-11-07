@@ -24,13 +24,7 @@ import { COUNTRIES, CURRENCIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/use-exchange";
 
-const conditions = [
-  "새 상품",
-  "거의 새 것",
-  "양호",
-  "사용감 있음",
-  "많이 사용함",
-];
+
 
 const deliveryMethods = [
   "직거래",
@@ -279,7 +273,7 @@ export default function EditItem() {
       
       toast({
         title: "상품 수정 완료",
-        description: "상품이 성공적으로 수정되었습니다.",
+        description: "성공적으로 수정되었습니다.",
       });
       
       navigate(`/items/${id}`);
@@ -297,7 +291,7 @@ export default function EditItem() {
         toast({
           variant: "destructive",
           title: "상품 수정 실패",
-          description: error.message || "상품 수정 중 오류가 발생했습니다.",
+          description: error.message || "수정 중 오류가 발생했습니다.",
         });
       }
     },
@@ -374,7 +368,7 @@ export default function EditItem() {
             <ArrowLeft className="h-5 w-5 mr-2" />
             뒤로
           </Button>
-          <h1 className="text-lg font-semibold">상품 수정하기</h1>
+          <h1 className="text-lg font-semibold">내 물품 수정하기</h1>
         </div>
       </header>
 
@@ -383,27 +377,7 @@ export default function EditItem() {
           <CardContent className="pt-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">거래 상태 <span className="text-red-500">*</span></label>
-                  <Select
-                    value={itemStatus}
-                    onValueChange={setItemStatus}
-                  >
-                    <SelectTrigger data-testid="select-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    거래 상태를 변경하면 구매자에게 알림이 전송됩니다.
-                  </p>
-                </div>
+                
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">상품 사진 <span className="text-red-500">*</span></label>
@@ -526,8 +500,8 @@ export default function EditItem() {
                       
                       <div className="text-xs text-gray-500 space-y-1">
                         <p>• 첫 번째 사진이 대표 사진으로 설정됩니다</p>
-                        <p>• 사진을 드래그해서 순서를 변경할 수 있습니다</p>
-                        <p>• ⭐ 버튼을 클릭하면 해당 사진을 대표 사진으로 설정합니다</p>
+                        
+                      
                       </div>
                     </div>
                   )}

@@ -748,7 +748,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 사용자별 데이터 분리: 아이템 소유자만 수정 가능
       if (!ensureDataSeparation(req, res, item.sellerId)) return;
       
-      console.log(`📋 아이템 수정: ${req.user!.id} -> ${req.params.id}`);
+      console.log(`📋 아이템 수정 시작: ${req.user!.id} -> ${req.params.id}`);
+      console.log(`📋 수정 데이터:`, { 
+        title: req.body.title,
+        price: req.body.price,
+        priceType: typeof req.body.price,
+        currency: req.body.currency 
+      });
       
       const updates = req.body as Partial<InsertItem>;
       const updatedItem = await storage.updateItem(req.params.id, updates);
@@ -757,6 +763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Failed to update item' });
       }
       
+      console.log(`✅ 아이템 수정 성공: ${req.params.id}`);
       res.json(updatedItem);
     } catch (error) {
       console.error('❌ PUT /api/items/:id 오류:', error);
