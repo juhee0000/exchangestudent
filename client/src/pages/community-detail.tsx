@@ -287,7 +287,7 @@ export default function CommunityDetail() {
                   <Textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="댓글을 작성해주세요..."
+                    placeholder="댓글을 입력해주세요"
                     className="min-h-[80px] resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     disabled={createCommentMutation.isPending}
                   />

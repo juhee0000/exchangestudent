@@ -84,8 +84,8 @@ export default function MyPage() {
             <div className="space-y-0">
               <MenuItem
                 icon={Package}
-                title="내 상품 관리"
-                description="판매중인 상품과 거래 내역"
+                title="내 판매 글 관리"
+                description="판매 중인 물품 글 수정"
                 onClick={() => navigate("/my/items")}
               />
               
