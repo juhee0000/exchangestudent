@@ -39,15 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -184,7 +176,7 @@ export default function Settings() {
           <h3 className="font-semibold mb-4">기타</h3>
           <div className="space-y-3">
             <Button variant="outline" className="w-full justify-start">
-              고객센터
+              문의하기
               <ChevronRight className="w-4 h-4 ml-auto" />
             </Button>
             <Button variant="outline" className="w-full justify-start">
@@ -192,7 +184,7 @@ export default function Settings() {
               <ChevronRight className="w-4 h-4 ml-auto" />
             </Button>
             <Button variant="outline" className="w-full justify-start">
-              앱 정보
+              개인정보 처리방침
               <ChevronRight className="w-4 h-4 ml-auto" />
             </Button>
           </div>

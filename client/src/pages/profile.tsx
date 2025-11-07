@@ -10,23 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-import { SUPPORTED_CURRENCIES } from "@/lib/currency";
+
 import { COUNTRIES } from "@/lib/countries";
 
 // 프로필 업데이트 스키마 (비밀번호 제외)
@@ -57,7 +47,7 @@ export default function Profile() {
   const { user, updateUser, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   if (!user) {
     navigate("/auth/login");
     return null;
@@ -88,29 +78,29 @@ export default function Profile() {
         country: data.country,
         preferredCurrency: data.preferredCurrency,
       };
-      
+
       if (data.newPassword) {
         updateData.currentPassword = data.currentPassword;
         updateData.newPassword = data.newPassword;
       }
-      
+
       return apiRequest("PUT", `/api/users/${user.id}`, updateData);
     },
     onSuccess: async (response) => {
       const updatedUser = await response.json();
-      
+
       // 인증 컨텍스트와 로컬 스토리지 모두 업데이트
       updateUser(updatedUser);
-      
+
       // 쿼리 캐시 무효화 (홈 화면 데이터 새로고침)
       queryClient.invalidateQueries({ queryKey: ["/api/items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      
+
       toast({
         title: "프로필 업데이트 완료",
         description: "프로필 정보가 성공적으로 업데이트되었습니다.",
       });
-      
+
       // MY 페이지로 이동
       navigate("/my");
     },
@@ -128,29 +118,7 @@ export default function Profile() {
     updateProfileMutation.mutate(data);
   };
 
-  const handleDeleteAccount = async () => {
-    try {
-      const response = await apiRequest("DELETE", "/api/user/account");
-      const result = await response.json();
-      
-      toast({
-        title: "계정이 삭제되었습니다",
-        variant: "default",
-      });
-      
-      // 강제 로그아웃 처리는 이미 API에서 처리됨
-      if (result.forceLogout) {
-        await logout();
-        navigate("/auth/login");
-      }
-    } catch (error) {
-      toast({
-        title: "계정 삭제 실패",
-        description: "문제가 발생했습니다. 고객센터에 문의해주세요.",
-        variant: "destructive",
-      });
-    }
-  };
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -199,25 +167,6 @@ export default function Profile() {
                 {/* 기본 정보 */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">기본 정보</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>이름</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="이름을 입력하세요" 
-                            {...field}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="username"
@@ -259,7 +208,7 @@ export default function Profile() {
                 {/* 위치 정보 */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">위치 정보</h3>
-                  
+
                   <FormField
                     control={form.control}
                     name="country"
@@ -290,7 +239,7 @@ export default function Profile() {
                     name="school"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>학교</FormLabel>
+                        <FormLabel>해외 학교</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="학교명을 입력하세요" 
@@ -302,38 +251,13 @@ export default function Profile() {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="preferredCurrency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>선호 통화</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-white">
-                              <SelectValue placeholder="통화를 선택하세요" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {SUPPORTED_CURRENCIES.map((currency) => (
-                              <SelectItem key={currency} value={currency}>
-                                {currency}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
                 {/* 비밀번호 변경 */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">비밀번호 변경</h3>
                   <p className="text-sm text-gray-600">비밀번호를 변경하려면 아래 필드를 입력하세요.</p>
-                  
+
                   <FormField
                     control={form.control}
                     name="currentPassword"
@@ -402,39 +326,6 @@ export default function Profile() {
                     <Save className="w-4 h-4 mr-2" />
                     {updateProfileMutation.isPending ? "저장 중..." : "프로필 저장"}
                   </Button>
-                  
-                  {/* 작고 잘 안 보이는 회원탈퇴 링크 */}
-                  <div className="text-center pt-6 border-t border-gray-100">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button 
-                          type="button"
-                          className="text-xs text-gray-400 hover:text-gray-500 underline"
-                          data-testid="button-delete-account"
-                        >
-                          회원탈퇴
-                        </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
-                            등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>취소</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDeleteAccount}
-                            className="bg-red-500 hover:bg-red-600"
-                          >
-                            회원탈퇴
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
                 </div>
               </form>
             </Form>

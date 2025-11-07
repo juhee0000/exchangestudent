@@ -62,8 +62,8 @@ export default function MyPage() {
           </Avatar>
           <div className="flex-1">
             <h1 className="text-xl font-semibold text-gray-900">{user.fullName}</h1>
-            <p className="text-gray-600">{user.email}</p>
-            <p className="text-sm text-gray-500">{user.school} • {user.country}</p>
+           
+            <p className="text-sm text-gray-500">{user.country} • {user.school}</p>
           </div>
           <Button
             variant="outline"
@@ -100,7 +100,7 @@ export default function MyPage() {
               <MenuItem
                 icon={Settings}
                 title="설정"
-                description="알림, 계정 설정"
+                description="알림, 문의하기"
                 onClick={() => navigate("/settings")}
               />
               <MenuItem
