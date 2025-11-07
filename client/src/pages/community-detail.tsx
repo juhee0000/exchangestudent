@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Heart, MessageCircle, Users, ExternalLink, Send } from "lucide-react";
+import { ArrowLeft, Users, ExternalLink, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
@@ -72,10 +72,6 @@ export default function CommunityDetail() {
       setCommentText("");
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId, "comments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
-      toast({
-        title: "댓글 작성 완료",
-        description: "댓글이 성공적으로 작성되었습니다."
-      });
     },
     onError: (error: any) => {
       toast({
@@ -139,12 +135,12 @@ export default function CommunityDetail() {
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center flex-1">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(`/community?tab=${post.category}`)}
-              className="p-2"
+              className="p-2 absolute left-4"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -183,10 +179,6 @@ export default function CommunityDetail() {
           </div>
           
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
-          
-          <div className="text-sm text-gray-600">
-            {post.school && <span>{post.school}</span>}
-          </div>
         </div>
 
         {/* Images */}
@@ -233,15 +225,7 @@ export default function CommunityDetail() {
         )}
 
         {/* Stats */}
-        <div className="flex items-center space-x-6 py-4 border-t border-gray-200">
-          <div className="flex items-center space-x-1 text-gray-500">
-            <Heart className="w-5 h-5" />
-            <span className="text-sm">{post.likes || 0}</span>
-          </div>
-          <div className="flex items-center space-x-1 text-gray-500">
-            <MessageCircle className="w-5 h-5" />
-            <span className="text-sm">{comments.length}</span>
-          </div>
+        <div className="flex items-center justify-end py-4 border-t border-gray-200">
           <div className="text-sm text-gray-500">
             조회 {post.views || 0}
           </div>
@@ -260,17 +244,17 @@ export default function CommunityDetail() {
             </div>
           ) : comments.length > 0 ? (
             <div className="space-y-4 mb-6">
-              {comments.map((comment) => (
+              {comments.map((comment: any) => (
                 <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          {comment.authorId?.charAt(0)?.toUpperCase() || 'U'}
+                          {comment.authorFullName?.charAt(0)?.toUpperCase() || comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
                       <span className="font-medium text-gray-900">
-                        익명
+                        {comment.authorFullName || comment.authorUsername || '알 수 없음'}
                       </span>
                     </div>
                     <span className="text-sm text-gray-500">
@@ -285,7 +269,6 @@ export default function CommunityDetail() {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <MessageCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
               <p>아직 댓글이 없습니다</p>
               <p className="text-sm">첫 번째 댓글을 작성해보세요!</p>
             </div>

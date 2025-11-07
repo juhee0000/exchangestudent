@@ -515,9 +515,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPostComments(postId: string): Promise<Comment[]> {
-    return await db.select().from(comments)
+    const results = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        authorId: comments.authorId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorUsername: users.username,
+        authorFullName: users.fullName,
+      })
+      .from(comments)
+      .leftJoin(users, eq(comments.authorId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(comments.createdAt);
+    
+    return results as any;
   }
 
   async createComment(comment: InsertComment & { authorId: string }): Promise<Comment> {

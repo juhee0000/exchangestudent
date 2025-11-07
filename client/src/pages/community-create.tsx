@@ -125,10 +125,6 @@ export default function CommunityCreate() {
     onSuccess: (result) => {
       console.log("=== 글 작성 성공 ===");
       console.log("Created post:", result);
-      toast({
-        title: "게시글 작성 완료",
-        description: "게시글이 성공적으로 작성되었습니다."
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
       navigate("/community");
     },
