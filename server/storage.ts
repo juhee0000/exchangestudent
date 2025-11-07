@@ -41,7 +41,7 @@ export interface IStorage {
   
   // Item methods
   getItems(): Promise<Item[]>;
-  getItem(id: string): Promise<Item | undefined>;
+  getItem(id: string): Promise<(Item & { seller?: User }) | undefined>;
   createItem(insertItem: InsertItem): Promise<Item>;
   updateItem(id: string, updates: Partial<InsertItem>): Promise<Item | undefined>;
   updateItemStatus(id: string, status: string): Promise<Item | undefined>;
@@ -228,9 +228,22 @@ export class DatabaseStorage implements IStorage {
     return await query.orderBy(desc(items.createdAt));
   }
 
-  async getItem(id: string): Promise<Item | undefined> {
-    const [item] = await db.select().from(items).where(eq(items.id, id));
-    return item || undefined;
+  async getItem(id: string): Promise<(Item & { seller?: User }) | undefined> {
+    const [result] = await db
+      .select({
+        item: items,
+        seller: users,
+      })
+      .from(items)
+      .leftJoin(users, eq(items.sellerId, users.id))
+      .where(eq(items.id, id));
+    
+    if (!result) return undefined;
+    
+    return {
+      ...result.item,
+      seller: result.seller || undefined,
+    };
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {

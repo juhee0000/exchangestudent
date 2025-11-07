@@ -188,7 +188,7 @@ export const insertReportSchema = createInsertSchema(reports);
 // Types inferred from Zod schemas
 export type User = z.infer<typeof selectUserSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Item = z.infer<typeof selectItemSchema>;
+export type Item = z.infer<typeof selectItemSchema> & { seller?: User };
 export type InsertItem = z.infer<typeof insertItemSchema>;
 export type Favorite = z.infer<typeof selectFavoriteSchema> & { item?: Item };
 export type ChatRoom = z.infer<typeof selectChatRoomSchema>;

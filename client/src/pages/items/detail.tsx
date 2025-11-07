@@ -515,10 +515,10 @@ export default function ItemDetail() {
             <h3 className="font-semibold mb-3">판매자 정보</h3>
             <div className="flex items-center space-x-3">
               <Avatar>
-                <AvatarFallback>U</AvatarFallback>
+                <AvatarFallback>{item.seller?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">판매자</p>
+                <p className="font-medium" data-testid="text-seller-username">{item.seller?.username || '판매자'}</p>
                 <p className="text-sm text-gray-600">{item.school}</p>
               </div>
             </div>
