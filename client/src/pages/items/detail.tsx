@@ -186,7 +186,8 @@ export default function ItemDetail() {
         title: "상품 상태 변경됨",
         description: "상품 상태가 성공적으로 변경되었습니다."
       });
-      // Invalidate and refetch item data
+      // Invalidate item list for homepage and item detail
+      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/items", id] });
     },
     onError: (error: any) => {
