@@ -87,7 +87,7 @@ export default function EditItem() {
 
       const currency = CURRENCIES.find(c => c.code === item.currency) || CURRENCIES[0];
       setSelectedCurrency(currency);
-
+      
       form.reset({
         title: item.title || "",
         description: item.description || "",
@@ -104,6 +104,7 @@ export default function EditItem() {
         availableTo: item.availableTo ? new Date(item.availableTo) : undefined,
         status: item.status || "거래가능",
         isAvailable: item.isAvailable ?? true,
+        currency: currency.code,
       });
     }
   }, [item, user, navigate, toast]);
