@@ -20,6 +20,7 @@ import EmailLogin from "@/pages/auth/email-login";
 import Register from "@/pages/auth/register";
 import CompleteRegistration from "@/pages/auth/complete-registration";
 import CreateItem from "@/pages/items/create";
+import EditItem from "@/pages/items/edit";
 import ItemDetail from "@/pages/items/detail";
 import SearchPage from "@/pages/search";
 import SearchResults from "@/pages/search-results";
@@ -40,7 +41,7 @@ function Router() {
   const { login } = useAuth();
   const { toast } = useToast();
   const isAuthPage = location.startsWith('/auth');
-  const isItemDetailPage = location.startsWith('/items/') && location !== '/items/create';
+  const isItemDetailPage = location.startsWith('/items/') && location !== '/items/create' && !location.includes('/edit');
   const isSearchPage = location === '/search' || location.startsWith('/search/');
   const isProfilePage = location === '/profile';
   const isNotificationsPage = location === '/notifications';
@@ -109,6 +110,7 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={NotificationsPage} />
         <Route path="/items/create" component={CreateItem} />
+        <Route path="/items/:id/edit" component={EditItem} />
         <Route path="/items/:id" component={ItemDetail} />
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />

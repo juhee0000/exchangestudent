@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MessageCircle, Share, Eye, MapPin, Flag, MoreVertical, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, MessageCircle, Share, Eye, MapPin, Flag, MoreVertical, X, ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -57,6 +57,7 @@ export default function ItemDetail() {
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullscreen, setShowFullscreen] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -225,6 +226,28 @@ export default function ItemDetail() {
     }
   });
 
+  const deleteItemMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/items/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "상품이 삭제되었습니다",
+        description: "상품이 성공적으로 삭제되었습니다."
+      });
+      navigate("/");
+    },
+    onError: (error: any) => {
+      console.error("Delete error:", error);
+      toast({
+        title: "상품 삭제 실패",
+        description: "상품을 삭제할 수 없습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleChatStart = () => {
     if (!user) {
       navigate("/auth/login");
@@ -256,6 +279,36 @@ export default function ItemDetail() {
       return;
     }
     reportItemMutation.mutate();
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: item?.title,
+          text: item?.description,
+          url: url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({
+          title: "링크가 복사되었습니다",
+          description: "링크를 공유해보세요!"
+        });
+      }
+    } catch (error) {
+      console.error("Share error:", error);
+    }
+  };
+
+  const handleDelete = () => {
+    setShowDeleteDialog(false);
+    deleteItemMutation.mutate();
+  };
+
+  const handleEdit = () => {
+    navigate(`/items/${id}/edit`);
   };
 
   if (isLoading) {
@@ -303,14 +356,33 @@ export default function ItemDetail() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
-                  <Flag className="w-4 h-4 mr-2" />
-                  신고하기
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log("Share")}>
-                  <Share className="w-4 h-4 mr-2" />
-                  공유하기
-                </DropdownMenuItem>
+                {user && user.id === item.sellerId ? (
+                  <>
+                    <DropdownMenuItem onClick={handleEdit}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      수정하기
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
+                      <Share className="w-4 h-4 mr-2" />
+                      공유하기
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      삭제하기
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                      <Flag className="w-4 h-4 mr-2" />
+                      신고하기
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
+                      <Share className="w-4 h-4 mr-2" />
+                      공유하기
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -415,40 +487,7 @@ export default function ItemDetail() {
 
           {/* Seller Info */}
           <Card className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">판매자 정보</h3>
-              {user && user.id === item.sellerId && (
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateItemStatusMutation.mutate("거래가능")}
-                    disabled={updateItemStatusMutation.isPending || getItemStatus(item) === "거래가능"}
-                    className="text-xs"
-                  >
-                    거래가능
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateItemStatusMutation.mutate("거래완료")}
-                    disabled={updateItemStatusMutation.isPending || getItemStatus(item) === "거래완료"}
-                    className="text-xs"
-                  >
-                    거래완료
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateItemStatusMutation.mutate("거래기간만료")}
-                    disabled={updateItemStatusMutation.isPending || getItemStatus(item) === "거래기간만료"}
-                    className="text-xs"
-                  >
-                    기간만료
-                  </Button>
-                </div>
-              )}
-            </div>
+            <h3 className="font-semibold mb-3">판매자 정보</h3>
             <div className="flex items-center space-x-3">
               <Avatar>
                 <AvatarFallback>U</AvatarFallback>
@@ -535,6 +574,33 @@ export default function ItemDetail() {
               disabled={reportItemMutation.isPending || !reportReason}
             >
               {reportItemMutation.isPending ? "신고 중..." : "신고하기"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>상품 삭제</DialogTitle>
+            <DialogDescription>
+              정말로 이 상품을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteItemMutation.isPending}
+            >
+              {deleteItemMutation.isPending ? "삭제 중..." : "삭제"}
             </Button>
           </DialogFooter>
         </DialogContent>

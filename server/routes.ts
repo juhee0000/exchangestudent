@@ -739,16 +739,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put('/api/items/:id', authenticateToken, async (req, res) => {
-    const item = await storage.getItem(req.params.id);
-    if (!item) {
-      return res.status(404).json({ error: 'Item not found' });
+    try {
+      const item = await storage.getItem(req.params.id);
+      if (!item) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
+      
+      // 사용자별 데이터 분리: 아이템 소유자만 수정 가능
+      if (!ensureDataSeparation(req, res, item.sellerId)) return;
+      
+      console.log(`📋 아이템 수정: ${req.user!.id} -> ${req.params.id}`);
+      
+      const updates = req.body as Partial<InsertItem>;
+      const updatedItem = await storage.updateItem(req.params.id, updates);
+      
+      if (!updatedItem) {
+        return res.status(404).json({ error: 'Failed to update item' });
+      }
+      
+      res.json(updatedItem);
+    } catch (error) {
+      console.error('❌ PUT /api/items/:id 오류:', error);
+      res.status(500).json({ error: '상품 수정에 실패했습니다.' });
     }
-    
-    // 사용자별 데이터 분리: 아이템 소유자만 수정 가능
-    if (!ensureDataSeparation(req, res, item.sellerId)) return;
-    
-    console.log(`📋 아이템 수정: ${req.user!.id} -> ${req.params.id}`);
-    res.json(await storage.updateItemStatus(req.params.id, req.body.status));
   });
 
   // Exchange rates endpoint
