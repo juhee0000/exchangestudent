@@ -232,6 +232,8 @@ export default function ItemDetail() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items", id] });
       toast({
         title: "상품이 삭제되었습니다",
         description: "상품이 성공적으로 삭제되었습니다."
@@ -415,9 +417,25 @@ export default function ItemDetail() {
           <Card className="p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center space-x-2">
-                <Badge className={getStatusBadgeColor(getItemStatus(item))}>
-                  {getItemStatus(item)}
-                </Badge>
+                {user && user.id === item.sellerId ? (
+                  <Select 
+                    value={getItemStatus(item)} 
+                    onValueChange={(value) => updateItemStatusMutation.mutate(value)}
+                  >
+                    <SelectTrigger className="w-[140px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="거래가능">거래가능</SelectItem>
+                      <SelectItem value="거래완료">거래완료</SelectItem>
+                      <SelectItem value="거래기간만료">거래기간만료</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Badge className={getStatusBadgeColor(getItemStatus(item))}>
+                    {getItemStatus(item)}
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center text-gray-500 text-sm">
                 <span className="flex items-center">
