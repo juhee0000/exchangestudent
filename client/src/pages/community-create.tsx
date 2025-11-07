@@ -24,7 +24,7 @@ const createPostSchema = insertCommunityPostSchema.omit({
   commentsCount: true,
   createdAt: true,
 }).extend({
-  images: z.array(z.string()).max(2, "최대 2장까지만 업로드할 수 있습니다").optional(),
+  images: z.array(z.string()).max(5, "최대 5장까지만 업로드할 수 있습니다").optional(),
   semester: z.string().optional(),
   openChatLink: z.string().optional(),
 });
@@ -39,9 +39,8 @@ export default function CommunityCreate() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // URL 파라미터에서 카테고리 읽기
-  const urlParams = new URLSearchParams(window.location.search);
-  const categoryFromUrl = urlParams.get('category') as "이야기방" | "모임방" | null;
+  // 자유게시판으로 고정
+  const categoryFromUrl = "자유게시판";
 
   // Generate semester options based on current date
   const generateSemesterOptions = () => {
@@ -84,11 +83,11 @@ export default function CommunityCreate() {
     defaultValues: {
       title: "",
       content: "",
-      category: categoryFromUrl || "이야기방", // URL 파라미터에서 온 카테고리 사용
-      country: user?.country || "",
+      category: "자유게시판",
+      country: "전체",
       school: user?.school || "",
       images: [],
-      semester: semesterOptions[0] || "",
+      semester: "",
       openChatLink: "",
     },
   });
@@ -188,16 +187,6 @@ export default function CommunityCreate() {
       return;
     }
 
-    if (!data.category) {
-      console.log("Category validation failed");
-      toast({
-        title: "카테고리를 선택해주세요",
-        description: "카테고리는 필수 항목입니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     if (!data.country?.trim()) {
       console.log("Country validation failed");
       toast({
@@ -206,29 +195,6 @@ export default function CommunityCreate() {
         variant: "destructive"
       });
       return;
-    }
-
-    if (!data.school?.trim()) {
-      console.log("School validation failed");
-      toast({
-        title: "학교를 입력해주세요",
-        description: "학교는 필수 항목입니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // 모임방 전용 필수 필드 검증
-    if (data.category === "모임방") {
-      if (!data.semester?.trim()) {
-        console.log("Semester validation failed");
-        toast({
-          title: "학기를 선택해주세요",
-          description: "모임방 글에는 학기가 필수입니다.",
-          variant: "destructive"
-        });
-        return;
-      }
     }
 
     console.log("All validations passed, creating post...");
@@ -285,10 +251,10 @@ export default function CommunityCreate() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    if (uploadedImages.length + files.length > 2) {
+    if (uploadedImages.length + files.length > 5) {
       toast({
         title: "이미지 업로드 제한",
-        description: "최대 2장까지만 업로드할 수 있습니다.",
+        description: "최대 5장까지만 업로드할 수 있습니다.",
         variant: "destructive"
       });
       return;
@@ -348,7 +314,7 @@ export default function CommunityCreate() {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-gray-900">글쓰기</h1>
+            <h1 className="text-lg font-semibold text-gray-900">자유게시판 글 쓰기</h1>
           </div>
           
           <Button
@@ -398,22 +364,31 @@ export default function CommunityCreate() {
             }} 
             className="space-y-6"
           >
-            {/* Category Selection */}
+            {/* Country Selection */}
             <FormField
               control={form.control}
-              name="category"
+              name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>카테고리 *</FormLabel>
+                  <FormLabel className="text-base font-normal text-gray-700">어느 국가와 관련된 내용인가요?</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="카테고리를 선택하세요" />
+                        <SelectValue placeholder="국가를 선택하세요" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="이야기방">이야기방</SelectItem>
-                      <SelectItem value="모임방">모임방</SelectItem>
+                      <SelectItem value="전체">전체</SelectItem>
+                      <SelectItem value="미국">미국</SelectItem>
+                      <SelectItem value="독일">독일</SelectItem>
+                      <SelectItem value="스페인">스페인</SelectItem>
+                      <SelectItem value="프랑스">프랑스</SelectItem>
+                      <SelectItem value="영국">영국</SelectItem>
+                      <SelectItem value="호주">호주</SelectItem>
+                      <SelectItem value="일본">일본</SelectItem>
+                      <SelectItem value="중국">중국</SelectItem>
+                      <SelectItem value="이탈리아">이탈리아</SelectItem>
+                      <SelectItem value="기타">기타</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -427,114 +402,17 @@ export default function CommunityCreate() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>제목 *</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="제목을 입력하세요"
                       {...field} 
-                      className="text-base"
+                      className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            {/* Semester Selection - Only for 모임방 */}
-            {form.watch("category") === "모임방" && (
-              <FormField
-                control={form.control}
-                name="semester"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>학기 *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="학기를 선택하세요" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {semesterOptions.map((semester) => (
-                          <SelectItem key={semester} value={semester}>
-                            {semester}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-
-
-            {/* School Input */}
-            <FormField
-              control={form.control}
-              name="school"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>학교 *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="학교명을 입력하세요"
-                      {...field} 
-                      className="text-base"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Country Selection */}
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>국가 *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="국가를 선택하세요" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {COUNTRIES.map((country) => (
-                        <SelectItem key={country} value={country}>
-                          {country}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Open Chat Link - Only for 모임방 */}
-            {form.watch("category") === "모임방" && (
-              <FormField
-                control={form.control}
-                name="openChatLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>오픈 카톡 링크</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://open.kakao.com/..."
-                        {...field} 
-                        className="text-base"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             {/* Content */}
             <FormField
@@ -542,11 +420,10 @@ export default function CommunityCreate() {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>내용 *</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="내용을 입력하세요..."
-                      className="min-h-[200px] text-base resize-none"
+                      placeholder="내용을 입력하세요"
+                      className="min-h-[250px] text-sm resize-none border-0 px-0 focus-visible:ring-0"
                       {...field} 
                     />
                   </FormControl>
@@ -557,13 +434,13 @@ export default function CommunityCreate() {
 
             {/* Image Upload */}
             <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">
-                이미지 ({uploadedImages.length}/2)
+              <label className="text-sm font-normal text-gray-500">
+                이미지 ({uploadedImages.length}/5)
               </label>
               
               {/* Image Preview */}
               {uploadedImages.length > 0 && (
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 flex-wrap gap-3">
                   {uploadedImages.map((image, index) => (
                     <div key={index} className="relative">
                       <img
@@ -584,7 +461,7 @@ export default function CommunityCreate() {
               )}
 
               {/* Upload Button */}
-              {uploadedImages.length < 2 && (
+              {uploadedImages.length < 5 && (
                 <div>
                   <input
                     type="file"
@@ -596,13 +473,12 @@ export default function CommunityCreate() {
                   />
                   <label
                     htmlFor="images"
-                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors text-sm"
                   >
                     {isUploading ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
                     ) : (
                       <>
-                        <ImageIcon className="w-4 h-4 mr-2" />
                         사진 추가
                       </>
                     )}
