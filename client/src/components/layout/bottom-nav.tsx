@@ -7,7 +7,7 @@ export default function BottomNav() {
 
   const navItems = [
     { path: "/", icon: Home, label: "홈" },
-    { path: "/community", icon: MessageSquare, label: "커뮤니티" },
+    { path: "/community", icon: MessageSquare, label: "자유게시판" },
     { path: "/meetings", icon: Users, label: "모임방" },
     { path: "/my", icon: User, label: "MY" },
   ];
