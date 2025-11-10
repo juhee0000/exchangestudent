@@ -1167,6 +1167,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/community/posts/:id', authenticateToken, async (req, res) => {
+    try {
+      const post = await storage.getCommunityPost(req.params.id);
+      if (!post) return res.status(404).json({ error: 'Post not found' });
+      if (post.authorId !== req.user!.id) return res.status(403).json({ error: 'Not authorized' });
+      
+      const updateData = {
+        title: req.body.title,
+        content: req.body.content,
+        category: req.body.category,
+        country: req.body.country,
+        school: req.body.school,
+        images: req.body.images,
+        semester: req.body.semester,
+        openChatLink: req.body.openChatLink,
+      };
+      
+      const updatedPost = await storage.updateCommunityPost(req.params.id, updateData);
+      res.json(updatedPost);
+    } catch (error) {
+      console.error('Database error in PUT /api/community/posts/:id:', error);
+      res.status(500).json({ error: 'Failed to update community post' });
+    }
+  });
+
   app.get('/api/community/posts/:id/comments', authenticateToken, async (req, res) => {
     try {
       // 로그인한 사용자만 댓글 조회 가능

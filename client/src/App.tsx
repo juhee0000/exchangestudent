@@ -29,6 +29,7 @@ import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import CommunityCreate from "@/pages/community-create";
 import CommunityDetail from "@/pages/community-detail";
+import CommunityEdit from "@/pages/community-edit";
 import NotificationsPage from "@/pages/notifications";
 import MyItems from "@/pages/my/items";
 import MyReviews from "@/pages/my/reviews";
@@ -101,6 +102,7 @@ function Router() {
         <Route path="/community" component={Community} />
         <Route path="/meetings" component={Meetings} />
         <Route path="/community-create" component={CommunityCreate} />
+        <Route path="/community/post/:id/edit" component={CommunityEdit} />
         <Route path="/community/post/:id" component={CommunityDetail} />
         <Route path="/community/create" component={CommunityCreate} />
         <Route path="/my" component={MyPage} />

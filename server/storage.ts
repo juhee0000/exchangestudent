@@ -478,6 +478,15 @@ export class DatabaseStorage implements IStorage {
     return post;
   }
 
+  async updateCommunityPost(id: string, updateData: Partial<InsertCommunityPost>): Promise<CommunityPost | undefined> {
+    const [post] = await db
+      .update(communityPosts)
+      .set(updateData)
+      .where(eq(communityPosts.id, id))
+      .returning();
+    return post || undefined;
+  }
+
   async getCommunityPostsByCategory(category: string): Promise<CommunityPost[]> {
     return await db.select().from(communityPosts)
       .where(eq(communityPosts.category, category))
