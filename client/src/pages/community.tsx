@@ -15,7 +15,7 @@ export default function Community() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
+  const { data: posts = [], isLoading, isFetching } = useQuery<CommunityPost[]>({
     queryKey: ["/api/community/posts", "자유게시판", selectedCountry, searchKeyword],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -40,6 +40,7 @@ export default function Community() {
       if (!response.ok) throw new Error("Failed to fetch posts");
       return response.json();
     },
+    placeholderData: (previousData) => previousData,
   });
 
   const formatTimeAgo = (date: Date) => {
@@ -56,7 +57,7 @@ export default function Community() {
     navigate("/community/create?category=자유게시판");
   };
 
-  if (isLoading) {
+  if (isLoading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>

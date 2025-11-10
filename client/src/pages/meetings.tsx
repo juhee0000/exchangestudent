@@ -17,7 +17,7 @@ export default function Meetings() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
+  const { data: posts = [], isLoading, isFetching } = useQuery<CommunityPost[]>({
     queryKey: ["/api/community/posts", "모임방", selectedCountry, searchKeyword],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -42,13 +42,14 @@ export default function Meetings() {
       if (!response.ok) throw new Error("Failed to fetch posts");
       return response.json();
     },
+    placeholderData: (previousData) => previousData,
   });
 
   const handleCreatePost = () => {
     navigate("/meetings/create");
   };
 
-  if (isLoading) {
+  if (isLoading && posts.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
