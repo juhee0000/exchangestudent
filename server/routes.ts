@@ -1213,7 +1213,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to update community post' });
     }
   });
+  app.delete('/api/community/posts/:id', authenticateToken, async (req, res) => {
+    try {
+      const postId = req.params.id;
+      const post = await storage.getCommunityPost(postId);
 
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+
+      // 소유자만 삭제 가능
+      if (post.authorId !== req.user!.id) {
+        return res.status(403).json({ error: 'Not authorized to delete this post' });
+      }
+
+      // storage 메서드를 사용하여 삭제 로직 실행
+      const success = await storage.deleteCommunityPost(postId); 
+
+      if (!success) {
+        return res.status(500).json({ error: 'Failed to delete post' });
+      }
+
+      return res.status(204).send(); // 성공적으로 삭제되었음을 알리는 204 No Content
+    } catch (error) {
+      console.error('Database error in DELETE /api/community/posts/:id:', error);
+      res.status(500).json({ error: 'Failed to delete post' });
+    }
+  });
   app.get('/api/community/posts/:id/comments', authenticateToken, async (req, res) => {
     try {
       // 로그인한 사용자만 댓글 조회 가능
@@ -1244,6 +1270,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === [추가] 댓글 삭제 API ===
+  app.delete('/api/community/comments/:id', authenticateToken, async (req, res) => {
+      try {
+        if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+
+        const commentId = req.params.id;
+        const userId = req.user.id;
+
+        const success = await storage.deleteComment(commentId, userId);
+
+        if (success) {
+          res.status(204).send(); // No Content
+        } else {
+          // 403: Not the owner or comment not found/already deleted
+          res.status(403).json({ error: 'Access denied or comment not found' });
+        }
+      } catch (error) {
+        console.error('❌ DELETE /api/community/comments/:id 오류:', error);
+        res.status(500).json({ error: 'Failed to delete comment' });
+      }
+    });
   // 캐시된 응답을 위한 메모리 저장소
   const responseCache = new Map<string, { data: any; expires: number }>();
   const RESPONSE_CACHE_DURATION = 30 * 1000; // 30초 캐시

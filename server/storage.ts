@@ -1,3 +1,5 @@
+// server/storage.ts (수정된 전체 내용)
+
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { 
@@ -38,7 +40,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
   updateUser(id: string, updateData: Partial<User>): Promise<User>;
-  
+
   // Item methods
   getItems(): Promise<Item[]>;
   getItem(id: string): Promise<(Item & { seller?: User }) | undefined>;
@@ -52,7 +54,7 @@ export interface IStorage {
   getItemsBySchool(school: string): Promise<Item[]>;
   getUserItems(userId: string): Promise<Item[]>;
   incrementItemViews(id: string): Promise<void>;
-  
+
   // Message methods
   getChatRoomMessages(roomId: string): Promise<Message[]>;
   getChatMessages(roomId: string): Promise<Message[]>;
@@ -61,17 +63,19 @@ export interface IStorage {
   getUnreadMessageCount(roomId: string, userId: string): Promise<number>;
   calculateUnreadMessagesForRoom(roomId: string, userId: string): Promise<number>;
   markMessagesAsRead(roomId: string, userId: string): Promise<void>;
-  
+
   // Chat room methods
   getChatRooms(userId: string): Promise<ChatRoom[]>;
   getChatRoom(id: string): Promise<ChatRoom | undefined>;
   createChatRoom(insertChatRoom: InsertChatRoom): Promise<ChatRoom>;
   findOrCreateChatRoom(itemId: string, buyerId: string, sellerId: string): Promise<ChatRoom>;
-  
+
   // Community methods
   getCommunityPosts(): Promise<CommunityPost[]>;
   getCommunityPost(id: string): Promise<CommunityPost | undefined>;
   createCommunityPost(insertPost: InsertCommunityPost): Promise<CommunityPost>;
+  updateCommunityPost(id: string, updateData: Partial<InsertCommunityPost>): Promise<CommunityPost | undefined>;
+  deleteCommunityPost(postId: string): Promise<boolean>; // IStorage 추가
   getCommunityPostsByCategory(category: string): Promise<CommunityPost[]>;
   getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]>;
   getCommunityPostsBySchool(school: string): Promise<CommunityPost[]>;
@@ -80,20 +84,21 @@ export interface IStorage {
   getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]>;
   getPostComments(postId: string): Promise<Comment[]>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
-  
+  deleteComment(commentId: string, userId: string): Promise<boolean>; // IStorage 추가
+
   // Favorites methods
   getUserFavorites(userId: string): Promise<Favorite[]>;
   addFavorite(userId: string, itemId: string): Promise<Favorite>;
   removeFavorite(userId: string, itemId: string): Promise<boolean>;
   isFavorite(userId: string, itemId: string): Promise<boolean>;
-  
+
   // Report methods
   createReport(insertReport: InsertReport & { reporterId: string }): Promise<Report>;
   getUserReports(userId: string): Promise<Report[]>;
-  
+
   // School methods
   getPopularSchools(): Promise<string[]>;
-  
+
   // Statistics methods
   getUserStats(userId: string): Promise<{
     itemsPosted: number;
@@ -103,10 +108,10 @@ export interface IStorage {
     soldStat: number;
     purchasedStat: number;
   }>;
-  
+
   // Chat room management
   deleteChatRoom(roomId: string, userId: string): Promise<boolean>;
-  
+
   // Admin methods
   getAdminStats(): Promise<{
     totalUsers: number;
@@ -128,12 +133,12 @@ export interface IStorage {
   updateUser(userId: string, updates: Partial<InsertUser>): Promise<User | undefined>;
   toggleItemLike(itemId: string, userId: string): Promise<boolean>;
   getComments(postId: string): Promise<Comment[]>;
-  
+
   // New methods for My pages
   getReceivedReviews(userId: string): Promise<any[]>;
   getWrittenReviews(userId: string): Promise<any[]>;
   deleteUser(userId: string): Promise<boolean>;
-  
+
   // Notification methods
   createNotification(notification: InsertNotification): Promise<Notification>;
   getNotifications(userId: string): Promise<Notification[]>;
@@ -201,7 +206,7 @@ export class DatabaseStorage implements IStorage {
         sql`LOWER(${items.description}) LIKE ${searchTerm}`
       ));
     }
-    
+
     // 거래 가능 상품만 필터링
     if (filters.onlyAvailable) {
       // 상태가 '거래가능'이고 거래 기간이 만료되지 않은 상품만 표시
@@ -239,9 +244,9 @@ export class DatabaseStorage implements IStorage {
       .from(items)
       .leftJoin(users, eq(items.sellerId, users.id))
       .where(eq(items.id, id));
-    
+
     if (!result) return undefined;
-    
+
     return {
       ...result.item,
       seller: result.seller || undefined,
@@ -351,7 +356,7 @@ export class DatabaseStorage implements IStorage {
     console.log(`🔥🔥🔥 calculateUnreadMessagesForRoom 새로운 함수 시작! 🔥🔥🔥`);
     console.log(`🔥 채팅방 ID: ${roomId}`);
     console.log(`🔥 사용자 ID: ${userId}`);
-    
+
     try {
       // 해당 채팅방에서 상대방이 보낸 안읽은 메시지 조회
       const unreadFromOthers = await db.select()
@@ -361,11 +366,11 @@ export class DatabaseStorage implements IStorage {
           eq(messages.isRead, false),
           ne(messages.senderId, userId)
         ));
-      
+
       const count = unreadFromOthers.length;
-      
+
       console.log(`🔥 안읽은 메시지 ${count}개 발견!`);
-      
+
       if (count > 0) {
         console.log(`🔥 안읽은 메시지 목록:`, unreadFromOthers.map(msg => ({
           id: msg.id.substring(0, 8) + '...',
@@ -376,16 +381,16 @@ export class DatabaseStorage implements IStorage {
       } else {
         console.log(`🔥 안읽은 메시지가 없습니다.`);
       }
-      
+
       console.log(`🔥🔥🔥 최종 반환값: ${count}개 🔥🔥🔥`);
-      
+
       return count;
     } catch (error) {
       console.error('🔴 calculateUnreadMessagesForRoom 에러:', error);
       return 0;
     }
   }
-  
+
   // 기존 함수는 새 함수를 호출하도록 변경
   async getUnreadMessageCount(roomId: string, userId: string): Promise<number> {
     return await this.calculateUnreadMessagesForRoom(roomId, userId);
@@ -489,6 +494,21 @@ export class DatabaseStorage implements IStorage {
     return post || undefined;
   }
 
+  // [추가된 부분] 게시글 삭제 메서드
+  async deleteCommunityPost(postId: string): Promise<boolean> {
+    try {
+      // 1. 게시글에 달린 모든 댓글 삭제
+      await db.delete(comments).where(eq(comments.postId, postId));
+      // 2. 게시글 삭제
+      const result = await db.delete(communityPosts).where(eq(communityPosts.id, postId)).returning();
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting community post:', error);
+      return false;
+    }
+  }
+  // -------------------------------------
+
   async getCommunityPostsByCategory(category: string): Promise<CommunityPost[]> {
     return await db.select().from(communityPosts)
       .where(eq(communityPosts.category, category))
@@ -497,7 +517,7 @@ export class DatabaseStorage implements IStorage {
 
   async getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]> {
     const whereConditions = [eq(communityPosts.category, query.category)];
-    
+
     if (query.country) {
       whereConditions.push(eq(communityPosts.country, query.country));
     }
@@ -538,11 +558,11 @@ export class DatabaseStorage implements IStorage {
       .select({ postId: comments.postId })
       .from(comments)
       .where(eq(comments.authorId, userId));
-    
+
     if (commentResults.length === 0) {
       return [];
     }
-    
+
     const uniquePostIds = [...new Set(commentResults.map(row => row.postId))];
     return await db.select().from(communityPosts)
       .where(inArray(communityPosts.id, uniquePostIds))
@@ -576,7 +596,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(comments.authorId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(comments.createdAt);
-    
+
     return results as any;
   }
 
@@ -588,22 +608,51 @@ export class DatabaseStorage implements IStorage {
     return newComment;
   }
 
+  // [추가된 부분] 댓글 삭제 메서드
+  async deleteComment(commentId: string, userId: string): Promise<boolean> {
+    const [comment] = await db.select().from(comments).where(eq(comments.id, commentId)).limit(1);
+
+    if (!comment) {
+        return false;
+    }
+
+    // Only the author can delete the comment
+    if (comment.authorId !== userId) {
+        return false;
+    }
+
+    // 1. Delete the comment
+    const deleteResult = await db.delete(comments).where(eq(comments.id, commentId));
+
+    if (deleteResult.rowCount > 0) {
+        // 2. Decrement the commentsCount on the corresponding post
+        await db.update(communityPosts)
+            .set({ commentsCount: sql`${communityPosts.commentsCount} - 1` })
+            .where(eq(communityPosts.id, comment.postId));
+
+        return true;
+    }
+
+    return false;
+  }
+  // -------------------------------------
+
 
   // Admin methods
   async getAdminStats() {
     const [usersCount] = await db.select({ count: count() }).from(users);
     const [itemsCount] = await db.select({ count: count() }).from(items);
     const [messagesCount] = await db.select({ count: count() }).from(messages);
-    
+
     const totalUsers = usersCount.count;
     const totalItems = itemsCount.count;
     const totalMessages = messagesCount.count;
     const activeUsers = totalUsers; // Simplified for now
-    
+
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const [recentItemsResult] = await db.select({ count: count() }).from(items)
       .where(sql`${items.createdAt} >= ${sevenDaysAgo}`);
-    
+
     // Popular categories (simplified)
     const popularCategories = [
       { category: "전자기기", count: 3 },
@@ -626,26 +675,26 @@ export class DatabaseStorage implements IStorage {
   async getDailyStats() {
     const today = new Date();
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    
+
     const dailyVisitors = Math.floor(Math.random() * 100) + 50;
-    
+
     const [dailyItems] = await db.select({ count: count() }).from(items)
       .where(sql`${items.createdAt} >= ${todayStart}`);
-    
+
     const dailyCompletedTrades = Math.floor(Math.random() * 10) + 5;
-    
+
     const weeklyStats = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      
+
       const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-      
+
       const [itemsCount] = await db.select({ count: count() }).from(items)
         .where(sql`${items.createdAt} >= ${dayStart} AND ${items.createdAt} < ${dayEnd}`);
-      
+
       weeklyStats.push({
         date: dateStr,
         visitors: Math.floor(Math.random() * 80) + 40,
@@ -653,7 +702,7 @@ export class DatabaseStorage implements IStorage {
         trades: Math.floor(Math.random() * 8) + 3
       });
     }
-    
+
     return {
       dailyVisitors,
       dailyItemRegistrations: dailyItems.count,
@@ -664,7 +713,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAdminItems(search?: string): Promise<Item[]> {
     let query = db.select().from(items);
-    
+
     if (search) {
       query = query.where(or(
         eq(items.title, search),
@@ -672,13 +721,13 @@ export class DatabaseStorage implements IStorage {
         eq(items.category, search)
       ));
     }
-    
+
     return await query.orderBy(desc(items.createdAt));
   }
 
   async getAdminUsers(search?: string): Promise<User[]> {
     let query = db.select().from(users);
-    
+
     if (search) {
       query = query.where(or(
         eq(users.username, search),
@@ -686,7 +735,7 @@ export class DatabaseStorage implements IStorage {
         eq(users.school, search)
       ));
     }
-    
+
     return await query.orderBy(desc(users.createdAt));
   }
 
@@ -709,7 +758,7 @@ export class DatabaseStorage implements IStorage {
   async toggleItemLike(itemId: string, userId: string): Promise<boolean> {
     // Check if already liked
     const existingFavorite = await this.isFavorite(userId, itemId);
-    
+
     if (existingFavorite) {
       await this.removeFavorite(userId, itemId);
       return false;
@@ -748,17 +797,17 @@ export class DatabaseStorage implements IStorage {
 
     // Soft delete: hide the room for the user who requested deletion
     const updateData: { hiddenForBuyer?: boolean; hiddenForSeller?: boolean } = {};
-    
+
     if (room.buyerId === userId) {
       updateData.hiddenForBuyer = true;
     } else if (room.sellerId === userId) {
       updateData.hiddenForSeller = true;
     }
-    
+
     const result = await db.update(chatRooms)
       .set(updateData)
       .where(eq(chatRooms.id, roomId));
-    
+
     return result.rowCount > 0;
   }
 
@@ -862,7 +911,7 @@ export class DatabaseStorage implements IStorage {
     if (userRooms.length === 0) return 0;
 
     const roomIds = userRooms.map(r => r.id);
-    
+
     // Count unread messages in user's rooms where sender is not the user
     const messageConditions = [
       eq(messages.isRead, false),
@@ -899,43 +948,43 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(userId: string): Promise<boolean> {
     try {
       console.log('🗑️ 사용자 완전 삭제 시작:', userId);
-      
+
       // 1. Delete all favorites first (foreign key constraint)
       await db.delete(favorites).where(eq(favorites.userId, userId));
       console.log('✅ 찜 목록 삭제 완료');
-      
+
       // 2. Delete all messages in rooms where user participated
       const userRooms = await db.select({ id: chatRooms.id })
         .from(chatRooms)
         .where(or(eq(chatRooms.sellerId, userId), eq(chatRooms.buyerId, userId)));
-      
+
       if (userRooms.length > 0) {
         const roomIds = userRooms.map(room => room.id);
         await db.delete(messages).where(inArray(messages.roomId, roomIds));
         console.log('✅ 채팅 메시지 삭제 완료');
-        
+
         // 3. Delete chat rooms
         await db.delete(chatRooms)
           .where(or(eq(chatRooms.sellerId, userId), eq(chatRooms.buyerId, userId)));
         console.log('✅ 채팅방 삭제 완료');
       }
-      
+
       // 4. Delete community post comments
       await db.delete(comments).where(eq(comments.authorId, userId));
       console.log('✅ 커뮤니티 댓글 삭제 완료');
-      
+
       // 5. Delete community posts
       await db.delete(communityPosts).where(eq(communityPosts.authorId, userId));
       console.log('✅ 커뮤니티 글 삭제 완료');
-      
+
       // 6. Delete all items posted by user
       await db.delete(items).where(eq(items.sellerId, userId));
       console.log('✅ 등록 물품 삭제 완료');
-      
+
       // 7. Finally delete the user
       const result = await db.delete(users).where(eq(users.id, userId));
       console.log('✅ 사용자 계정 삭제 완료');
-      
+
       return result.rowCount > 0;
     } catch (error) {
       console.error('❌ 사용자 삭제 중 오류:', error);

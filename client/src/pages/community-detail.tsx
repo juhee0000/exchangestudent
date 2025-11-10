@@ -1,9 +1,22 @@
+// client/src/pages/community-detail.tsx (수정된 전체 내용)
+
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, ExternalLink, Send, MoreVertical, Edit, Share2 } from "lucide-react";
+import { ArrowLeft, Users, ExternalLink, Send, MoreVertical, Edit, Share2, Trash2 } from "lucide-react"; // Trash2 추가
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // AlertDialog 컴포넌트 추가
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +47,7 @@ export default function CommunityDetail() {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch(`/api/community/posts/${postId}`, {
         headers,
         credentials: "include",
@@ -53,7 +66,7 @@ export default function CommunityDetail() {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      
+
       const response = await fetch(`/api/community/posts/${postId}/comments`, {
         headers,
         credentials: "include",
@@ -88,12 +101,38 @@ export default function CommunityDetail() {
     }
   });
 
+  // [추가된 부분] 댓글 삭제 Mutation
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      // DELETE 요청
+      return apiRequest('DELETE', `/api/community/comments/${commentId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "댓글 삭제 완료",
+        description: "댓글이 성공적으로 삭제되었습니다.",
+      });
+      // 댓글 목록과 댓글 수 캐시 무효화하여 UI 업데이트
+      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId, "comments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
+    },
+    onError: (error: any) => {
+      console.error('❌ 댓글 삭제 오류:', error);
+      toast({
+        title: "댓글 삭제 실패", 
+        description: error.message?.includes('403') ? "본인의 댓글만 삭제할 수 있습니다." : "댓글을 삭제하는데 실패했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+  // -------------------------------------
+
   const handleSubmitComment = () => {
     if (!user) {
       navigate("/auth/login");
       return;
     }
-    
+
     if (!commentText.trim()) {
       toast({
         title: "댓글 내용을 입력해주세요",
@@ -101,7 +140,7 @@ export default function CommunityDetail() {
       });
       return;
     }
-    
+
     createCommentMutation.mutate(commentText.trim());
   };
 
@@ -140,7 +179,7 @@ export default function CommunityDetail() {
 
   const handleShare = async () => {
     const url = `${window.location.origin}/community/post/${postId}`;
-    
+
     try {
       await navigator.clipboard.writeText(url);
       toast({
@@ -173,7 +212,7 @@ export default function CommunityDetail() {
               {post.category}
             </h1>
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="p-2">
@@ -209,7 +248,7 @@ export default function CommunityDetail() {
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
             </span>
           </div>
-          
+
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
@@ -254,7 +293,7 @@ export default function CommunityDetail() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             댓글 {comments.length}개
           </h3>
-          
+
           {/* Comment List */}
           {commentsLoading ? (
             <div className="text-center py-4">
@@ -262,28 +301,67 @@ export default function CommunityDetail() {
             </div>
           ) : comments.length > 0 ? (
             <div className="space-y-4 mb-6">
-              {comments.map((comment: any) => (
-                <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-600">
-                          {comment.authorFullName?.charAt(0)?.toUpperCase() || comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
+              {comments.map((comment: any) => {
+                const canDelete = user?.id === comment.authorId;
+                return (
+                  <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-600">
+                            {comment.authorFullName?.charAt(0)?.toUpperCase() || comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                        <span className="font-medium text-gray-900">
+                          {comment.authorFullName || comment.authorUsername || '알 수 없음'}
                         </span>
                       </div>
-                      <span className="font-medium text-gray-900">
-                        {comment.authorFullName || comment.authorUsername || '알 수 없음'}
-                      </span>
+
+                      {/* Delete Button / Timestamp */}
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-500">
+                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+                        </span>
+                        {canDelete && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="p-1 h-6 w-6 text-red-500 hover:bg-red-100"
+                                data-testid={`button-delete-comment-${comment.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  이 작업은 되돌릴 수 없습니다. 댓글이 영구적으로 삭제됩니다.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>취소</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteCommentMutation.mutate(comment.id)}
+                                  disabled={deleteCommentMutation.isPending}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  삭제
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
-                    </span>
+                    <p className="text-gray-800 leading-relaxed">
+                      {comment.content}
+                    </p>
                   </div>
-                  <p className="text-gray-800 leading-relaxed">
-                    {comment.content}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
