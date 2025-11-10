@@ -102,6 +102,36 @@ export default function Meetings() {
         </div>
       </header>
 
+      <div className="px-4 py-3 bg-white border-b">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
+          <button
+            onClick={() => setSelectedCountry("전체")}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
+              selectedCountry === "전체" 
+                ? "bg-gray-900 text-white" 
+                : "bg-gray-100 text-gray-700"
+            }`}
+            data-testid="filter-전체"
+          >
+            전체
+          </button>
+          {COUNTRIES.slice(0, 10).map((country) => (
+            <button
+              key={country}
+              onClick={() => setSelectedCountry(country)}
+              className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
+                selectedCountry === country 
+                  ? "bg-gray-900 text-white" 
+                  : "bg-gray-100 text-gray-700"
+              }`}
+              data-testid={`filter-${country}`}
+            >
+              {country}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <main className="pb-20">
         {posts.length === 0 ? (
           <div className="text-center py-12">
