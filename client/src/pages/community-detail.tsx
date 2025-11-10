@@ -181,21 +181,6 @@ export default function CommunityDetail() {
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
-        {/* Images */}
-        {post.images && post.images.length > 0 && (
-          <div className="mb-6">
-            <div className="grid grid-cols-1 gap-3">
-              {post.images.map((image: string, index: number) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`Post image ${index + 1}`}
-                  className="w-full rounded-lg border"
-                />
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Content */}
         <div className="mb-6">
@@ -225,7 +210,7 @@ export default function CommunityDetail() {
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-end py-4 border-t border-gray-200">
+        <div className="flex items-center justify-end py-4">
           <div className="text-sm text-gray-500">
             조회 {post.views || 0}
           </div>

@@ -427,61 +427,6 @@ export default function CommunityCreate() {
                 </FormItem>
               )}
             />
-
-            {/* Image Upload */}
-            <div className="space-y-3">
-              <label className="text-sm font-normal text-gray-500">
-                이미지 ({uploadedImages.length}/5)
-              </label>
-              
-              {/* Image Preview */}
-              {uploadedImages.length > 0 && (
-                <div className="flex space-x-3 flex-wrap gap-3">
-                  {uploadedImages.map((image, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={image}
-                        alt={`Preview ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg border"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload Button */}
-              {uploadedImages.length < 5 && (
-                <div>
-                  <input
-                    type="file"
-                    id="images"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="images"
-                    className="inline-flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    {isUploading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-                    ) : (
-                      <>
-                        사진 추가
-                      </>
-                    )}
-                  </label>
-                </div>
-              )}
-            </div>
           </form>
         </Form>
       </div>
