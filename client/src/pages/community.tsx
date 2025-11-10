@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, MessageSquare, Search, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import type { CommunityPost } from "@shared/schema";
@@ -10,16 +11,20 @@ import { COUNTRIES } from "@/lib/countries";
 
 export default function Community() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
+  const [searchKeyword, setSearchKeyword] = useState("");
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
-    queryKey: ["/api/community/posts", "자유게시판", selectedCountry],
+    queryKey: ["/api/community/posts", "자유게시판", selectedCountry, searchKeyword],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append("category", "자유게시판");
       if (selectedCountry !== "전체") {
         params.append("country", selectedCountry);
+      }
+      if (searchKeyword.trim()) {
+        params.append("search", searchKeyword.trim());
       }
       
       const token = localStorage.getItem("token");
@@ -61,22 +66,20 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50 h-16">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">자유게시판</h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-600 hover:text-primary" 
-              onClick={() => navigate("/search/community")}
-              data-testid="button-search"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
+      <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
+        <div className="mb-3">
+          <h1 className="text-xl font-bold text-gray-900">자유게시판</h1>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="검색어를 입력하세요"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-lg"
+            data-testid="input-search"
+          />
         </div>
       </header>
 
