@@ -101,7 +101,7 @@ export default function CommunityCreate() {
       title: "",
       content: "",
       category: categoryFromUrl,
-      country: isMeetingPost ? "" : "전체",
+      country: isMeetingPost ? "전체" : "전체",
       school: user?.school || "",
       images: [],
       semester: "",
@@ -389,7 +389,7 @@ export default function CommunityCreate() {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900">모임 이름</FormLabel>
+                      <FormLabel className="text-base font-normal text-gray-900">모임 이름</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="26-2 000대학교 준비방"
@@ -408,15 +408,14 @@ export default function CommunityCreate() {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900">어느 국가와 관련된 내용인가요?(선택)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormLabel className="text-base font-normal text-gray-900">어느 국가와 관련된 내용인가요?(선택)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || "전체"}>
                         <FormControl>
                           <SelectTrigger className="bg-gray-50 border-gray-300">
                             <SelectValue placeholder="전체" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">선택 안함</SelectItem>
                           <SelectItem value="전체">전체</SelectItem>
                           <SelectItem value="미국">미국</SelectItem>
                           <SelectItem value="독일">독일</SelectItem>
@@ -441,7 +440,7 @@ export default function CommunityCreate() {
                   name="content"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900">간단한 설명</FormLabel>
+                      <FormLabel className="text-base font-normal text-gray-900">간단한 설명</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="000 대학교로 교환가시는 분들 같이 준비해요!"
