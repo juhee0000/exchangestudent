@@ -40,7 +40,7 @@ export default function Meetings() {
   });
 
   const handleCreatePost = () => {
-    navigate("/community/create?category=모임방");
+    navigate("/meetings/create");
   };
 
   if (isLoading) {
