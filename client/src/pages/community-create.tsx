@@ -408,7 +408,7 @@ export default function CommunityCreate() {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-normal text-gray-900">어느 국가와 관련된 내용인가요?(선택)</FormLabel>
+                      <FormLabel className="text-base font-normal text-gray-900">어느 국가와 관련된 모임인가요?(선택)</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || "전체"}>
                         <FormControl>
                           <SelectTrigger className="bg-gray-50 border-gray-300">
