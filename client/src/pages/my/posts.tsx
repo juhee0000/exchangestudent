@@ -66,8 +66,8 @@ export default function MyPosts() {
     ...communityPosts.map(post => ({ ...post, postType: "community" as const })),
     ...items.map(item => ({ ...item, postType: "item" as const }))
   ].sort((a, b) => {
-    const dateA = new Date(a.createdAt).getTime();
-    const dateB = new Date(b.createdAt).getTime();
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return dateB - dateA; // 최신순 정렬
   });
 
@@ -204,10 +204,10 @@ export default function MyPosts() {
                           </span>
                         )}
                         <span className="ml-auto">
-                          {formatDistanceToNow(new Date(post.createdAt), {
+                          {post.createdAt ? formatDistanceToNow(new Date(post.createdAt), {
                             addSuffix: true,
                             locale: ko,
-                          })}
+                          }) : '날짜 없음'}
                         </span>
                       </div>
                     </div>
