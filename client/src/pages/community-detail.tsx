@@ -204,17 +204,16 @@ export default function CommunityDetail() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isAuthor ? (
+              {isAuthor && (
                 <DropdownMenuItem onClick={() => navigate(`/community/post/${postId}/edit`)}>
                   <Edit className="w-4 h-4 mr-2" />
                   수정하기
                 </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem onClick={handleShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  URL 공유하기
-                </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={handleShare}>
+                <Share2 className="w-4 h-4 mr-2" />
+                URL 공유하기
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
