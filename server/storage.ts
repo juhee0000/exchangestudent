@@ -1,5 +1,3 @@
-// server/storage.ts (수정된 전체 내용)
-
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { 
@@ -52,7 +50,7 @@ export interface IStorage {
   getItemsByCategory(category: string): Promise<Item[]>;
   getItemsByCountry(country: string): Promise<Item[]>;
   getItemsBySchool(school: string): Promise<Item[]>;
-  getUserItems(userId: string): Promise<Item[]>;
+  getUserItems(userId: string): Promise<Item[]>; // ✅ 이 메서드를 routes.ts에서 사용
   incrementItemViews(id: string): Promise<void>;
 
   // Message methods
@@ -75,7 +73,7 @@ export interface IStorage {
   getCommunityPost(id: string): Promise<CommunityPost | undefined>;
   createCommunityPost(insertPost: InsertCommunityPost): Promise<CommunityPost>;
   updateCommunityPost(id: string, updateData: Partial<InsertCommunityPost>): Promise<CommunityPost | undefined>;
-  deleteCommunityPost(postId: string): Promise<boolean>; // IStorage 추가
+  deleteCommunityPost(postId: string): Promise<boolean>;
   getCommunityPostsByCategory(category: string): Promise<CommunityPost[]>;
   getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]>;
   getCommunityPostsBySchool(school: string): Promise<CommunityPost[]>;
@@ -84,7 +82,7 @@ export interface IStorage {
   getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]>;
   getPostComments(postId: string): Promise<Comment[]>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
-  deleteComment(commentId: string, userId: string): Promise<boolean>; // IStorage 추가
+  deleteComment(commentId: string, userId: string): Promise<boolean>;
 
   // Favorites methods
   getUserFavorites(userId: string): Promise<Favorite[]>;
@@ -494,7 +492,7 @@ export class DatabaseStorage implements IStorage {
     return post || undefined;
   }
 
-  // [추가된 부분] 게시글 삭제 메서드
+  // 게시글 삭제 메서드
   async deleteCommunityPost(postId: string): Promise<boolean> {
     try {
       // 1. 게시글에 달린 모든 댓글 삭제
@@ -507,7 +505,6 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
-  // -------------------------------------
 
   async getCommunityPostsByCategory(category: string): Promise<CommunityPost[]> {
     return await db.select().from(communityPosts)
@@ -608,7 +605,7 @@ export class DatabaseStorage implements IStorage {
     return newComment;
   }
 
-  // [추가된 부분] 댓글 삭제 메서드
+  // 댓글 삭제 메서드
   async deleteComment(commentId: string, userId: string): Promise<boolean> {
     const [comment] = await db.select().from(comments).where(eq(comments.id, commentId)).limit(1);
 
@@ -635,8 +632,6 @@ export class DatabaseStorage implements IStorage {
 
     return false;
   }
-  // -------------------------------------
-
 
   // Admin methods
   async getAdminStats() {

@@ -1,9 +1,7 @@
-// client/src/pages/community-detail.tsx (수정된 전체 내용)
-
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, ExternalLink, Send, MoreVertical, Edit, Share2, Trash2 } from "lucide-react"; // Trash2 추가
+import { ArrowLeft, Users, ExternalLink, Send, MoreVertical, Edit, Share2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -16,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // AlertDialog 컴포넌트 추가
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +26,22 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { Comment } from "@shared/schema";
+import type { Comment, Item } from "@shared/schema";
+
+// Post 타입에 authorItems 필드를 추가 정의 (작성자의 물품 목록)
+interface DetailedPost {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  country: string;
+  authorId: string;
+  createdAt: string;
+  views: number;
+  openChatLink?: string;
+  authorItems: Item[]; // 백엔드에서 추가된 물품 목록 필드
+}
+
 
 export default function CommunityDetail() {
   const [, params] = useRoute("/community/post/:id");
@@ -39,7 +52,7 @@ export default function CommunityDetail() {
   const postId = params?.id;
   const [commentText, setCommentText] = useState("");
 
-  const { data: post, isLoading } = useQuery({
+  const { data: post, isLoading } = useQuery<DetailedPost>({ // DetailedPost 타입 사용
     queryKey: ["/api/community/posts", postId],
     queryFn: async () => {
       const token = localStorage.getItem("token");
@@ -53,6 +66,7 @@ export default function CommunityDetail() {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch post");
+      // 백엔드에서 authorItems가 포함된 객체를 반환한다고 가정
       return response.json();
     },
     enabled: !!postId, // 모든 사용자가 글을 볼 수 있도록 함
@@ -101,10 +115,9 @@ export default function CommunityDetail() {
     }
   });
 
-  // [추가된 부분] 댓글 삭제 Mutation
+  // 댓글 삭제 Mutation
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
-      // DELETE 요청
       return apiRequest('DELETE', `/api/community/comments/${commentId}`);
     },
     onSuccess: () => {
@@ -112,7 +125,6 @@ export default function CommunityDetail() {
         title: "댓글 삭제 완료",
         description: "댓글이 성공적으로 삭제되었습니다.",
       });
-      // 댓글 목록과 댓글 수 캐시 무효화하여 UI 업데이트
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId, "comments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
     },
@@ -125,7 +137,6 @@ export default function CommunityDetail() {
       });
     }
   });
-  // -------------------------------------
 
   const handleSubmitComment = () => {
     if (!user) {
@@ -152,6 +163,7 @@ export default function CommunityDetail() {
     );
   }
 
+  // post가 undefined일 가능성 (query 실패/404)을 대비한 체크
   if (!post) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -287,6 +299,54 @@ export default function CommunityDetail() {
             조회 {post.views || 0}
           </div>
         </div>
+
+        {/* [추가된 부분] 작성자의 다른 물품 */}
+        {post.authorItems && post.authorItems.length > 0 && (
+          <div className="mt-6 border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              작성자의 다른 물품 ({post.authorItems.length}개)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              {post.authorItems.slice(0, 4).map((item) => ( // 최대 4개만 표시
+                <div 
+                  key={item.id} 
+                  className="rounded-lg overflow-hidden border bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/items/${item.id}`)} // 물품 상세 페이지로 이동
+                >
+                  <div className="aspect-square bg-gray-200 overflow-hidden">
+                    {item.images && item.images[0] ? (
+                      <img 
+                        src={item.images[0]} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-500">No Image</div>
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <h4 className="text-sm font-medium text-gray-900 truncate">{item.title}</h4>
+                    <p className="text-sm font-bold text-blue-600 mt-0.5">{item.currency} {item.price}</p> 
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* 전체 물품 보기 링크 */}
+            {post.authorItems.length > 4 && (
+                <div className="mt-4 text-right">
+                  <Button 
+                    variant="link" 
+                    size="sm"
+                    onClick={() => navigate(`/search/items?authorId=${post.authorId}`)}
+                    className="text-blue-600 p-0"
+                  >
+                    작성자의 전체 물품 보기 &rarr;
+                  </Button>
+                </div>
+            )}
+          </div>
+        )}
+        {/* [추가된 부분 끝] */}
 
         {/* Comments Section */}
         <div className="mt-6 border-t border-gray-200 pt-6">

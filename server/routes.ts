@@ -49,14 +49,14 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    
+
     // JWT 토큰에서 사용자 ID 추출 및 검증
     if (!decoded.id || typeof decoded.id !== 'string') {
       return res.status(403).json({ error: 'Invalid token format' });
     }
-    
+
     let user: User | undefined;
-    
+
     // 캐시에서 사용자 정보 확인
     const cached = userCache.get(decoded.id);
     if (cached && cached.expires > Date.now()) {
@@ -73,7 +73,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
       // 만료된 캐시 정리
       userCache.delete(decoded.id);
     }
-    
+
     // 사용자가 존재하지 않으면 (삭제된 경우) 401 에러로 처리
     if (!user) {
       return res.status(401).json({ 
@@ -81,7 +81,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
         forceLogout: true 
       });
     }
-    
+
     // 사용자 정보를 req.user에 설정
     req.user = user;
     // 로그 줄이기 - 매 요청마다 로그 출력 안함
@@ -113,12 +113,12 @@ const ensureDataSeparation = (req: Request, res: Response, resourceOwnerId?: str
     res.status(401).json({ error: 'Authentication required' });
     return false;
   }
-  
+
   if (resourceOwnerId && !verifyResourceOwnership(resourceOwnerId, req.user.id)) {
     res.status(403).json({ error: 'Access denied - insufficient permissions' });
     return false;
   }
-  
+
   return true;
 };
 
@@ -126,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   app.set('trust proxy', 1);
-  
+
   // 세션 스토어 최적화 - 메모리 스토어 사용으로 동시 접속 성능 향상
   const sessionConfig = {
     secret: process.env.SESSION_SECRET || 'dev-session-secret-key-2025',
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
     name: 'exchange-market-session'
   };
-  
+
   app.use(session(sessionConfig));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -167,10 +167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     backlog: 511 // 대기열 크기 증가
     // maxConnections는 WebSocketServer에서 지원하지 않음
   });
-  
+
   const clients = new Map<string, WebSocket>();
   const rooms = new Map<string, Set<string>>(); // roomId -> Set of userIds
-  
+
   // 연결 수 모니터링
   setInterval(() => {
     console.log(`WebSocket: ${clients.size} active connections, ${rooms.size} active rooms`);
@@ -179,16 +179,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   wss.on('connection', (ws: WebSocket) => {
     let userId: string | null = null;
     let currentRoomId: string | null = null;
-    
+
     // 타임아웃 설정
     const timeout = setTimeout(() => {
       ws.close(1000, 'Authentication timeout');
     }, 30000);
-    
+
     ws.on('message', (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
-        
+
         if (message.type === 'auth' && message.token) {
           const decoded = jwt.verify(message.token, JWT_SECRET) as any;
           userId = decoded.id;
@@ -197,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           clearTimeout(timeout);
           ws.send(JSON.stringify({ type: 'auth_success', userId }));
-          
+
         } else if (message.type === 'join_room' && userId) {
           if (currentRoomId) {
             // 이전 방에서 나가기
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
           }
-          
+
           currentRoomId = message.roomId;
           if (currentRoomId && !rooms.has(currentRoomId)) {
             rooms.set(currentRoomId, new Set());
@@ -217,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (currentRoomId && userId) {
             rooms.get(currentRoomId)!.add(userId);
           }
-          
+
         } else if (message.type === 'leave_room' && userId && currentRoomId) {
           const room = rooms.get(currentRoomId);
           if (room) {
@@ -233,12 +233,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ws.close(1003, 'Invalid message format');
       }
     });
-    
+
     ws.on('close', () => {
       clearTimeout(timeout);
       if (userId) {
         clients.delete(userId);
-        
+
         if (currentRoomId) {
           const room = rooms.get(currentRoomId);
           if (room) {
@@ -250,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
     });
-    
+
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
       clearTimeout(timeout);
@@ -261,14 +261,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const handleOAuthCallback = (req: Request, res: Response) => {
     const user = req.user as User & { needsAdditionalInfo?: boolean };
     if (!user) return res.redirect('/auth/login?error=auth_failed');
-    
+
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
-    
+
     // Check if user needs to complete registration (school/country info)
     const needsInfo = user.needsAdditionalInfo || !user.school || !user.country || user.school === '' || user.country === '';
     const userWithFlag = { ...user, password: undefined, needsAdditionalInfo: needsInfo };
     const userPayload = encodeURIComponent(JSON.stringify(userWithFlag));
-    
+
     // 항상 메인 페이지로 보내고, 클라이언트가 needsAdditionalInfo 플래그를 확인하여 처리
     res.redirect(`/?token=${token}&user=${userPayload}`);
   };
@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const host = req.get('host');
     const protocol = req.get('x-forwarded-proto') || 'https';
     const redirectUri = `${protocol}://${host}/api/auth/kakao/callback`;
-    
+
     const kakaoAuthUrl = 'https://kauth.kakao.com/oauth/authorize?' + 
       `client_id=${process.env.KAKAO_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
@@ -291,18 +291,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   // 카카오 OAuth 콜백 직접 처리
   app.get('/api/auth/kakao/callback', async (req, res) => {
-    
+
     const { code, error } = req.query;
-    
+
     if (error || !code) {
       return res.redirect('/auth/login?error=auth_failed');
     }
-    
+
     try {
       const host = req.get('host');
       const protocol = req.get('x-forwarded-proto') || 'https';
       const redirectUri = `${protocol}://${host}/api/auth/kakao/callback`;
-      
+
       // 1. 액세스 토큰 발급
       const tokenResponse = await fetch('https://kauth.kakao.com/oauth/token', {
         method: 'POST',
@@ -317,37 +317,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           code: code as string
         })
       });
-      
+
       const tokenData = await tokenResponse.json();
-      
+
       if (!tokenData.access_token) {
         throw new Error('카카오 액세스 토큰 발급 실패');
       }
-      
+
       // 2. 사용자 정보 가져오기
       const userResponse = await fetch('https://kapi.kakao.com/v2/user/me', {
         headers: {
           'Authorization': `Bearer ${tokenData.access_token}`
         }
       });
-      
+
       const userData = await userResponse.json();
-      
+
       const email = userData.kakao_account?.email;
       const nickname = userData.properties?.nickname;
       const kakaoId = userData.id.toString();
-      
+
       if (!email) {
         throw new Error('카카오 계정에서 이메일을 가져올 수 없습니다.');
       }
-      
+
       // 3. 사용자 처리
       let user = await storage.getUserByEmail(email);
-      
+
       if (user && user.status === 'deleted') {
         return res.redirect('/auth/login?error=deleted_account&message=' + encodeURIComponent('삭제된 계정입니다. 카카오 연동을 해제하고 다시 시도해주세요.'));
       }
-      
+
       if (!user) {
         // 새 사용자 생성
         const username = `kakao_${kakaoId}`;
@@ -363,21 +363,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           kakaoId,
           kakaoAccessToken: tokenData.access_token
         });
-        
+
       }
-      
+
       // 4. JWT 토큰 생성 및 리다이렉트
       const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
       const userPayload = encodeURIComponent(JSON.stringify({ ...user, password: undefined }));
-      
+
       const needsInfo = !user.school || !user.country || user.school === '' || user.country === '';
-      
+
       if (needsInfo) {
         res.redirect(`/auth/complete-registration?token=${token}&user=${userPayload}`);
       } else {
         res.redirect(`/?token=${token}&user=${userPayload}`);
       }
-      
+
     } catch (error) {
       res.redirect('/auth/login?error=auth_failed');
     }
@@ -415,7 +415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', async (req, res) => {
     try {
       console.log('🔄 회원가입 요청 데이터:', req.body);
-      
+
       // 1️⃣ 클라이언트 데이터를 서버 스키마에 맞게 변환
       // 프론트엔드에서는 nickname을 보내지만, 데이터베이스에서는 username 필드를 사용
       const transformedData = {
@@ -427,7 +427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         school: req.body.school || "",  // 선택사항이므로 기본값 설정
         country: req.body.country || "",  // 선택사항이므로 기본값 설정
       };
-      
+
       // username이 여전히 없다면 오류
       if (!transformedData.username) {
         console.log('❌ nickname/username이 누락됨');
@@ -436,57 +436,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: [{ message: 'Nickname is required', path: ['nickname'] }]
         });
       }
-      
+
       console.log('🔄 변환된 데이터:', transformedData);
-      
+
       // 2️⃣ 데이터 유효성 검사
       const validatedData = registerSchema.parse(transformedData);
       console.log('✅ 데이터 검증 완료');
-      
+
       // 3️⃣ 이메일과 username 중복 확인
       const existingUser = await storage.getUserByEmail(validatedData.email);
       if (existingUser) {
         console.log('❌ 이미 존재하는 이메일:', validatedData.email);
         return res.status(400).json({ error: 'User already exists' });
       }
-      
+
       const existingUsername = await storage.getUserByUsername(validatedData.username);
       if (existingUsername) {
         console.log('❌ 이미 존재하는 닉네임:', validatedData.username);
         return res.status(400).json({ error: 'Username already exists. Please choose a different nickname.' });
       }
-      
+
       // 4️⃣ 비밀번호 해싱 (보안을 위해 암호화)
       const hashedPassword = await bcrypt.hash(validatedData.password, 10);
       console.log('✅ 비밀번호 해싱 완료');
-      
+
       // 5️⃣ 사용자 데이터 준비
       const userData = {
         ...validatedData,
         password: hashedPassword,  // 해싱된 비밀번호로 교체
         fullName: validatedData.fullName || validatedData.username,  // fullName 기본값 설정
       };
-      
+
       console.log('🔄 최종 사용자 데이터 생성 완료');
-      
+
       // 6️⃣ 데이터베이스에 사용자 생성
       const user = await storage.createUser(userData);
       console.log('✅ 데이터베이스에 사용자 생성 완료:', user.id);
-      
+
       // 7️⃣ JWT 토큰 생성 (로그인 상태 유지용)
       const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
       console.log('✅ JWT 토큰 생성 완료');
-      
+
       // 8️⃣ 성공 응답 (비밀번호는 제외하고 전송)
       res.json({ 
         token, 
         user: { ...user, password: undefined }  // 보안상 비밀번호는 클라이언트에 전송하지 않음
       });
-      
+
     } catch (error) {
       console.error('❌ 회원가입 처리 중 오류:', error);
       console.log('Database error in /api/auth/register:', (error as Error).message);
-      
+
       // 검증 오류인 경우 상세한 오류 메시지 전송
       if (error instanceof z.ZodError) {
         console.log('❌ 데이터 검증 실패:', error.errors);
@@ -495,7 +495,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: error.errors 
         });
       }
-      
+
       res.status(500).json({ error: 'Registration failed. Please try again later.' });
     }
   });
@@ -504,19 +504,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = serverLoginSchema.parse(req.body);
       const user = await storage.getUserByEmail(validatedData.email) || await storage.getUserByUsername(validatedData.email);
-      
+
       if (!user) {
         return res.status(401).json({ 
           error: '존재하지 않는 계정입니다. 이메일 또는 닉네임을 확인해주세요.' 
         });
       }
-      
+
       if (!await bcrypt.compare(validatedData.password, user.password)) {
         return res.status(401).json({ 
           error: '비밀번호가 올바르지 않습니다. 다시 확인해주세요.' 
         });
       }
-      
+
       const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
       res.json({ token, user: { ...user, password: undefined } });
     } catch (error) {
@@ -531,17 +531,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/complete-oauth-registration', authenticateToken, async (req, res) => {
     try {
       const { school, country } = req.body;
-      
+
       if (!school || !country) {
         return res.status(400).json({ error: '학교와 국가를 모두 입력해주세요.' });
       }
-      
+
       // Update user with additional info
       const updatedUser = await storage.updateUser(req.user!.id, {
         school,
         country
       });
-      
+
       res.json({ 
         message: '회원가입이 완료되었습니다!', 
         user: { ...updatedUser, password: undefined }
@@ -574,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🟠 카카오 연결 해제 시작');
       console.log('🟠 Access Token:', accessToken ? `Present (${accessToken.substring(0, 10)}...)` : 'Missing');
-      
+
       const response = await fetch('https://kapi.kakao.com/v1/user/unlink', {
         method: 'POST',
         headers: {
@@ -610,32 +610,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user!.id;
       const user = req.user!;
-      
+
       console.log(`🗑️ 계정 삭제 시작: ${userId}`);
-      
+
       // Delete all user's items first
       const userItems = await storage.getUserItems(userId);
       for (const item of userItems) {
         await storage.deleteItem(item.id);
       }
       console.log(`✅ 사용자 아이템 ${userItems.length}개 삭제 완료`);
-      
+
       // Delete user's favorites
       const userFavorites = await storage.getUserFavorites(userId);
       for (const favorite of userFavorites) {
         await storage.removeFavorite(userId, favorite.id);
       }
       console.log(`✅ 즐겨찾기 ${userFavorites.length}개 삭제 완료`);
-      
+
       // OAuth 연동 해제 처리
       let oauthGuideMessage = '';
       let kakaoDisconnectSuccess = false;
-      
+
       console.log('🟣 사용자 OAuth 정보 확인:');
       console.log('  - authProvider:', user.authProvider);
       console.log('  - kakaoId:', user.kakaoId);
       console.log('  - kakaoAccessToken:', user.kakaoAccessToken ? 'Present' : 'Missing');
-      
+
       if (user.authProvider?.includes('kakao')) {
         if (user.kakaoAccessToken) {
           console.log('🔄 카카오 연결 해제 시도');
@@ -654,18 +654,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (user.authProvider?.includes('naver')) {
         oauthGuideMessage = '네이버 연동이 해제되었습니다. 다시 가입하시려면 네이버 계정에서 연동을 해제하고 새로 동의해주세요.';
       }
-      
+
       // Delete the user account
       await storage.deleteUser(userId);
       console.log(`✅ 계정 삭제 완료: ${userId}`);
-      
+
       // 로그아웃 처리: 세션 종료
       if (req.session) {
         req.session.destroy((err) => {
           if (err) console.error('Session destruction error:', err);
         });
       }
-      
+
       // 클라이언트에게 강제 로그아웃 지시
       res.json({ 
         message: '계정이 성공적으로 삭제되었습니다.',
@@ -721,16 +721,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/items', authenticateToken, async (req, res) => {
     try {
       console.log('📋 POST /api/items 수신:', { user: req.user?.email, bodyKeys: Object.keys(req.body) });
-      
+
       const itemData = req.body as Omit<InsertItem, 'sellerId'>;
       console.log('📋 아이템 데이터:', { title: itemData.title, price: itemData.price, currency: itemData.currency });
-      
+
       const validatedData = insertItemSchema.parse({ ...itemData, sellerId: req.user!.id });
       console.log('✅ insertItemSchema 검증 통과');
-      
+
       const item = await storage.createItem(validatedData);
       console.log('✅ 아이템 생성 성공:', item.id);
-      
+
       res.status(201).json(item);
     } catch (error) {
       console.error('❌ POST /api/items 오류:', error);
@@ -744,27 +744,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!item) {
         return res.status(404).json({ error: 'Item not found' });
       }
-      
+
       // 사용자별 데이터 분리: 아이템 소유자만 수정 가능
       if (!ensureDataSeparation(req, res, item.sellerId)) return;
-      
+
       console.log(`📋 아이템 수정 시작: ${req.user!.id} -> ${req.params.id}`);
-      
+
       const updates = req.body as Partial<InsertItem>;
-      
+
       // 날짜 필드 처리: 문자열을 Date 객체로 변환 또는 null로 설정
       const processedUpdates = {
         ...updates,
         availableFrom: updates.availableFrom ? new Date(updates.availableFrom) : null,
         availableTo: updates.availableTo ? new Date(updates.availableTo) : null,
       };
-      
+
       const updatedItem = await storage.updateItem(req.params.id, processedUpdates);
-      
+
       if (!updatedItem) {
         return res.status(404).json({ error: 'Failed to update item' });
       }
-      
+
       console.log(`✅ 아이템 수정 성공: ${req.params.id}`);
       res.json(updatedItem);
     } catch (error) {
@@ -824,7 +824,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.set('Expires', '0');
     try {
       const rooms = await storage.getChatRooms(req.user!.id);
-      
+
       // Get detailed information for each chat room
       const detailedRooms = await Promise.all(
         rooms.map(async (room) => {
@@ -837,9 +837,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // 채팅방별로 안읽은 메시지 개수 계산 (실제 DB 기반)
           const unreadCount = await storage.calculateUnreadMessagesForRoom(room.id, req.user!.id);
-          
+
           // 안읽은 메시지 개수 계산 완료
-        
+
 
           if (!item || !buyer || !seller) {
             return null; // Skip rooms with missing data
@@ -849,11 +849,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const currentUserId = req.user!.id;
           const isCurrentUserBuyer = room.buyerId === currentUserId;
           const otherUserHasHidden = isCurrentUserBuyer ? room.hiddenForSeller : room.hiddenForBuyer;
-          
+
           // If the other party has hidden the chat room, show anonymous profile for them
           let displayBuyer = buyer;
           let displaySeller = seller;
-          
+
           if (otherUserHasHidden) {
             const anonymousUser = {
               id: isCurrentUserBuyer ? seller.id : buyer.id,
@@ -872,7 +872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               createdAt: new Date(),
               password: ""
             };
-            
+
             if (isCurrentUserBuyer) {
               displaySeller = anonymousUser;
             } else {
@@ -881,7 +881,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           console.log(`✅ 채팅방 ${room.id.substring(0, 8)}... - 실제 unreadCount: ${unreadCount} (사용자: ${req.user!.id.substring(0, 8)}...)`);
-          
+
           return {
             ...room,
             item,
@@ -895,18 +895,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Filter out null values (rooms with missing data)
       const validRooms = detailedRooms.filter(room => room !== null);
-      
+
       console.log(`📤 채팅방 응답 데이터:`, validRooms.map(r => ({
         roomId: r.id.substring(0, 8) + '...',
         unreadCount: r.unreadCount
       })));
-      
+
       console.log(`🎯 DEBUG: validRooms 전체 데이터:`, validRooms.map(r => ({
         id: r.id.substring(0, 8),
         unreadCount: r.unreadCount,
         userId: req.user!.id.substring(0, 8)
       })));
-      
+
       res.json(validRooms);
     } catch (error) {
       console.error('❌ GET /api/chat/rooms 오류:', error);
@@ -946,7 +946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!room) {
         return res.status(404).json({ error: 'Chat room not found' });
       }
-      
+
       // Check if user is participant in this chat room
       if (room.buyerId !== req.user!.id && room.sellerId !== req.user!.id) {
         return res.status(403).json({ error: 'Access denied' });
@@ -970,11 +970,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentUserId = req.user!.id;
       const isCurrentUserBuyer = room.buyerId === currentUserId;
       const otherUserHasHidden = isCurrentUserBuyer ? room.hiddenForSeller : room.hiddenForBuyer;
-      
+
       // If the other party has hidden the chat room, show anonymous profile for them
       let displayBuyer = buyer;
       let displaySeller = seller;
-      
+
       if (otherUserHasHidden) {
         const anonymousUser = {
           id: isCurrentUserBuyer ? seller.id : buyer.id,
@@ -993,7 +993,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(),
           password: ""
         };
-        
+
         if (isCurrentUserBuyer) {
           displaySeller = anonymousUser;
         } else {
@@ -1008,7 +1008,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         buyer: displayBuyer,
         seller: displaySeller
       };
-      
+
       res.json(detailedRoom);
     } catch (error) {
       console.error('❌ GET /api/chat/rooms/:id 오류:', error);
@@ -1022,12 +1022,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!room) {
         return res.status(404).json({ error: 'Chat room not found' });
       }
-      
+
       // Check if user is participant in this chat room
       if (room.buyerId !== req.user!.id && room.sellerId !== req.user!.id) {
         return res.status(403).json({ error: 'Access denied' });
       }
-      
+
       const messages = await storage.getChatRoomMessages(req.params.id);
       res.json(messages);
     } catch (error) {
@@ -1047,7 +1047,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!room) {
         return res.status(404).json({ error: 'Chat room not found' });
       }
-      
+
       // Check if user is participant in this chat room
       if (room.buyerId !== req.user!.id && room.sellerId !== req.user!.id) {
         return res.status(403).json({ error: 'Access denied' });
@@ -1059,7 +1059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         roomId: req.params.id,
         isRead: false // 메시지를 받는 사람 기준으로 읽지 않은 상태
       });
-      
+
       res.status(201).json(message);
     } catch (error) {
       console.error('❌ POST /api/chat/rooms/:id/messages 오류:', error);
@@ -1091,7 +1091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch favorites' });
     }
   });
-  
+
   app.post('/api/favorites', authenticateToken, async (req, res) => {
     try {
       res.status(201).json(await storage.addFavorite(req.user!.id, req.body.itemId));
@@ -1100,7 +1100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to add favorite' });
     }
   });
-  
+
   app.delete('/api/favorites/:itemId', authenticateToken, async (req, res) => {
     try {
       await storage.removeFavorite(req.user!.id, req.params.itemId);
@@ -1110,7 +1110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to remove favorite' });
     }
   });
-  
+
   app.post('/api/items/:id/toggle-like', authenticateToken, async (req, res) => {
     try {
       res.json({ isLiked: await storage.toggleItemLike(req.params.id, req.user!.id) });
@@ -1119,7 +1119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to toggle like' });
     }
   });
-  
+
   app.post('/api/items/:id/report', authenticateToken, async (req, res) => {
     try {
       const { reason, description } = req.body;
@@ -1169,9 +1169,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const post = await storage.getCommunityPost(req.params.id);
       if (!post) return res.status(404).json({ error: 'Post not found' });
+
       // 모든 사용자가 게시글 조회 가능하고 조회수 증가
       await storage.incrementCommunityPostViews(req.params.id);
-      res.json(post);
+
+      // [수정된 부분] 작성자의 물품글 목록 조회
+      const authorItems = await storage.getUserItems(post.authorId);
+
+      // 게시글 정보와 함께 물품글 목록을 추가하여 반환
+      res.json({ ...post, authorItems });
+
     } catch (error) {
       console.error('Database error in /api/community/posts/:id:', error);
       res.status(500).json({ error: 'Failed to fetch community post' });
@@ -1194,7 +1201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const post = await storage.getCommunityPost(req.params.id);
       if (!post) return res.status(404).json({ error: 'Post not found' });
       if (post.authorId !== req.user!.id) return res.status(403).json({ error: 'Not authorized' });
-      
+
       const updateData = {
         title: req.body.title,
         content: req.body.content,
@@ -1205,7 +1212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         semester: req.body.semester,
         openChatLink: req.body.openChatLink,
       };
-      
+
       const updatedPost = await storage.updateCommunityPost(req.params.id, updateData);
       res.json(updatedPost);
     } catch (error) {
@@ -1213,6 +1220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to update community post' });
     }
   });
+
   app.delete('/api/community/posts/:id', authenticateToken, async (req, res) => {
     try {
       const postId = req.params.id;
@@ -1240,6 +1248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to delete post' });
     }
   });
+
   app.get('/api/community/posts/:id/comments', authenticateToken, async (req, res) => {
     try {
       // 로그인한 사용자만 댓글 조회 가능
@@ -1270,27 +1279,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // === [추가] 댓글 삭제 API ===
+  // 댓글 삭제 API
   app.delete('/api/community/comments/:id', authenticateToken, async (req, res) => {
-      try {
-        if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+    try {
+      if (!req.user) return res.status(401).json({ error: 'Authentication required' });
 
-        const commentId = req.params.id;
-        const userId = req.user.id;
+      const commentId = req.params.id;
+      const userId = req.user.id;
 
-        const success = await storage.deleteComment(commentId, userId);
+      const success = await storage.deleteComment(commentId, userId);
 
-        if (success) {
-          res.status(204).send(); // No Content
-        } else {
-          // 403: Not the owner or comment not found/already deleted
-          res.status(403).json({ error: 'Access denied or comment not found' });
-        }
-      } catch (error) {
-        console.error('❌ DELETE /api/community/comments/:id 오류:', error);
-        res.status(500).json({ error: 'Failed to delete comment' });
+      if (success) {
+        res.status(204).send(); // No Content
+      } else {
+        // 403: Not the owner or comment not found/already deleted
+        res.status(403).json({ error: 'Access denied or comment not found' });
       }
-    });
+    } catch (error) {
+      console.error('❌ DELETE /api/community/comments/:id 오류:', error);
+      res.status(500).json({ error: 'Failed to delete comment' });
+    }
+  });
+
+
   // 캐시된 응답을 위한 메모리 저장소
   const responseCache = new Map<string, { data: any; expires: number }>();
   const RESPONSE_CACHE_DURATION = 30 * 1000; // 30초 캐시
@@ -1300,19 +1311,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const cacheKey = `messages-unread-${req.user!.id}`;
       const cached = responseCache.get(cacheKey);
-      
+
       if (cached && cached.expires > Date.now()) {
         return res.json(cached.data);
       }
-      
+
       const count = await storage.getUnreadMessageCount(req.user!.id);
       const result = { count };
-      
+
       responseCache.set(cacheKey, {
         data: result,
         expires: Date.now() + RESPONSE_CACHE_DURATION
       });
-      
+
       res.json(result);
     } catch (error) {
       console.log('Database error in /api/messages/unread-count:', (error as Error).message);
@@ -1325,19 +1336,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const cacheKey = `notifications-unread-${req.user!.id}`;
       const cached = responseCache.get(cacheKey);
-      
+
       if (cached && cached.expires > Date.now()) {
         return res.json(cached.data);
       }
-      
+
       const count = await storage.getUnreadNotificationCount(req.user!.id);
       const result = { count };
-      
+
       responseCache.set(cacheKey, {
         data: result,
         expires: Date.now() + RESPONSE_CACHE_DURATION
       });
-      
+
       res.json(result);
     } catch (error) {
       console.log('Database error in /api/notifications/unread-count:', (error as Error).message);

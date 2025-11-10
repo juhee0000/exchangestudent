@@ -103,7 +103,7 @@ export default function Meetings() {
       </header>
 
       <div className="px-4 py-3 bg-white border-b">
-        <div className="flex space-x-2 overflow-x-auto">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setSelectedCountry("전체")}
             className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
