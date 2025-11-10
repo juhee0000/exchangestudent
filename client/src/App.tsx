@@ -117,11 +117,11 @@ function Router() {
         <Route path="/community/create" component={CommunityCreate} />
         <Route path="/meetings/create" component={MeetingCreate} />
         <Route path="/meetings/:id/edit" component={MeetingEdit} />
-        <Route path="/my" component={MyPage} />
         <Route path="/my/items" component={MyItems} />
         <Route path="/my/reviews" component={MyReviews} />
         <Route path="/my/posts" component={MyPosts} />
         <Route path="/my/commented" component={MyCommentedPosts} />
+        <Route path="/my" component={MyPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={NotificationsPage} />
