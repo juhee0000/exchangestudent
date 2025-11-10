@@ -24,6 +24,9 @@ import EditItem from "@/pages/items/edit";
 import ItemDetail from "@/pages/items/detail";
 import SearchPage from "@/pages/search";
 import SearchResults from "@/pages/search-results";
+import ItemsSearch from "@/pages/search/items";
+import CommunitySearch from "@/pages/search/community";
+import MeetingsSearch from "@/pages/search/meetings";
 import NotFound from "@/pages/not-found";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
@@ -97,6 +100,9 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/search" component={SearchPage} />
         <Route path="/search/:query" component={SearchResults} />
+        <Route path="/search/items/:query?" component={ItemsSearch} />
+        <Route path="/search/community/:query?" component={CommunitySearch} />
+        <Route path="/search/meetings/:query?" component={MeetingsSearch} />
         <Route path="/chat" component={Chat} />
         <Route path="/chat/:roomId" component={ChatRoom} />
         <Route path="/community" component={Community} />

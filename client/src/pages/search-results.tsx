@@ -108,11 +108,6 @@ function SearchResults() {
     }
   };
 
-  const handleToggleFavorite = async (itemId: string) => {
-    // TODO: Implement favorite toggle
-    console.log("Toggle favorite:", itemId);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header with search */}
@@ -195,8 +190,6 @@ function SearchResults() {
                   <ItemCard
                     key={item.id}
                     item={item}
-                    variant="default"
-                    onToggleFavorite={handleToggleFavorite}
                   />
                 ))}
               </div>

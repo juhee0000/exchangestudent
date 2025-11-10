@@ -7,14 +7,12 @@ import { useAuth } from "@/hooks/use-auth";
 import Header from "@/components/layout/header";
 import FilterBar from "@/components/items/filter-bar";
 import ItemCard from "@/components/items/item-card";
-import SearchBar from "@/components/common/search-bar";
 import type { Item } from "@shared/schema";
 
 export default function Home() {
   const [filter, setFilter] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
-  const [searchText, setSearchText] = useState("");
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showSchoolPrompt, setShowSchoolPrompt] = useState(false);
@@ -38,13 +36,12 @@ export default function Home() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["/api/items", filter, user?.school, selectedCountry, onlyAvailable, searchText],
+    queryKey: ["/api/items", filter, user?.school, selectedCountry, onlyAvailable],
     queryFn: async ({ pageParam = 0 }) => {
       const params = new URLSearchParams();
       if (filter === "school" && user?.school) params.append("school", user.school);
       if (filter === "country" && selectedCountry !== "all") params.append("country", selectedCountry);
       if (onlyAvailable) params.append("onlyAvailable", "true");
-      if (searchText.trim()) params.append("search", searchText.trim());
       params.append("page", pageParam.toString());
       params.append("limit", "10");
       
@@ -144,7 +141,11 @@ export default function Home() {
 
   return (
     <>
-      <Header title="교환마켓" showSearch={false} />
+      <Header 
+        title="교환마켓" 
+        showSearch={true} 
+        onSearchClick={() => navigate("/search/items")}
+      />
       <FilterBar 
         filter={filter} 
         onFilterChange={handleFilterChange}
@@ -153,10 +154,6 @@ export default function Home() {
         onlyAvailable={onlyAvailable}
         onToggleAvailable={setOnlyAvailable}
         user={user}
-      />
-      <SearchBar 
-        placeholder="상품을 검색하세요"
-        onSearchChange={setSearchText}
       />
       
       <main className="pb-20 pt-4">

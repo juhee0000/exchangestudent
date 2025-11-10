@@ -8,22 +8,28 @@ interface HeaderProps {
   showSearch?: boolean;
   showNotifications?: boolean;
   notificationCount?: number;
+  onSearchClick?: () => void;
 }
 
 export default function Header({ 
   title, 
   showSearch = true, 
   showNotifications = true,
-  notificationCount = 0 
+  notificationCount = 0,
+  onSearchClick
 }: HeaderProps) {
   const [, navigate] = useLocation();
   const { data: liveNotificationCount } = useUnreadNotificationCount();
   
   // Use live notification count if no explicit count is provided
-  const displayCount = notificationCount || liveNotificationCount?.count || 0;
+  const displayCount = notificationCount || (liveNotificationCount as { count: number } | undefined)?.count || 0;
 
   const handleSearchClick = () => {
-    navigate("/search");
+    if (onSearchClick) {
+      onSearchClick();
+    } else {
+      navigate("/search");
+    }
   };
 
   return (
