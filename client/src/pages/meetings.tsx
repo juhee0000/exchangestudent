@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import type { CommunityPost } from "@shared/schema";
 import { COUNTRIES } from "@/lib/countries";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function Meetings() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
@@ -61,6 +63,19 @@ export default function Meetings() {
       "스페인": "bg-yellow-200 text-yellow-800",
     };
     return colorMap[country] || "bg-gray-200 text-gray-800";
+  };
+
+  const formatTimeAgo = (date: string | Date) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      const timeAgo = formatDistanceToNow(dateObj, { 
+        addSuffix: true,
+        locale: ko 
+      });
+      return timeAgo.replace('약 ', '');
+    } catch (error) {
+      return '';
+    }
   };
 
   return (
@@ -132,23 +147,23 @@ export default function Meetings() {
                 <Card 
                   key={post.id} 
                   onClick={() => navigate(`/community/post/${post.id}`)}
-                  className={`cursor-pointer hover:shadow-md transition-shadow relative ${getCountryColor(post.country)}`}
+                  className={`cursor-pointer hover:shadow-md transition-shadow relative ${post.country && post.country !== '' ? getCountryColor(post.country) : 'bg-gray-100'}`}
                   data-testid={`card-meeting-${post.id}`}
                 >
                   <div className="p-4">
-                    <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-white bg-opacity-80">
-                      {post.country}
-                    </div>
+                    {post.country && post.country !== '' && (
+                      <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-white bg-opacity-80">
+                        {post.country}
+                      </div>
+                    )}
                     
-                    <div className="absolute top-2 right-2 flex items-center space-x-1 text-xs">
-                      <MessageSquare className="w-3 h-3" />
-                      <span>{post.commentsCount || 0}</span>
+                    <div className="absolute top-2 right-2 text-xs text-gray-600">
+                      {formatTimeAgo(post.createdAt)}
                     </div>
 
                     <div className="mt-8 mb-2">
-                      <div className="text-sm font-medium mb-1">{post.semester || "25-2"}</div>
-                      <div className="text-sm text-gray-700 mb-1">{post.school}</div>
-                      <h3 className="font-semibold text-sm">{post.title}</h3>
+                      <h3 className="font-semibold text-base mb-2 line-clamp-1">{post.title}</h3>
+                      <p className="text-sm text-gray-700 line-clamp-2">{post.content}</p>
                     </div>
                   </div>
                 </Card>
