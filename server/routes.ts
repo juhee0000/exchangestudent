@@ -1134,9 +1134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Community Routes - 글 조회는 인증 없이 가능
   app.get('/api/community/posts', async (req, res) => {
     try {
-      const { category, country } = req.query;
+      const { category, country, search } = req.query;
       // 모든 사용자가 커뮤니티 글 조회 가능
-      res.json(await storage.getCommunityPostsByQuery({ category: category as string, country: country as string }));
+      res.json(await storage.getCommunityPostsByQuery({ 
+        category: category as string, 
+        country: country as string,
+        search: search as string 
+      }));
     } catch (error) {
       console.error('Database error in /api/community/posts:', error);
       res.status(500).json({ error: 'Failed to fetch community posts' });

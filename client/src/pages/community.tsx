@@ -3,24 +3,29 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus, MessageSquare, Search, Eye } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import SearchBar from "@/components/common/search-bar";
 import type { CommunityPost } from "@shared/schema";
 import { COUNTRIES } from "@/lib/countries";
 
 export default function Community() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
+  const [searchText, setSearchText] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
   const { data: posts = [], isLoading } = useQuery<CommunityPost[]>({
-    queryKey: ["/api/community/posts", "자유게시판", selectedCountry],
+    queryKey: ["/api/community/posts", "자유게시판", selectedCountry, searchText],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append("category", "자유게시판");
       if (selectedCountry !== "전체") {
         params.append("country", selectedCountry);
+      }
+      if (searchText.trim()) {
+        params.append("search", searchText.trim());
       }
       
       const token = localStorage.getItem("token");
@@ -68,12 +73,24 @@ export default function Community() {
             <h1 className="text-xl font-bold text-gray-900">자유게시판</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-primary" data-testid="button-search">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-gray-600 hover:text-primary" 
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              data-testid="button-search"
+            >
               <Search className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </header>
+
+      <SearchBar 
+        placeholder="게시글을 검색하세요"
+        open={isSearchOpen}
+        onSearchChange={setSearchText}
+      />
 
       <div className="px-4 py-3 bg-white border-b">
         <div className="flex space-x-2 overflow-x-auto">
