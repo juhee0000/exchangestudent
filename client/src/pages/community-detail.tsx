@@ -141,40 +141,17 @@ export default function CommunityDetail() {
   const handleShare = async () => {
     const url = `${window.location.origin}/community/post/${postId}`;
     
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.content.slice(0, 100),
-          url: url,
-        });
-        toast({
-          title: "공유 완료",
-          description: "게시글이 공유되었습니다.",
-        });
-      } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          toast({
-            title: "공유 실패",
-            description: "공유하는데 실패했습니다.",
-            variant: "destructive"
-          });
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "링크 복사 완료",
-          description: "링크가 클립보드에 복사되었습니다.",
-        });
-      } catch {
-        toast({
-          title: "복사 실패",
-          description: "링크를 복사하는데 실패했습니다.",
-          variant: "destructive"
-        });
-      }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "URL 주소가 복사되었습니다",
+      });
+    } catch {
+      toast({
+        title: "복사 실패",
+        description: "URL을 복사하는데 실패했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
