@@ -31,6 +31,7 @@ import NotFound from "@/pages/not-found";
 import AdminLogin from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import CommunityCreate from "@/pages/community-create";
+import MeetingCreate from "@/pages/meeting-create";
 import CommunityDetail from "@/pages/community-detail";
 import CommunityEdit from "@/pages/community-edit";
 import NotificationsPage from "@/pages/notifications";
@@ -111,6 +112,7 @@ function Router() {
         <Route path="/community/post/:id/edit" component={CommunityEdit} />
         <Route path="/community/post/:id" component={CommunityDetail} />
         <Route path="/community/create" component={CommunityCreate} />
+        <Route path="/meetings/create" component={MeetingCreate} />
         <Route path="/my" component={MyPage} />
         <Route path="/my/items" component={MyItems} />
         <Route path="/my/reviews" component={MyReviews} />
