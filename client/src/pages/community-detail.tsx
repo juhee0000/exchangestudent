@@ -200,18 +200,21 @@ export default function CommunityDetail() {
       <div className="p-4 pb-20">
         {/* Post Header */}
         <div className="mb-4">
-          {/* Country Tag */}
-          <div className="mb-3">
+          {/* Country Tag and Time */}
+          <div className="flex items-center justify-between mb-3">
             <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
               {post.country}
             </div>
+            <span className="text-sm text-gray-500">
+              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+            </span>
           </div>
           
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
           
           {/* Metadata */}
-          <div className="flex items-center justify-between">
+          {(post.category === "모임방" || post.semester) && (
             <div className="flex items-center space-x-2">
               {post.category === "모임방" && (
                 <div className="flex items-center space-x-1 text-blue-600">
@@ -225,10 +228,7 @@ export default function CommunityDetail() {
                 </span>
               )}
             </div>
-            <span className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
-            </span>
-          </div>
+          )}
         </div>
 
 
