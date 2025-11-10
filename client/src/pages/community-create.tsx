@@ -12,8 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { insertCommunityPostSchema, type InsertCommunityPost } from "@shared/schema";
-import { COUNTRIES } from "@/lib/countries";
+import { insertCommunityPostSchema } from "@shared/schema";
 import { z } from "zod";
 
 const createPostSchema = insertCommunityPostSchema.omit({
@@ -29,79 +28,23 @@ const createPostSchema = insertCommunityPostSchema.omit({
   openChatLink: z.string().optional(),
 });
 
-const createMeetingPostSchema = insertCommunityPostSchema.omit({
-  id: true,
-  authorId: true,
-  likes: true,
-  views: true,
-  commentsCount: true,
-  createdAt: true,
-}).extend({
-  country: z.string().optional(),
-  images: z.array(z.string()).max(5, "최대 5장까지만 업로드할 수 있습니다").optional(),
-  semester: z.string().optional(),
-  openChatLink: z.string().optional(),
-});
-
 type CreatePostForm = z.infer<typeof createPostSchema>;
-type CreateMeetingPostForm = z.infer<typeof createMeetingPostSchema>;
 
 export default function CommunityCreate() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const { user } = useRequireAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // URL에서 category 파라미터 가져오기
-  const params = new URLSearchParams(location.split('?')[1] || '');
-  const categoryFromUrl = params.get('category') || "자유게시판";
-  const isMeetingPost = categoryFromUrl === "모임방";
-
-  // Generate semester options based on current date
-  const generateSemesterOptions = () => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 0-based to 1-based
-    
-    const options = [];
-    let startYear = currentYear;
-    let startSemester = 1;
-    
-    // Determine current semester
-    if (currentMonth >= 3 && currentMonth <= 6) {
-      startSemester = 2; // 2학기
-    } else if (currentMonth >= 7 && currentMonth <= 8) {
-      startSemester = 3; // 3학기
-    } else if (currentMonth >= 9 || currentMonth <= 2) {
-      if (currentMonth >= 9) {
-        startYear = currentYear + 1;
-        startSemester = 1; // 다음년도 1학기
-      } else {
-        startSemester = 1; // 1학기
-      }
-    }
-    
-    // Generate 5 semester options starting from current
-    for (let i = 0; i < 5; i++) {
-      const year = startYear + Math.floor((startSemester - 1 + i) / 3);
-      const semester = ((startSemester - 1 + i) % 3) + 1;
-      options.push(`${year % 100}년 ${semester}학기`);
-    }
-    
-    return options;
-  };
-
-  const semesterOptions = generateSemesterOptions();
-
-  const form = useForm<CreatePostForm | CreateMeetingPostForm>({
-    resolver: zodResolver(isMeetingPost ? createMeetingPostSchema : createPostSchema),
+  const form = useForm<CreatePostForm>({
+    resolver: zodResolver(createPostSchema),
     defaultValues: {
       title: "",
       content: "",
-      category: categoryFromUrl,
-      country: isMeetingPost ? "전체" : "전체",
+      category: "자유게시판",
+      country: "전체",
       school: user?.school || "",
       images: [],
       semester: "",
@@ -110,47 +53,26 @@ export default function CommunityCreate() {
   });
 
   const createPostMutation = useMutation({
-    mutationFn: async (data: CreatePostForm | CreateMeetingPostForm) => {
-      console.log("=== 글 작성 시작 ===");
-      console.log("Form data:", data);
-      console.log("User info:", user);
-      console.log("Uploaded images:", uploadedImages);
-      
+    mutationFn: async (data: CreatePostForm) => {
       const postData = {
         title: data.title,
         content: data.content,
-        category: data.category,
-        country: isMeetingPost ? (data.country || "") : (data.country || user!.country),
+        category: "자유게시판",
+        country: data.country || user!.country,
         school: data.school || user!.school,
         images: uploadedImages,
-        semester: data.category === "모임방" ? data.semester : undefined,
-        openChatLink: data.category === "모임방" ? data.openChatLink : undefined,
+        semester: undefined,
+        openChatLink: undefined,
       };
-      console.log("Sending to API:", postData);
       
-      try {
-        const response = await apiRequest("POST", "/api/community/posts", postData);
-        console.log("API response status:", response.status);
-        const result = await response.json();
-        console.log("API response data:", result);
-        return result;
-      } catch (error) {
-        console.error("API request failed:", error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/community/posts", postData);
+      return await response.json();
     },
-    onSuccess: (result) => {
-      console.log("=== 글 작성 성공 ===");
-      console.log("Created post:", result);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
-      navigate(isMeetingPost ? "/meetings" : "/community");
+      navigate("/community");
     },
     onError: (error: any) => {
-      console.error("=== 글 작성 실패 ===");
-      console.error("Error object:", error);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      
       let errorMessage = "게시글을 작성하는데 실패했습니다.";
       
       if (error.message) {
@@ -171,17 +93,8 @@ export default function CommunityCreate() {
     }
   });
 
-  const onSubmit = (data: CreatePostForm | CreateMeetingPostForm) => {
-    console.log("=== 폼 제출 ===");
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
-    console.log("Form is valid:", form.formState.isValid);
-    console.log("User data:", user);
-    console.log("Authentication token exists:", !!localStorage.getItem('token'));
-    
-    // 필수 필드 검증
+  const onSubmit = (data: CreatePostForm) => {
     if (!data.title?.trim()) {
-      console.log("Title validation failed");
       toast({
         title: "제목을 입력해주세요",
         description: "제목은 필수 항목입니다.",
@@ -191,7 +104,6 @@ export default function CommunityCreate() {
     }
     
     if (!data.content?.trim()) {
-      console.log("Content validation failed");
       toast({
         title: "내용을 입력해주세요", 
         description: "내용은 필수 항목입니다.",
@@ -200,9 +112,7 @@ export default function CommunityCreate() {
       return;
     }
 
-    // 자유게시판일 때만 국가 필수
-    if (!isMeetingPost && !data.country?.trim()) {
-      console.log("Country validation failed");
+    if (!data.country?.trim()) {
       toast({
         title: "국가를 선택해주세요",
         description: "국가는 필수 항목입니다.",
@@ -211,11 +121,9 @@ export default function CommunityCreate() {
       return;
     }
 
-    console.log("All validations passed, creating post...");
     createPostMutation.mutate(data);
   };
 
-  // Image compression function with progressive compression
   const compressImage = (file: File, maxWidth: number = 600, quality: number = 0.5): Promise<string> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
@@ -223,7 +131,6 @@ export default function CommunityCreate() {
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions (smaller for mobile)
         let { width, height } = img;
         if (width > height) {
           if (width > maxWidth) {
@@ -239,15 +146,12 @@ export default function CommunityCreate() {
         
         canvas.width = width;
         canvas.height = height;
-        
-        // Draw and compress progressively
         ctx.drawImage(img, 0, 0, width, height);
         
         let currentQuality = quality;
         let compressedDataUrl = canvas.toDataURL('image/jpeg', currentQuality);
         let sizeInBytes = (compressedDataUrl.length * 3) / 4;
         
-        // Keep compressing until under 200KB or quality gets too low
         while (sizeInBytes > 200 * 1024 && currentQuality > 0.05) {
           currentQuality *= 0.7;
           compressedDataUrl = canvas.toDataURL('image/jpeg', currentQuality);
@@ -284,7 +188,6 @@ export default function CommunityCreate() {
             description: "고화질 이미지를 압축하고 있습니다...",
           });
           
-          // Compress image before adding to state
           const compressedImage = await compressImage(file);
           setUploadedImages(prev => [...prev, compressedImage]);
           
@@ -311,7 +214,7 @@ export default function CommunityCreate() {
   };
 
   if (!user) {
-    return null; // useRequireAuth will handle the redirect
+    return null;
   }
 
   return (
@@ -323,37 +226,26 @@ export default function CommunityCreate() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(isMeetingPost ? "/meetings" : "/community")}
+              onClick={() => navigate("/community")}
               className="p-2"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-gray-900">
-              {isMeetingPost ? "모임방 만들기" : "자유게시판 글 쓰기"}
-            </h1>
+            <h1 className="text-lg font-semibold text-gray-900">자유게시판 글 쓰기</h1>
           </div>
           
           <Button
             type="button"
             onClick={async (e) => {
-              console.log("=== 완료 버튼 클릭 ===");
               e.preventDefault();
               e.stopPropagation();
               
-              // 폼 데이터를 직접 가져와서 제출
               const formData = form.getValues();
-              console.log("Current form values:", formData);
-              
-              // 유효성 검사 실행
               const isValid = await form.trigger();
-              console.log("Form validation result:", isValid);
-              console.log("Form errors after validation:", form.formState.errors);
               
               if (isValid) {
-                console.log("Form is valid, calling onSubmit");
                 onSubmit(formData);
               } else {
-                console.log("Form validation failed");
                 toast({
                   title: "입력 오류",
                   description: "필수 항목을 모두 입력해주세요.",
@@ -374,157 +266,78 @@ export default function CommunityCreate() {
         <Form {...form}>
           <form 
             onSubmit={(e) => {
-              console.log("Form onSubmit triggered");
               e.preventDefault();
               form.handleSubmit(onSubmit)(e);
             }} 
             className="space-y-6"
           >
-            {isMeetingPost ? (
-              <>
-                {/* 모임방 폼 - 간단 버전 */}
-                {/* Title */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-normal text-gray-900">모임 이름</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="26-2 000대학교 준비방"
-                          {...field} 
-                          className="bg-gray-50 border-gray-300"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Country Selection */}
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-normal text-gray-700">어느 국가와 관련된 내용인가요?</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="국가를 선택하세요" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="전체">전체</SelectItem>
+                      <SelectItem value="미국">미국</SelectItem>
+                      <SelectItem value="독일">독일</SelectItem>
+                      <SelectItem value="스페인">스페인</SelectItem>
+                      <SelectItem value="프랑스">프랑스</SelectItem>
+                      <SelectItem value="영국">영국</SelectItem>
+                      <SelectItem value="호주">호주</SelectItem>
+                      <SelectItem value="일본">일본</SelectItem>
+                      <SelectItem value="중국">중국</SelectItem>
+                      <SelectItem value="이탈리아">이탈리아</SelectItem>
+                      <SelectItem value="기타">기타</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {/* Country Selection (Optional) */}
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-normal text-gray-900">어느 국가와 관련된 모임인가요?(선택)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || "전체"}>
-                        <FormControl>
-                          <SelectTrigger className="bg-gray-50 border-gray-300">
-                            <SelectValue placeholder="전체" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="전체">전체</SelectItem>
-                          <SelectItem value="미국">미국</SelectItem>
-                          <SelectItem value="독일">독일</SelectItem>
-                          <SelectItem value="스페인">스페인</SelectItem>
-                          <SelectItem value="프랑스">프랑스</SelectItem>
-                          <SelectItem value="영국">영국</SelectItem>
-                          <SelectItem value="호주">호주</SelectItem>
-                          <SelectItem value="일본">일본</SelectItem>
-                          <SelectItem value="중국">중국</SelectItem>
-                          <SelectItem value="이탈리아">이탈리아</SelectItem>
-                          <SelectItem value="기타">기타</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input 
+                      placeholder="제목을 입력하세요"
+                      {...field} 
+                      className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                {/* Content */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-normal text-gray-900">간단한 설명</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="000 대학교로 교환가시는 분들 같이 준비해요!"
-                          className="min-h-[200px] text-sm resize-none bg-gray-50 border-gray-300"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            ) : (
-              <>
-                {/* 자유게시판 폼 - 기존 버전 */}
-                {/* Country Selection */}
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-normal text-gray-700">어느 국가와 관련된 내용인가요?</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="국가를 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="전체">전체</SelectItem>
-                          <SelectItem value="미국">미국</SelectItem>
-                          <SelectItem value="독일">독일</SelectItem>
-                          <SelectItem value="스페인">스페인</SelectItem>
-                          <SelectItem value="프랑스">프랑스</SelectItem>
-                          <SelectItem value="영국">영국</SelectItem>
-                          <SelectItem value="호주">호주</SelectItem>
-                          <SelectItem value="일본">일본</SelectItem>
-                          <SelectItem value="중국">중국</SelectItem>
-                          <SelectItem value="이탈리아">이탈리아</SelectItem>
-                          <SelectItem value="기타">기타</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Title */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input 
-                          placeholder="제목을 입력하세요"
-                          {...field} 
-                          className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Content */}
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="내용을 입력하세요"
-                          className="min-h-[250px] text-sm resize-none border-0 px-0 focus-visible:ring-0"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
+            {/* Content */}
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="내용을 입력하세요"
+                      className="min-h-[250px] text-sm resize-none border-0 px-0 focus-visible:ring-0"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </div>
