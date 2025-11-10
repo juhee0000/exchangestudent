@@ -1,4 +1,4 @@
-import { User, Settings, MessageSquare, Package, Star, LogOut, Edit } from "lucide-react";
+import { User, Settings, MessageSquare, Package, Star, LogOut, Edit, FileText, MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -83,12 +83,18 @@ export default function MyPage() {
           <CardContent className="p-0">
             <div className="space-y-0">
               <MenuItem
-                icon={Package}
-                title="내 판매 글 관리"
-                description="판매 중인 물품 글 수정"
-                onClick={() => navigate("/my/items")}
+                icon={FileText}
+                title="내가 쓴 글"
+                description="작성한 커뮤니티 글 보기"
+                onClick={() => navigate("/my/posts")}
               />
-              
+              <MenuItem
+                icon={MessageCircle}
+                title="댓글 쓴 글"
+                description="댓글 단 글 보기"
+                onClick={() => navigate("/my/commented")}
+                isLast
+              />
             </div>
           </CardContent>
         </Card>

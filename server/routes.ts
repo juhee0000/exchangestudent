@@ -1132,6 +1132,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Community Routes - 글 조회는 인증 없이 가능
+  app.get('/api/community/posts/my', authenticateToken, async (req, res) => {
+    try {
+      res.json(await storage.getCommunityPostsByAuthor(req.user!.id));
+    } catch (error) {
+      console.error('Database error in /api/community/posts/my:', error);
+      res.status(500).json({ error: 'Failed to fetch user posts' });
+    }
+  });
+
+  app.get('/api/community/posts/commented', authenticateToken, async (req, res) => {
+    try {
+      res.json(await storage.getCommunityPostsCommentedByUser(req.user!.id));
+    } catch (error) {
+      console.error('Database error in /api/community/posts/commented:', error);
+      res.status(500).json({ error: 'Failed to fetch commented posts' });
+    }
+  });
+
   app.get('/api/community/posts', async (req, res) => {
     try {
       const { category, country, search } = req.query;

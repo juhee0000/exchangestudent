@@ -76,6 +76,8 @@ export interface IStorage {
   getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]>;
   getCommunityPostsBySchool(school: string): Promise<CommunityPost[]>;
   getCommunityPostsByCountry(country: string): Promise<CommunityPost[]>;
+  getCommunityPostsByAuthor(authorId: string): Promise<CommunityPost[]>;
+  getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]>;
   getPostComments(postId: string): Promise<Comment[]>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   
@@ -522,6 +524,28 @@ export class DatabaseStorage implements IStorage {
   async getCommunityPostsByCountry(country: string): Promise<CommunityPost[]> {
     return await db.select().from(communityPosts)
       .where(eq(communityPosts.country, country))
+      .orderBy(desc(communityPosts.createdAt));
+  }
+
+  async getCommunityPostsByAuthor(authorId: string): Promise<CommunityPost[]> {
+    return await db.select().from(communityPosts)
+      .where(eq(communityPosts.authorId, authorId))
+      .orderBy(desc(communityPosts.createdAt));
+  }
+
+  async getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]> {
+    const commentedPostIds = await db
+      .selectDistinct({ postId: comments.postId })
+      .from(comments)
+      .where(eq(comments.authorId, userId));
+    
+    if (commentedPostIds.length === 0) {
+      return [];
+    }
+    
+    const postIds = commentedPostIds.map(row => row.postId);
+    return await db.select().from(communityPosts)
+      .where(inArray(communityPosts.id, postIds))
       .orderBy(desc(communityPosts.createdAt));
   }
 
