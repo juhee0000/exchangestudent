@@ -534,18 +534,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]> {
-    const commentedPostIds = await db
-      .selectDistinct({ postId: comments.postId })
+    const commentResults = await db
+      .select({ postId: comments.postId })
       .from(comments)
       .where(eq(comments.authorId, userId));
     
-    if (commentedPostIds.length === 0) {
+    if (commentResults.length === 0) {
       return [];
     }
     
-    const postIds = commentedPostIds.map(row => row.postId);
+    const uniquePostIds = [...new Set(commentResults.map(row => row.postId))];
     return await db.select().from(communityPosts)
-      .where(inArray(communityPosts.id, postIds))
+      .where(inArray(communityPosts.id, uniquePostIds))
       .orderBy(desc(communityPosts.createdAt));
   }
 
