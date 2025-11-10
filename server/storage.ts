@@ -523,6 +523,12 @@ export class DatabaseStorage implements IStorage {
       .where(eq(communityPosts.id, id));
   }
 
+  async incrementCommunityPostCommentsCount(id: string): Promise<void> {
+    await db.update(communityPosts)
+      .set({ commentsCount: sql`${communityPosts.commentsCount} + 1` })
+      .where(eq(communityPosts.id, id));
+  }
+
   async getPostComments(postId: string): Promise<Comment[]> {
     const results = await db
       .select({

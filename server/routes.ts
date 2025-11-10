@@ -1206,6 +1206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const commentData = insertCommentSchema.parse({ ...req.body, postId: req.params.id, authorId: req.user!.id });
       const comment = await storage.createComment(commentData as InsertComment & { authorId: string });
+      await storage.incrementCommunityPostCommentsCount(req.params.id);
       const post = await storage.getCommunityPost(req.params.id);
       if (post && post.authorId !== req.user!.id) {
         await storage.createNotification({
