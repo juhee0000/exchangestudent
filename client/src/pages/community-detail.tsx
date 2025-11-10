@@ -182,7 +182,7 @@ export default function CommunityDetail() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {isAuthor && (
-                <DropdownMenuItem onClick={() => navigate(`/community/post/${postId}/edit`)}>
+                <DropdownMenuItem onClick={() => navigate(post.category === "모임방" ? `/meetings/${postId}/edit` : `/community/post/${postId}/edit`)}>
                   <Edit className="w-4 h-4 mr-2" />
                   수정하기
                 </DropdownMenuItem>
@@ -212,23 +212,6 @@ export default function CommunityDetail() {
           
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
-          
-          {/* Metadata */}
-          {(post.category === "모임방" || post.semester) && (
-            <div className="flex items-center space-x-2">
-              {post.category === "모임방" && (
-                <div className="flex items-center space-x-1 text-blue-600">
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm font-medium">모임</span>
-                </div>
-              )}
-              {post.semester && (
-                <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                  {post.semester}
-                </span>
-              )}
-            </div>
-          )}
         </div>
 
 
