@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Users, ExternalLink, Send } from "lucide-react";
+import { ArrowLeft, Users, ExternalLink, Send, MoreVertical, Edit, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -130,6 +136,48 @@ export default function CommunityDetail() {
     return colors[country] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
+  const isAuthor = user?.id === post.authorId;
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/community/post/${postId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.content.slice(0, 100),
+          url: url,
+        });
+        toast({
+          title: "공유 완료",
+          description: "게시글이 공유되었습니다.",
+        });
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          toast({
+            title: "공유 실패",
+            description: "공유하는데 실패했습니다.",
+            variant: "destructive"
+          });
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({
+          title: "링크 복사 완료",
+          description: "링크가 클립보드에 복사되었습니다.",
+        });
+      } catch {
+        toast({
+          title: "복사 실패",
+          description: "링크를 복사하는데 실패했습니다.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   return (
     <div className="bg-white">
       {/* Header */}
@@ -149,9 +197,26 @@ export default function CommunityDetail() {
             </h1>
           </div>
           
-          <div className={`px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
-            {post.country}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-2">
+                <MoreVertical className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isAuthor ? (
+                <DropdownMenuItem onClick={() => navigate(`/community/post/${postId}/edit`)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  수정하기
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={handleShare}>
+                  <Share2 className="w-4 h-4 mr-2" />
+                  URL 공유하기
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -159,7 +224,18 @@ export default function CommunityDetail() {
       <div className="p-4 pb-20">
         {/* Post Header */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          {/* Country Tag */}
+          <div className="mb-3">
+            <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
+              {post.country}
+            </div>
+          </div>
+          
+          {/* Title */}
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
+          
+          {/* Metadata */}
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               {post.category === "모임방" && (
                 <div className="flex items-center space-x-1 text-blue-600">
@@ -177,8 +253,6 @@ export default function CommunityDetail() {
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
             </span>
           </div>
-          
-          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
 
