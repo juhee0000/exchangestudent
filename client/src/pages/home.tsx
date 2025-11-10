@@ -1,21 +1,25 @@
 import { useState, useEffect, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Search, Bell } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import Header from "@/components/layout/header";
 import FilterBar from "@/components/items/filter-bar";
 import ItemCard from "@/components/items/item-card";
+import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import type { Item } from "@shared/schema";
 
 export default function Home() {
   const [filter, setFilter] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showSchoolPrompt, setShowSchoolPrompt] = useState(false);
+  const { data: notificationData } = useUnreadNotificationCount();
+  const notificationCount = (notificationData as { count: number } | undefined)?.count || 0;
 
   // 국가별 필터 선택 시 사용자 국가를 디폴트로 설정
   useEffect(() => {
@@ -36,12 +40,13 @@ export default function Home() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["/api/items", filter, user?.school, selectedCountry, onlyAvailable],
+    queryKey: ["/api/items", filter, user?.school, selectedCountry, onlyAvailable, searchKeyword],
     queryFn: async ({ pageParam = 0 }) => {
       const params = new URLSearchParams();
       if (filter === "school" && user?.school) params.append("school", user.school);
       if (filter === "country" && selectedCountry !== "all") params.append("country", selectedCountry);
       if (onlyAvailable) params.append("onlyAvailable", "true");
+      if (searchKeyword.trim()) params.append("search", searchKeyword.trim());
       params.append("page", pageParam.toString());
       params.append("limit", "10");
       
@@ -141,11 +146,35 @@ export default function Home() {
 
   return (
     <>
-      <Header 
-        title="교환마켓" 
-        showSearch={true} 
-        onSearchClick={() => navigate("/search/items")}
-      />
+      <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-xl font-bold text-gray-900">교환마켓</h1>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-gray-600 hover:text-primary relative"
+            onClick={() => navigate("/notifications")}
+          >
+            <Bell className="h-5 w-5" />
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                {notificationCount > 99 ? "99+" : notificationCount}
+              </span>
+            )}
+          </Button>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="검색어를 입력하세요"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full border-gray-300 rounded-lg"
+            data-testid="input-search"
+          />
+        </div>
+      </header>
       <FilterBar 
         filter={filter} 
         onFilterChange={handleFilterChange}
