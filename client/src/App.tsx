@@ -38,6 +38,8 @@ import CommunityEdit from "@/pages/community-edit";
 import NotificationsPage from "@/pages/notifications";
 import MyItems from "@/pages/my/items";
 import MyReviews from "@/pages/my/reviews";
+import MyPosts from "@/pages/my/posts";
+import MyCommentedPosts from "@/pages/my/commented";
 import SettingsPage from "@/pages/settings";
 
 import BottomNav from "@/components/layout/bottom-nav";
@@ -118,6 +120,8 @@ function Router() {
         <Route path="/my" component={MyPage} />
         <Route path="/my/items" component={MyItems} />
         <Route path="/my/reviews" component={MyReviews} />
+        <Route path="/my/posts" component={MyPosts} />
+        <Route path="/my/commented" component={MyCommentedPosts} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/profile" component={Profile} />
         <Route path="/notifications" component={NotificationsPage} />
