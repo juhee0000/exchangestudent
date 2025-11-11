@@ -1,3 +1,5 @@
+// server/storage.ts
+
 import { randomUUID } from "crypto";
 import { db } from "./db";
 import { 
@@ -50,7 +52,7 @@ export interface IStorage {
   getItemsByCategory(category: string): Promise<Item[]>;
   getItemsByCountry(country: string): Promise<Item[]>;
   getItemsBySchool(school: string): Promise<Item[]>;
-  getUserItems(userId: string): Promise<Item[]>; // ✅ 이 메서드를 routes.ts에서 사용
+  getUserItems(userId: string): Promise<Item[]>; 
   incrementItemViews(id: string): Promise<void>;
 
   // Message methods
@@ -494,16 +496,23 @@ export class DatabaseStorage implements IStorage {
 
   // 게시글 삭제 메서드
   async deleteCommunityPost(postId: string): Promise<boolean> {
-    try {
-      // 1. 게시글에 달린 모든 댓글 삭제
-      await db.delete(comments).where(eq(comments.postId, postId));
-      // 2. 게시글 삭제
-      const result = await db.delete(communityPosts).where(eq(communityPosts.id, postId)).returning();
-      return result.rowCount > 0;
-    } catch (error) {
-      console.error('Error deleting community post:', error);
-      return false;
-    }
+  try {
+  // 1. 게시글에 달린 모든 댓글 삭제 (외래 키 제약 조건 위반 방지)
+  // delete는 .returning()이 배열을 반환합니다.
+  const deletedComments = await db.delete(comments).where(eq(comments.postId, postId)).returning({ id: comments.id }); 
+  console.log(`✅ 게시글 ${postId.substring(0, 8)}에 연결된 댓글 ${deletedComments.length}개 삭제 완료`);
+
+  // 2. 게시글 삭제
+  // delete는 .returning()을 사용하면 삭제된 항목의 배열을 반환합니다.
+  const result = await db.delete(communityPosts).where(eq(communityPosts.id, postId)).returning({ id: communityPosts.id }); 
+
+  // 삭제된 행의 개수가 1개 이상이면 성공
+  return result.length > 0; 
+
+  } catch (error) {
+  console.error('❌ Error deleting community post:', error);
+  return false;
+  }
   }
 
   async getCommunityPostsByCategory(category: string): Promise<CommunityPost[]> {
@@ -607,30 +616,30 @@ export class DatabaseStorage implements IStorage {
 
   // 댓글 삭제 메서드
   async deleteComment(commentId: string, userId: string): Promise<boolean> {
-    const [comment] = await db.select().from(comments).where(eq(comments.id, commentId)).limit(1);
+  const [comment] = await db.select().from(comments).where(eq(comments.id, commentId)).limit(1);
 
-    if (!comment) {
-        return false;
-    }
+  if (!comment) {
+  return false;
+  }
 
-    // Only the author can delete the comment
-    if (comment.authorId !== userId) {
-        return false;
-    }
+  // Only the author can delete the comment
+  if (comment.authorId !== userId) {
+  return false;
+  }
 
-    // 1. Delete the comment
-    const deleteResult = await db.delete(comments).where(eq(comments.id, commentId));
+  // 1. Delete the comment
+  const deleteResult = await db.delete(comments).where(eq(comments.id, commentId)).returning();
 
-    if (deleteResult.rowCount > 0) {
-        // 2. Decrement the commentsCount on the corresponding post
-        await db.update(communityPosts)
-            .set({ commentsCount: sql`${communityPosts.commentsCount} - 1` })
-            .where(eq(communityPosts.id, comment.postId));
+  if (deleteResult.length > 0) {
+  // 2. Decrement the commentsCount on the corresponding post
+  await db.update(communityPosts)
+  .set({ commentsCount: sql`${communityPosts.commentsCount} - 1` })
+  .where(eq(communityPosts.id, comment.postId));
 
-        return true;
-    }
+  return true;
+  }
 
-    return false;
+  return false;
   }
 
   // Admin methods

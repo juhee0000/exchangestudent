@@ -1,3 +1,5 @@
+// client/src/pages/my/posts.tsx (수정된 전체 내용)
+
 import { ArrowLeft, MessageSquare, Eye } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -16,8 +18,9 @@ const getCategoryColor = (category: string) => {
     case "자유게시판":
     case "이야기방":
       return "bg-red-100 text-red-800";
-    case "물품":
-      return "bg-green-100 text-green-800";
+    case "물품 판매":
+    case "물품": // Item이 "물품"으로 인식될 경우를 대비하여 회색으로 통일 (이전 요청)
+      return "bg-gray-200 text-gray-800"; 
     default:
       return "bg-gray-100 text-gray-800";
   }
@@ -94,13 +97,13 @@ export default function MyPosts() {
     return (
       <div className="min-h-screen bg-white p-4">
          <header className="bg-white border-b px-4 py-3 sticky top-0 z-10">
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/my")} className="p-2">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-lg font-semibold text-gray-900">내가 쓴 글</h1>
-            </div>
-          </header>
+           <div className="flex items-center space-x-3">
+             <Button variant="ghost" size="sm" onClick={() => navigate("/my")} className="p-2">
+               <ArrowLeft className="w-5 h-5" />
+             </Button>
+             <h1 className="text-lg font-semibold text-gray-900">내가 쓴 글</h1>
+           </div>
+         </header>
         <div className="text-center py-12">
           <p className="text-red-500 mb-4">게시글을 불러오는 중 오류가 발생했습니다.</p>
           <Button onClick={() => refetch()} variant="outline">다시 시도</Button>
@@ -157,25 +160,15 @@ export default function MyPosts() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
                         {/* 타입 배지 */}
-                        <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(isCommunityPost ? communityPost!.category : "물품")}`}>
-                          {isCommunityPost ? communityPost!.category : "물품"}
+                        <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(isCommunityPost ? communityPost!.category : "물품 판매")}`}>
+                          {isCommunityPost ? communityPost!.category : "물품 판매"}
                         </span>
-                        {/* 국가 배지 (커뮤니티 글에만 표시) */}
-                        {isCommunityPost && communityPost!.country && communityPost!.country !== "전체" && (
+                        {/* 국가 배지 (삭제됨) */}
+                        {/* {isCommunityPost && communityPost!.country && communityPost!.country !== "전체" && (
                           <span className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
                             {communityPost!.country}
                           </span>
-                        )}
-                        {/* 상태 배지 (물품 글에만 표시) */}
-                        {!isCommunityPost && itemPost && (
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            itemPost.status === "거래가능" 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-gray-100 text-gray-600"
-                          }`}>
-                            {itemPost.status}
-                          </span>
-                        )}
+                        )} */}
                       </div>
                       <h3 className="font-semibold text-gray-900 line-clamp-1">
                         {post.title}

@@ -1,3 +1,5 @@
+// client/src/pages/community-detail.tsx
+
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -26,20 +28,11 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { Comment, Item } from "@shared/schema";
+import type { Comment, Item, CommunityPost } from "@shared/schema";
 
-// Post 타입에 authorItems 필드를 추가 정의 (작성자의 물품 목록)
-interface DetailedPost {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  country: string;
-  authorId: string;
-  createdAt: string;
-  views: number;
-  openChatLink?: string;
-  authorItems: Item[]; // 백엔드에서 추가된 물품 목록 필드
+// Post 타입 정의
+interface DetailedPost extends CommunityPost {
+  // authorItems 필드가 제거되었습니다.
 }
 
 
@@ -52,7 +45,7 @@ export default function CommunityDetail() {
   const postId = params?.id;
   const [commentText, setCommentText] = useState("");
 
-  const { data: post, isLoading } = useQuery<DetailedPost>({ // DetailedPost 타입 사용
+  const { data: post, isLoading } = useQuery<DetailedPost>({
     queryKey: ["/api/community/posts", postId],
     queryFn: async () => {
       const token = localStorage.getItem("token");
@@ -66,10 +59,9 @@ export default function CommunityDetail() {
         credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to fetch post");
-      // 백엔드에서 authorItems가 포함된 객체를 반환한다고 가정
       return response.json();
     },
-    enabled: !!postId, // 모든 사용자가 글을 볼 수 있도록 함
+    enabled: !!postId, 
   });
 
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
@@ -94,9 +86,10 @@ export default function CommunityDetail() {
       }
       return response.json();
     },
-    enabled: !!postId, // 글이 있으면 댓글도 시도해보되, 실패하면 빈 배열
+    enabled: !!postId, 
   });
 
+  // 댓글 생성 Mutation
   const createCommentMutation = useMutation({
     mutationFn: async (content: string) => {
       return apiRequest('POST', `/api/community/posts/${postId}/comments`, { content });
@@ -138,6 +131,40 @@ export default function CommunityDetail() {
     }
   });
 
+  // 게시글 삭제 Mutation
+  const deletePostMutation = useMutation({
+    mutationFn: async () => {
+        // 백엔드 URL이 정확한지 확인
+        return apiRequest('DELETE', `/api/community/posts/${postId}`);
+    },
+    onSuccess: () => {
+        toast({
+            title: "게시글 삭제 완료",
+            description: "게시글이 성공적으로 삭제되었습니다."
+        });
+        // 커뮤니티 메인 페이지로 이동
+        navigate("/community");
+    },
+    onError: (error: any) => {
+        console.error('❌ 게시글 삭제 오류:', error);
+        // 서버에서 403(권한 없음)이나 500(DB 오류)이 올 수 있으므로, 구체적인 메시지 확인
+        const errorMessage = error.message;
+        let displayDescription = "게시글 삭제에 실패했습니다. (서버 오류)";
+
+        if (errorMessage?.includes('403')) {
+            displayDescription = "작성자만 게시글을 삭제할 수 있습니다.";
+        } else if (errorMessage?.includes('500') || errorMessage?.includes('Database')) {
+             displayDescription = "게시글 삭제 중 서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+        }
+
+        toast({
+            title: "게시글 삭제 실패",
+            description: displayDescription,
+            variant: "destructive"
+        });
+    }
+  });
+
   const handleSubmitComment = () => {
     if (!user) {
       navigate("/auth/login");
@@ -153,6 +180,13 @@ export default function CommunityDetail() {
     }
 
     createCommentMutation.mutate(commentText.trim());
+  };
+
+  // 게시글 삭제 처리 함수 (AlertDialog의 삭제 버튼에 연결됨)
+  const handleDeletePost = () => {
+    if (postId) {
+        deletePostMutation.mutate();
+    }
   };
 
   if (isLoading) {
@@ -183,7 +217,13 @@ export default function CommunityDetail() {
       "미국": "bg-purple-100 text-purple-800 border-purple-200",
       "캐나다": "bg-green-100 text-green-800 border-green-200",
       "호주": "bg-orange-100 text-orange-800 border-orange-200",
+      "영국": "bg-teal-100 text-teal-800 border-teal-200",
+      "독일": "bg-indigo-100 text-indigo-800 border-indigo-200",
+      "프랑스": "bg-pink-100 text-pink-800 border-pink-200",
+      "싱가포르": "bg-cyan-100 text-cyan-800 border-cyan-200",
+      "이탈리아": "bg-lime-100 text-lime-800 border-lime-200",
     };
+    // 목록에 없는 국가는 기본 회색으로 표시
     return colors[country] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
@@ -232,12 +272,48 @@ export default function CommunityDetail() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+
+              {/* 작성자에게 수정/삭제 옵션 제공 */}
               {isAuthor && (
-                <DropdownMenuItem onClick={() => navigate(post.category === "모임방" ? `/meetings/${postId}/edit` : `/community/post/${postId}/edit`)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  수정하기
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={() => navigate(post.category === "모임방" ? `/meetings/${postId}/edit` : `/community/post/${postId}/edit`)}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    수정하기
+                  </DropdownMenuItem>
+
+                  {/* 삭제하기 버튼에 AlertDialog 연결 (색상 및 기능 수정 완료) */}
+                  <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                          <DropdownMenuItem 
+                              onSelect={(e) => e.preventDefault()} 
+                              className="focus:bg-gray-100" 
+                          >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              삭제하기
+                          </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                              <AlertDialogTitle>게시글을 삭제하시겠습니까?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  이 작업은 되돌릴 수 없습니다. 게시글과 관련된 모든 댓글이 영구적으로 삭제됩니다.
+                              </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                              <AlertDialogCancel>취소</AlertDialogCancel>
+                              <AlertDialogAction 
+                                  onClick={handleDeletePost} 
+                                  disabled={deletePostMutation.isPending}
+                                  className="bg-red-500 hover:bg-red-600"
+                              >
+                                  삭제
+                              </AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
+                </>
               )}
+
               <DropdownMenuItem onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />
                 URL 공유하기
@@ -300,54 +376,6 @@ export default function CommunityDetail() {
           </div>
         </div>
 
-        {/* [추가된 부분] 작성자의 다른 물품 */}
-        {post.authorItems && post.authorItems.length > 0 && (
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              작성자의 다른 물품 ({post.authorItems.length}개)
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {post.authorItems.slice(0, 4).map((item) => ( // 최대 4개만 표시
-                <div 
-                  key={item.id} 
-                  className="rounded-lg overflow-hidden border bg-white shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/items/${item.id}`)} // 물품 상세 페이지로 이동
-                >
-                  <div className="aspect-square bg-gray-200 overflow-hidden">
-                    {item.images && item.images[0] ? (
-                      <img 
-                        src={item.images[0]} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">No Image</div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">{item.title}</h4>
-                    <p className="text-sm font-bold text-blue-600 mt-0.5">{item.currency} {item.price}</p> 
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* 전체 물품 보기 링크 */}
-            {post.authorItems.length > 4 && (
-                <div className="mt-4 text-right">
-                  <Button 
-                    variant="link" 
-                    size="sm"
-                    onClick={() => navigate(`/search/items?authorId=${post.authorId}`)}
-                    className="text-blue-600 p-0"
-                  >
-                    작성자의 전체 물품 보기 &rarr;
-                  </Button>
-                </div>
-            )}
-          </div>
-        )}
-        {/* [추가된 부분 끝] */}
-
         {/* Comments Section */}
         <div className="mt-6 border-t border-gray-200 pt-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -388,7 +416,7 @@ export default function CommunityDetail() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="p-1 h-6 w-6 text-red-500 hover:bg-red-100"
+                                className="p-1 h-6 w-6 text-gray-500 hover:bg-gray-100"
                                 data-testid={`button-delete-comment-${comment.id}`}
                               >
                                 <Trash2 className="w-4 h-4" />
