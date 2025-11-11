@@ -104,6 +104,16 @@ function Router() {
     }
   }, [login, toast]);
 
+  // 로딩 중이거나 인증되지 않은 사용자가 보호된 페이지에 접근하려는 경우
+  if (isLoading) {
+    return <div className="max-w-md mx-auto bg-white min-h-screen"></div>;
+  }
+
+  // 로그인하지 않았고 공개 페이지가 아닌 경우 빈 화면 (리다이렉트는 useEffect가 처리)
+  if (!user && !publicPages.includes(location) && !location.startsWith('/admin')) {
+    return <div className="max-w-md mx-auto bg-white min-h-screen"></div>;
+  }
+
   return (
     <div className={isAdminPage ? "bg-gray-50 min-h-screen" : "max-w-md mx-auto bg-white min-h-screen relative"}>
       <Switch>
