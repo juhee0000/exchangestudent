@@ -26,7 +26,9 @@ const createMeetingPostSchema = insertCommunityPostSchema.omit({
   country: z.string().optional(),
   images: z.array(z.string()).max(5, "최대 5장까지만 업로드할 수 있습니다").optional(),
   semester: z.string().optional(),
-  openChatLink: z.string().optional(),
+  openChatLink: z.string({
+      required_error: "오픈채팅 주소는 필수 입력 항목입니다.",
+    }).min(1, "오픈채팅 주소를 입력해주세요."),
 });
 
 type CreateMeetingPostForm = z.infer<typeof createMeetingPostSchema>;
@@ -248,7 +250,7 @@ export default function MeetingCreate() {
               name="openChatLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-normal text-gray-900">오픈채팅 주소 (선택)</FormLabel>
+                  <FormLabel className="text-base font-normal text-gray-900">오픈채팅 주소</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="https://open.kakao.com/o/..."
@@ -257,7 +259,7 @@ export default function MeetingCreate() {
                       data-testid="input-openchat-link"
                     />
                   </FormControl>
-                  <p className="text-sm text-gray-500 mt-1">모임에 참여할 수 있는 오픈채팅방 링크를 입력하세요</p>
+                  <p className="text-sm text-gray-500 mt-1">모임방으로 이용할 오픈채팅방 링크를 입력하세요</p>
                   <FormMessage />
                 </FormItem>
               )}

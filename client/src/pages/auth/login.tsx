@@ -105,7 +105,7 @@ export default function Login() {
 
         {/* SNS 로그인 안내 텍스트 */}
         <p className="text-gray-600 text-center mb-8 text-base">
-          SNS계정으로 간편하게 시작하세요
+          간편하게 로그인하고 서비스를 이용해보세요
         </p>
 
         {/* 로그인 버튼들 */}

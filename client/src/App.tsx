@@ -111,14 +111,14 @@ function Router() {
         <Route path="/chat" component={Chat} />
         <Route path="/chat/:roomId" component={ChatRoom} />
         <Route path="/community" component={Community} />
+        <Route path="/meetings/create" component={MeetingCreate} />
+        <Route path="/meetings/:id/edit" component={MeetingEdit} />
+        <Route path="/meetings/:id" component={MeetingDetail} />
         <Route path="/meetings" component={Meetings} />
         <Route path="/community-create" component={CommunityCreate} />
         <Route path="/community/post/:id/edit" component={CommunityEdit} />
         <Route path="/community/post/:id" component={CommunityDetail} />
         <Route path="/community/create" component={CommunityCreate} />
-        <Route path="/meetings/create" component={MeetingCreate} />
-        <Route path="/meetings/:id/edit" component={MeetingEdit} />
-        <Route path="/meetings/:id" component={MeetingDetail} />
         <Route path="/my/items" component={MyItems} />
         <Route path="/my/reviews" component={MyReviews} />
         <Route path="/my/posts" component={MyPosts} />
