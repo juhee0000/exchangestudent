@@ -80,7 +80,7 @@ export default function MeetingEdit() {
           description: "본인의 게시글만 수정할 수 있습니다.",
           variant: "destructive"
         });
-        navigate(`/community/post/${postId}`);
+        navigate(`/meetings/${postId}`);
         return;
       }
 
@@ -116,7 +116,7 @@ export default function MeetingEdit() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
-      navigate(`/community/post/${postId}`);
+      navigate(`/meetings/${postId}`);
     },
     onError: (error: any) => {
       let errorMessage = "게시글을 수정하는데 실패했습니다.";
@@ -182,7 +182,7 @@ export default function MeetingEdit() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(`/community/post/${postId}`)}
+              onClick={() => navigate(`/meetings/${postId}`)}
               className="p-2"
             >
               <ArrowLeft className="w-5 h-5" />

@@ -164,7 +164,7 @@ export default function MeetingsSearch() {
                     <Card 
                       key={post.id}
                       className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
-                      onClick={() => navigate(`/community/post/${post.id}`)}
+                      onClick={() => navigate(`/meetings/${post.id}`)}
                       data-testid={`card-meeting-${post.id}`}
                     >
                       {post.images && post.images.length > 0 ? (

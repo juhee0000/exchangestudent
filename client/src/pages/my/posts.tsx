@@ -36,10 +36,14 @@ export default function MyPosts() {
   const [, navigate] = useLocation();
   const { user, isLoading: isAuthLoading } = useRequireAuth();
 
-  // 스크롤 위치 저장 함수
-  const saveScrollPosition = (postId: string) => {
+  // 스크롤 위치 저장 및 네비게이션 함수
+  const navigateToCommunityPost = (postId: string, category: string) => {
     sessionStorage.setItem('communityScrollPosition', window.scrollY.toString());
-    navigate(`/community/post/${postId}`);
+    if (category === "모임방") {
+      navigate(`/meetings/${postId}`);
+    } else {
+      navigate(`/community/post/${postId}`);
+    }
   };
 
   // 커뮤니티 글 가져오기
@@ -147,7 +151,7 @@ export default function MyPosts() {
                   key={post.id}
                   onClick={() => {
                     if (isCommunityPost) {
-                      saveScrollPosition(post.id);
+                      navigateToCommunityPost(post.id, communityPost!.category);
                     } else {
                       sessionStorage.setItem('homeScrollPosition', window.scrollY.toString());
                       navigate(`/items/${post.id}`);

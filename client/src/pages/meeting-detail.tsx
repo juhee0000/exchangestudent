@@ -1,9 +1,7 @@
-// client/src/pages/community-detail.tsx
-
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Send, MoreVertical, Edit, Share2, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Send, MoreVertical, Edit, Share2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
@@ -30,14 +28,10 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Comment, CommunityPost } from "@shared/schema";
 
-// Post 타입 정의
-interface DetailedPost extends CommunityPost {
-  // authorItems 필드가 제거되었습니다.
-}
+interface DetailedPost extends CommunityPost {}
 
-
-export default function CommunityDetail() {
-  const [, params] = useRoute("/community/post/:id");
+export default function MeetingDetail() {
+  const [, params] = useRoute("/meetings/:id");
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -79,7 +73,6 @@ export default function CommunityDetail() {
       });
       if (!response.ok) {
         if (response.status === 401) {
-          // 로그인이 필요한 경우
           return [];
         }
         throw new Error("Failed to fetch comments");
@@ -89,7 +82,6 @@ export default function CommunityDetail() {
     enabled: !!postId, 
   });
 
-  // 댓글 생성 Mutation
   const createCommentMutation = useMutation({
     mutationFn: async (content: string) => {
       return apiRequest('POST', `/api/community/posts/${postId}/comments`, { content });
@@ -108,7 +100,6 @@ export default function CommunityDetail() {
     }
   });
 
-  // 댓글 삭제 Mutation
   const deleteCommentMutation = useMutation({
     mutationFn: async (commentId: string) => {
       return apiRequest('DELETE', `/api/community/comments/${commentId}`);
@@ -131,10 +122,8 @@ export default function CommunityDetail() {
     }
   });
 
-  // 게시글 삭제 Mutation
   const deletePostMutation = useMutation({
     mutationFn: async () => {
-        // 백엔드 URL이 정확한지 확인
         return apiRequest('DELETE', `/api/community/posts/${postId}`);
     },
     onSuccess: () => {
@@ -142,12 +131,10 @@ export default function CommunityDetail() {
             title: "게시글 삭제 완료",
             description: "게시글이 성공적으로 삭제되었습니다."
         });
-        // 커뮤니티 메인 페이지로 이동
-        navigate("/community");
+        navigate("/meetings");
     },
     onError: (error: any) => {
         console.error('❌ 게시글 삭제 오류:', error);
-        // 서버에서 403(권한 없음)이나 500(DB 오류)이 올 수 있으므로, 구체적인 메시지 확인
         const errorMessage = error.message;
         let displayDescription = "게시글 삭제에 실패했습니다. (서버 오류)";
 
@@ -182,7 +169,6 @@ export default function CommunityDetail() {
     createCommentMutation.mutate(commentText.trim());
   };
 
-  // 게시글 삭제 처리 함수 (AlertDialog의 삭제 버튼에 연결됨)
   const handleDeletePost = () => {
     if (postId) {
         deletePostMutation.mutate();
@@ -197,13 +183,12 @@ export default function CommunityDetail() {
     );
   }
 
-  // post가 undefined일 가능성 (query 실패/404)을 대비한 체크
   if (!post) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">게시글을 찾을 수 없습니다</h2>
-          <Button onClick={() => navigate("/community")}>커뮤니티로 돌아가기</Button>
+          <Button onClick={() => navigate("/meetings")}>모임방으로 돌아가기</Button>
         </div>
       </div>
     );
@@ -223,14 +208,13 @@ export default function CommunityDetail() {
       "싱가포르": "bg-cyan-100 text-cyan-800 border-cyan-200",
       "이탈리아": "bg-lime-100 text-lime-800 border-lime-200",
     };
-    // 목록에 없는 국가는 기본 회색으로 표시
     return colors[country] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   const isAuthor = user?.id === post.authorId;
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/community/post/${postId}`;
+    const url = `${window.location.origin}/meetings/${postId}`;
 
     try {
       await navigator.clipboard.writeText(url);
@@ -255,14 +239,14 @@ export default function CommunityDetail() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/community")}
+              onClick={() => navigate("/meetings")}
               className="p-2 absolute left-4"
-              data-testid="button-back-community"
+              data-testid="button-back-meetings"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="text-lg font-semibold text-gray-900">
-              {post.category}
+              모임방
             </h1>
           </div>
 
@@ -273,16 +257,13 @@ export default function CommunityDetail() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-
-              {/* 작성자에게 수정/삭제 옵션 제공 */}
               {isAuthor && (
                 <>
-                  <DropdownMenuItem onClick={() => navigate(`/community/post/${postId}/edit`)}>
+                  <DropdownMenuItem onClick={() => navigate(`/meetings/${postId}/edit`)}>
                     <Edit className="w-4 h-4 mr-2" />
                     수정하기
                   </DropdownMenuItem>
 
-                  {/* 삭제하기 버튼에 AlertDialog 연결 (색상 및 기능 수정 완료) */}
                   <AlertDialog>
                       <AlertDialogTrigger asChild>
                           <DropdownMenuItem 
@@ -342,13 +323,33 @@ export default function CommunityDetail() {
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
-
         {/* Content */}
         <div className="mb-6">
           <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
             {post.content}
           </p>
         </div>
+
+        {/* Open Chat Link */}
+        {post.openChatLink && (
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-blue-900 mb-1">오픈 카톡방</h3>
+                <p className="text-sm text-blue-700">아래 링크를 클릭하여 참여하세요</p>
+              </div>
+              <Button
+                onClick={() => window.open(post.openChatLink!, '_blank', 'noopener,noreferrer')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+                data-testid="button-openchat"
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                참여하기
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="flex items-center justify-end py-4">

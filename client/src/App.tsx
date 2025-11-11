@@ -34,6 +34,7 @@ import CommunityCreate from "@/pages/community-create";
 import MeetingCreate from "@/pages/meeting-create";
 import MeetingEdit from "@/pages/meeting-edit";
 import CommunityDetail from "@/pages/community-detail";
+import MeetingDetail from "@/pages/meeting-detail";
 import CommunityEdit from "@/pages/community-edit";
 import NotificationsPage from "@/pages/notifications";
 import MyItems from "@/pages/my/items";
@@ -117,6 +118,7 @@ function Router() {
         <Route path="/community/create" component={CommunityCreate} />
         <Route path="/meetings/create" component={MeetingCreate} />
         <Route path="/meetings/:id/edit" component={MeetingEdit} />
+        <Route path="/meetings/:id" component={MeetingDetail} />
         <Route path="/my/items" component={MyItems} />
         <Route path="/my/reviews" component={MyReviews} />
         <Route path="/my/posts" component={MyPosts} />

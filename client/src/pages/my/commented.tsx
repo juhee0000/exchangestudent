@@ -26,10 +26,14 @@ export default function MyCommentedPosts() {
   const [, navigate] = useLocation();
   const { user, isLoading: isAuthLoading } = useRequireAuth();
 
-  // 스크롤 위치 저장 함수
-  const saveScrollPosition = (postId: string) => {
+  // 스크롤 위치 저장 및 네비게이션 함수
+  const navigateToCommunityPost = (postId: string, category: string) => {
     sessionStorage.setItem('communityScrollPosition', window.scrollY.toString());
-    navigate(`/community/post/${postId}`);
+    if (category === "모임방") {
+      navigate(`/meetings/${postId}`);
+    } else {
+      navigate(`/community/post/${postId}`);
+    }
   };
 
   const { 
@@ -102,7 +106,7 @@ export default function MyCommentedPosts() {
             {posts.map((post) => (
               <div
                 key={post.id}
-                onClick={() => saveScrollPosition(post.id)} // 수정된 부분
+                onClick={() => navigateToCommunityPost(post.id, post.category)}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex space-x-3">

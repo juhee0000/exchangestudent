@@ -150,7 +150,7 @@ export default function Meetings() {
               {posts.map((post) => (
                 <Card 
                   key={post.id} 
-                  onClick={() => navigate(`/community/post/${post.id}`)}
+                  onClick={() => navigate(`/meetings/${post.id}`)}
                   className={`cursor-pointer hover:shadow-md transition-shadow relative ${post.country && post.country !== '' ? getCountryColor(post.country) : 'bg-gray-100'}`}
                   data-testid={`card-meeting-${post.id}`}
                 >

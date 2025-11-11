@@ -241,6 +241,27 @@ export default function MeetingCreate() {
                 </FormItem>
               )}
             />
+
+            {/* Open Chat Link */}
+            <FormField
+              control={form.control}
+              name="openChatLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-normal text-gray-900">오픈채팅 주소 (선택)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://open.kakao.com/o/..."
+                      {...field} 
+                      className="bg-gray-50 border-gray-300"
+                      data-testid="input-openchat-link"
+                    />
+                  </FormControl>
+                  <p className="text-sm text-gray-500 mt-1">모임에 참여할 수 있는 오픈채팅방 링크를 입력하세요</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </form>
         </Form>
       </div>
