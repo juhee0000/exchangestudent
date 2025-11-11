@@ -494,10 +494,26 @@ export default function ItemDetail() {
                 <span className="text-gray-500 w-32 flex-shrink-0">거래 희망 장소</span>
                 <p className="font-medium">{item.location || '-'}</p>
               </div>
-              <div className="flex">
-                <span className="text-gray-500 w-32 flex-shrink-0">오픈채팅 링크</span>
-                <p className="font-medium break-all">{item.openChatLink || '-'}</p>
-              </div>
+              {/* ✅ 로그인한 사용자만 오픈채팅 링크 표시 */}
+              {user && (
+                <div className="flex">
+                  <span className="text-gray-500 w-32 flex-shrink-0">오픈채팅 링크</span>
+                  <p className="font-medium break-all">
+                    {item.openChatLink ? (
+                      <a
+                        href={item.openChatLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {item.openChatLink}
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </p>
+                </div>
+              )}
               <div className="flex">
                 <span className="text-gray-500 w-32 flex-shrink-0">거래 가능 기간</span>
                 <p className="font-medium">
@@ -533,6 +549,18 @@ export default function ItemDetail() {
             size="lg"
             className="w-full h-12 marketplace-button-primary"
             onClick={() => {
+              // ✅ 1️⃣ 비로그인 상태일 경우 로그인 페이지로 이동
+              if (!user) {
+                toast({
+                  title: "로그인이 필요합니다",
+                  description: "오픈채팅을 이용하려면 로그인해주세요.",
+                  variant: "destructive"
+                });
+                navigate("/auth/login");
+                return;
+              }
+
+              // ✅ 2️⃣ 로그인 상태일 때만 오픈채팅 링크로 이동
               if (item.openChatLink) {
                 window.open(item.openChatLink, '_blank');
               } else {
