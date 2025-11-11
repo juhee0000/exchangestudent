@@ -46,8 +46,8 @@ import SettingsPage from "@/pages/settings";
 import BottomNav from "@/components/layout/bottom-nav";
 
 function Router() {
-  const [location, navigate] = useLocation();
-  const { user, isLoading, login } = useAuth();
+  const [location] = useLocation();
+  const { login } = useAuth();
   const { toast } = useToast();
   const isAuthPage = location.startsWith('/auth');
   const isItemDetailPage = location.startsWith('/items/') && location !== '/items/create' && !location.includes('/edit');
@@ -55,16 +55,6 @@ function Router() {
   const isProfilePage = location === '/profile';
   const isNotificationsPage = location === '/notifications';
   const isAdminPage = location.startsWith('/admin');
-
-  // 인증이 필요 없는 페이지 목록
-  const publicPages = ['/auth/login', '/auth/email-login', '/auth/register', '/register', '/auth/complete-registration', '/admin', '/admin/dashboard'];
-  
-  // 로그인 체크 및 리다이렉트
-  useEffect(() => {
-    if (!isLoading && !user && !publicPages.includes(location) && !location.startsWith('/admin')) {
-      navigate('/auth/login');
-    }
-  }, [user, isLoading, location, navigate]);
 
   // Handle OAuth callback
   useEffect(() => {
@@ -103,16 +93,6 @@ function Router() {
       }
     }
   }, [login, toast]);
-
-  // 로딩 중이거나 인증되지 않은 사용자가 보호된 페이지에 접근하려는 경우
-  if (isLoading) {
-    return <div className="max-w-md mx-auto bg-white min-h-screen"></div>;
-  }
-
-  // 로그인하지 않았고 공개 페이지가 아닌 경우 빈 화면 (리다이렉트는 useEffect가 처리)
-  if (!user && !publicPages.includes(location) && !location.startsWith('/admin')) {
-    return <div className="max-w-md mx-auto bg-white min-h-screen"></div>;
-  }
 
   return (
     <div className={isAdminPage ? "bg-gray-50 min-h-screen" : "max-w-md mx-auto bg-white min-h-screen relative"}>
