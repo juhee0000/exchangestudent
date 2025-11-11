@@ -65,6 +65,7 @@ export default function Login() {
     try {
       const response = await authApi.login(data);
       login(response.token, response.user);
+      navigate("/");
     } catch (error) {
       toast({
         variant: "destructive",
@@ -79,17 +80,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-white">
       {/* 상단 헤더 */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+      <div className="flex items-center justify-center p-4 border-b border-gray-100">
         <h1 className="text-sm font-medium text-gray-700">회원가입 및 로그인</h1>
-        <div className="w-8"></div> {/* 균형을 위한 빈 공간 */}
       </div>
 
       {/* 메인 컨텐츠 */}

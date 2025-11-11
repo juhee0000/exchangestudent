@@ -46,8 +46,8 @@ import SettingsPage from "@/pages/settings";
 import BottomNav from "@/components/layout/bottom-nav";
 
 function Router() {
-  const [location] = useLocation();
-  const { login } = useAuth();
+  const [location, navigate] = useLocation();
+  const { user, isLoading, login } = useAuth();
   const { toast } = useToast();
   const isAuthPage = location.startsWith('/auth');
   const isItemDetailPage = location.startsWith('/items/') && location !== '/items/create' && !location.includes('/edit');
@@ -55,6 +55,16 @@ function Router() {
   const isProfilePage = location === '/profile';
   const isNotificationsPage = location === '/notifications';
   const isAdminPage = location.startsWith('/admin');
+
+  // 인증이 필요 없는 페이지 목록
+  const publicPages = ['/auth/login', '/auth/email-login', '/auth/register', '/register', '/auth/complete-registration', '/admin', '/admin/dashboard'];
+  
+  // 로그인 체크 및 리다이렉트
+  useEffect(() => {
+    if (!isLoading && !user && !publicPages.includes(location) && !location.startsWith('/admin')) {
+      navigate('/auth/login');
+    }
+  }, [user, isLoading, location, navigate]);
 
   // Handle OAuth callback
   useEffect(() => {
