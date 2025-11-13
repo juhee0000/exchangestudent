@@ -89,6 +89,8 @@ export default function CompleteRegistration() {
   const { login, user } = useAuth();
   const [schoolInput, setSchoolInput] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [countryInput, setCountryInput] = useState("");
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
 
   // 자주 입력된 학교명 조회
   const { data: popularSchools = [] } = useQuery<string[]>({
@@ -237,6 +239,15 @@ export default function CompleteRegistration() {
     ).slice(0, 5);
   };
 
+  // 국가 자동완성 필터링 (대소문자 구분 없이)
+  const getFilteredCountries = () => {
+    if (!countryInput) return COUNTRIES;
+    const searchTerm = countryInput.toLowerCase();
+    return COUNTRIES.filter(country => 
+      country.toLowerCase().includes(searchTerm)
+    ).slice(0, 8);
+  };
+
   const getStepTitle = () => {
     switch (currentStep) {
       case 'school': return '해외 교환학교 선택';
@@ -281,8 +292,8 @@ export default function CompleteRegistration() {
                           value={field.value || ""}
                           onChange={(e) => {
                             const value = e.target.value;
-                            // 한글과 영문 모두 입력 가능 (약칭 지원을 위해)
-                            const filtered = value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z]/g, "");
+                            // 한글만 입력 가능
+                            const filtered = value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣]/g, "");
                             field.onChange(filtered);
                             setSchoolInput(filtered);
                             setShowSuggestions(filtered.length > 0);
@@ -328,6 +339,7 @@ export default function CompleteRegistration() {
         );
 
       case 'country':
+        const filteredCountries = getFilteredCountries();
         return (
           <Form {...countryForm}>
             <form onSubmit={countryForm.handleSubmit(handleNext)} className="space-y-8">
@@ -337,20 +349,46 @@ export default function CompleteRegistration() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm text-blue-500 font-medium">{getStepLabel()}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0">
-                          <SelectValue placeholder={getStepPlaceholder()} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {COUNTRIES.map((country) => (
-                          <SelectItem key={country} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          placeholder={getStepPlaceholder()}
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value);
+                            setCountryInput(value);
+                            setShowCountrySuggestions(true);
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setShowCountrySuggestions(false), 200);
+                          }}
+                          onFocus={() => {
+                            setShowCountrySuggestions(true);
+                          }}
+                          className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
+                          data-testid="input-country"
+                        />
+                        {showCountrySuggestions && filteredCountries.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                            {filteredCountries.map((country, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  field.onChange(country);
+                                  setCountryInput(country);
+                                  setShowCountrySuggestions(false);
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-blue-50 first:rounded-t-xl last:rounded-b-xl transition-colors"
+                              >
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
