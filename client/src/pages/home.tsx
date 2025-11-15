@@ -40,12 +40,11 @@ export default function Home() {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["/api/items", filter, user?.school, selectedCountry, onlyAvailable, searchKeyword],
+    queryKey: ["/api/items", filter, user?.school, selectedCountry, searchKeyword],
     queryFn: async ({ pageParam = 0 }) => {
       const params = new URLSearchParams();
       if (filter === "school" && user?.school) params.append("school", user.school);
       if (filter === "country" && selectedCountry !== "all") params.append("country", selectedCountry);
-      if (onlyAvailable) params.append("onlyAvailable", "true");
       if (searchKeyword.trim()) params.append("search", searchKeyword.trim());
       params.append("page", pageParam.toString());
       params.append("limit", "10");
@@ -63,12 +62,17 @@ export default function Home() {
   });
 
   // Flatten pages and deduplicate items by ID to prevent key conflicts
-  const items = data?.pages.flat().reduce((acc: Item[], item: Item) => {
+  const allItems = data?.pages.flat().reduce((acc: Item[], item: Item) => {
     if (!acc.some(existingItem => existingItem.id === item.id)) {
       acc.push(item);
     }
     return acc;
   }, []) || [];
+
+  // Client-side filtering for "거래가능" (available items only)
+  const items = onlyAvailable 
+    ? allItems.filter((item: Item) => item.status === '거래가능')
+    : allItems;
 
   // 스크롤 위치 저장 및 복원
   useEffect(() => {
