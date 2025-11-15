@@ -37,35 +37,21 @@ export default function CompleteRegistration() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login, user } = useAuth();
+  
+  // 학교명 입력을 위한 별도 state
+  const [schoolInput, setSchoolInput] = useState("");
+  const [schoolError, setSchoolError] = useState("");
 
   const stepOrder: RegisterStep[] = ['country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
   const isLastStep = currentStepIndex === stepOrder.length - 1;
 
-  // 각 단계별 폼 설정
-  const schoolForm = useForm({
-    resolver: zodResolver(schoolSchema),
-    defaultValues: { school: formData.school || "" },
-    mode: "onChange"
-  });
-
+  // 국가 선택을 위한 폼만 유지
   const countryForm = useForm({
     resolver: zodResolver(countrySchema),
     defaultValues: { country: formData.country || "" },
     mode: "onChange"
   });
-
-  // 단계별 폼 초기화
-  useEffect(() => {
-    switch (currentStep) {
-      case 'school':
-        schoolForm.reset({ school: formData.school || "" });
-        break;
-      case 'country':
-        countryForm.reset({ country: formData.country || "" });
-        break;
-    }
-  }, [currentStep]);
 
   // Handle OAuth callback parameters
   useEffect(() => {
@@ -90,17 +76,22 @@ export default function CompleteRegistration() {
     }
   }, [login, navigate, user]);
 
-  const handleNext = async (data: any) => {
-    // 현재 단계 데이터만 저장
+  const handleNext = async (data?: any) => {
     const newData = { ...formData };
     
-    switch (currentStep) {
-      case 'school':
-        newData.school = data.school;
-        break;
-      case 'country':
-        newData.country = data.country;
-        break;
+    // 학교명 단계 처리
+    if (currentStep === 'school') {
+      if (!schoolInput.trim()) {
+        setSchoolError("학교명을 입력해주세요");
+        return;
+      }
+      newData.school = schoolInput.trim();
+      setSchoolError("");
+    }
+    
+    // 국가 선택 단계 처리
+    if (currentStep === 'country' && data) {
+      newData.country = data.country;
     }
     
     setFormData(newData);
@@ -196,32 +187,27 @@ export default function CompleteRegistration() {
     switch (currentStep) {
       case 'school':
         return (
-          <Form {...schoolForm}>
-            <form onSubmit={schoolForm.handleSubmit(handleNext)} className="space-y-8">
-              <FormField
-                control={schoolForm.control}
-                name="school"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm text-blue-500 font-medium">{getStepLabel()}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={getStepPlaceholder()}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
-                        data-testid="input-school"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          <div className="space-y-8">
+            <div className="space-y-2">
+              <label className="text-sm text-blue-500 font-medium">
+                {getStepLabel()}
+              </label>
+              <input
+                type="text"
+                placeholder={getStepPlaceholder()}
+                value={schoolInput}
+                onChange={(e) => {
+                  setSchoolInput(e.target.value);
+                  if (schoolError) setSchoolError("");
+                }}
+                className="w-full border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0 focus:outline-none"
+                data-testid="input-school"
               />
-            </form>
-          </Form>
+              {schoolError && (
+                <p className="text-sm text-red-500">{schoolError}</p>
+              )}
+            </div>
+          </div>
         );
 
       case 'country':
@@ -321,11 +307,14 @@ export default function CompleteRegistration() {
         {/* 버튼 영역 */}
         <div className="mt-8">
           <Button
-            type="submit"
+            type="button"
             disabled={isLoading}
             onClick={() => {
-              const currentForm = currentStep === 'school' ? schoolForm : countryForm;
-              currentForm.handleSubmit(handleNext)();
+              if (currentStep === 'school') {
+                handleNext();
+              } else {
+                countryForm.handleSubmit(handleNext)();
+              }
             }}
             className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium rounded-xl flex items-center justify-center gap-2"
           >
