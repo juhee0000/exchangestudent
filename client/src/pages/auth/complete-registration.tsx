@@ -281,11 +281,9 @@ export default function CompleteRegistration() {
                           value={field.value || ""}
                           onChange={(e) => {
                             const value = e.target.value;
-                            // 한글과 영문 모두 입력 가능 (약칭 지원을 위해)
-                            const filtered = value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z]/g, "");
-                            field.onChange(filtered);
-                            setSchoolInput(filtered);
-                            setShowSuggestions(filtered.length > 0);
+                            field.onChange(value);
+                            setSchoolInput(value);
+                            setShowSuggestions(value.length > 0);
                           }}
                           onBlur={() => {
                             setTimeout(() => setShowSuggestions(false), 200);
