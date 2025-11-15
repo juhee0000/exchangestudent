@@ -45,7 +45,7 @@ import SettingsPage from "@/pages/settings";
 import BottomNav from "@/components/layout/bottom-nav";
 
 function Router() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
   const isAuthPage = location.startsWith('/auth');
@@ -67,20 +67,18 @@ function Router() {
         
         // 추가 정보가 필요한지 우선 확인
         if (user.needsAdditionalInfo) {
-          // 로그인하지 않고 complete-registration 페이지로 이동
-          window.history.replaceState({}, document.title, '/auth/complete-registration');
-          window.location.href = `/auth/complete-registration?token=${token}&user=${encodeURIComponent(userStr)}`;
+          // Clear URL parameters and navigate to complete-registration
+          window.history.replaceState({}, document.title, `/auth/complete-registration?token=${token}&user=${encodeURIComponent(userStr)}`);
+          navigate(`/auth/complete-registration?token=${token}&user=${encodeURIComponent(userStr)}`);
           return;
         }
         
         // needsAdditionalInfo가 false이면 로그인 후 메인 페이지로 이동
         login(token, user);
         
-        // 성공 팝업 제거 - 소셜 로그인 성공 시 toast 제거
-        
         // Clear URL parameters and navigate to home
-        window.history.replaceState({}, document.title, window.location.pathname);
-        window.location.href = '/';
+        window.history.replaceState({}, document.title, '/');
+        navigate('/');
         
       } catch (error) {
         console.error('OAuth callback error:', error);
@@ -91,14 +89,14 @@ function Router() {
         });
       }
     }
-  }, [login, toast]);
+  }, [login, toast, navigate]);
 
   return (
     <div className={isAdminPage ? "bg-gray-50 min-h-screen" : "max-w-md mx-auto bg-white min-h-screen relative"}>
       <Switch>
         <Route path="/auth/login" component={Login} />
-       
-     
+        <Route path="/auth/complete-registration" component={CompleteRegistration} />
+        
         <Route path="/" component={Home} />
         <Route path="/search" component={SearchPage} />
         <Route path="/search/:query" component={SearchResults} />
