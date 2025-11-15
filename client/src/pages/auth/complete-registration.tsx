@@ -207,7 +207,11 @@ export default function CompleteRegistration() {
                     <FormControl>
                       <Input
                         placeholder={getStepPlaceholder()}
-                        {...field}
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                         className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
                         data-testid="input-school"
                       />
