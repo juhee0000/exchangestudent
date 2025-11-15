@@ -339,7 +339,28 @@ export default function MeetingDetail() {
                 <p className="text-sm text-blue-700">아래 링크를 클릭하여 참여하세요</p>
               </div>
               <Button
-                onClick={() => window.open(post.openChatLink!, '_blank', 'noopener,noreferrer')}
+                onClick={() => {
+                  if (!user) {
+                    toast({
+                      title: "로그인이 필요합니다",
+                      description: "오픈 카톡방에 참여하려면 로그인해주세요.",
+                      variant: "destructive",
+                    });
+                    navigate("/auth/login");
+                    return;
+                  }
+
+                  // 로그인 상태일 때만 링크 열기
+                  if (post.openChatLink) {
+                    window.open(post.openChatLink, "_blank", "noopener,noreferrer");
+                  } else {
+                    toast({
+                      title: "링크가 존재하지 않습니다",
+                      description: "해당 모임에는 오픈카톡 링크가 없습니다.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
                 data-testid="button-openchat"
@@ -360,125 +381,123 @@ export default function MeetingDetail() {
 
         {/* Comments Section */}
         <div className="mt-6 border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            댓글 {comments.length}개
-          </h3>
-
-          {/* Comment List */}
-          {commentsLoading ? (
-            <div className="text-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto"></div>
-            </div>
-          ) : comments.length > 0 ? (
-            <div className="space-y-4 mb-6">
-              {comments.map((comment: any) => {
-                const canDelete = user?.id === comment.authorId;
-                return (
-                  <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-gray-600">
-                            {comment.authorFullName?.charAt(0)?.toUpperCase() || comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
-                          </span>
-                        </div>
-                        <span className="font-medium text-gray-900">
-                          {comment.authorFullName || comment.authorUsername || '알 수 없음'}
-                        </span>
-                      </div>
-
-                      {/* Delete Button / Timestamp */}
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">
-                          {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
-                        </span>
-                        {canDelete && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="p-1 h-6 w-6 text-gray-500 hover:bg-gray-100"
-                                data-testid={`button-delete-comment-${comment.id}`}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  이 작업은 되돌릴 수 없습니다. 댓글이 영구적으로 삭제됩니다.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>취소</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => deleteCommentMutation.mutate(comment.id)}
-                                  disabled={deleteCommentMutation.isPending}
-                                  className="bg-red-500 hover:bg-red-600"
-                                >
-                                  삭제
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-gray-800 leading-relaxed">
-                      {comment.content}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>아직 댓글이 없습니다</p>
-              <p className="text-sm">첫 번째 댓글을 작성해보세요!</p>
-            </div>
-          )}
-
-          {/* Comment Form */}
           {user ? (
-            <div className="mt-6">
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-blue-600">
-                    {user.fullName?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'M'}
-                  </span>
+            <>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                댓글 {comments.length}개
+              </h3>
+
+              {commentsLoading ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto"></div>
                 </div>
-                <div className="flex-1">
-                  <Textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="댓글을 입력해주세요"
-                    className="min-h-[80px] resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    disabled={createCommentMutation.isPending}
-                  />
-                  <div className="flex justify-end mt-2">
-                    <Button
-                      onClick={handleSubmitComment}
-                      disabled={!commentText.trim() || createCommentMutation.isPending}
-                      className="bg-blue-500 hover:bg-blue-600 text-white"
-                      size="sm"
-                    >
-                      {createCommentMutation.isPending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      ) : (
-                        <Send className="w-4 h-4 mr-1" />
-                      )}
-                      댓글 작성
-                    </Button>
+              ) : comments.length > 0 ? (
+                <div className="space-y-4 mb-6">
+                  {comments.map((comment: any) => {
+                    const canDelete = user?.id === comment.authorId;
+                    return (
+                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-600">
+                                {comment.authorFullName?.charAt(0)?.toUpperCase() ||
+                                 comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
+                              </span>
+                            </div>
+                            <span className="font-medium text-gray-900">
+                              {comment.authorFullName || comment.authorUsername || '알 수 없음'}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">
+                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+                            </span>
+                            {canDelete && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-1 h-6 w-6 text-gray-500 hover:bg-gray-100"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      이 작업은 되돌릴 수 없습니다. 댓글이 영구적으로 삭제됩니다.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>취소</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteCommentMutation.mutate(comment.id)}
+                                      disabled={deleteCommentMutation.isPending}
+                                      className="bg-red-500 hover:bg-red-600"
+                                    >
+                                      삭제
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-gray-800 leading-relaxed">{comment.content}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>아직 댓글이 없습니다</p>
+                  <p className="text-sm">첫 번째 댓글을 작성해보세요!</p>
+                </div>
+              )}
+
+              {/* Comment Form */}
+              <div className="mt-6">
+                <div className="flex space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-blue-600">
+                      {user.fullName?.charAt(0)?.toUpperCase() ||
+                       user.username?.charAt(0)?.toUpperCase() || 'M'}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <Textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="댓글을 입력해주세요"
+                      className="min-h-[80px] resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      disabled={createCommentMutation.isPending}
+                    />
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        onClick={handleSubmitComment}
+                        disabled={!commentText.trim() || createCommentMutation.isPending}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                        size="sm"
+                      >
+                        {createCommentMutation.isPending ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        ) : (
+                          <Send className="w-4 h-4 mr-1" />
+                        )}
+                        댓글 작성
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </>
           ) : (
             <div className="mt-6 text-center py-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600 mb-2">댓글을 보거나 작성하려면 로그인이 필요합니다</p>
-              <Button 
+              <Button
                 onClick={() => {
                   toast({
                     title: "로그인이 필요합니다",
