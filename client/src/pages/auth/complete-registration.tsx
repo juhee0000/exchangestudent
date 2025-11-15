@@ -37,14 +37,6 @@ export default function CompleteRegistration() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login, user } = useAuth();
-  const [schoolInput, setSchoolInput] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  // 자주 입력된 학교명 조회
-  const { data: popularSchools = [] } = useQuery<string[]>({
-    queryKey: ['/api/schools/popular'],
-    enabled: currentStep === 'school',
-  });
 
   const stepOrder: RegisterStep[] = ['country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
@@ -176,14 +168,6 @@ export default function CompleteRegistration() {
     }
   };
 
-  // 자동완성 필터링
-  const getFilteredSuggestions = () => {
-    if (!schoolInput || !popularSchools) return [];
-    return popularSchools.filter(school => 
-      school.includes(schoolInput) || schoolInput.includes(school.substring(0, 2))
-    ).slice(0, 5);
-  };
-
   const getStepTitle = () => {
     switch (currentStep) {
       case 'school': return '해외 교환학교 선택';
@@ -211,7 +195,6 @@ export default function CompleteRegistration() {
   const getCurrentForm = () => {
     switch (currentStep) {
       case 'school':
-        const filteredSuggestions = getFilteredSuggestions();
         return (
           <Form {...schoolForm}>
             <form onSubmit={schoolForm.handleSubmit(handleNext)} className="space-y-8">
@@ -222,49 +205,14 @@ export default function CompleteRegistration() {
                   <FormItem>
                     <FormLabel className="text-sm text-blue-500 font-medium">{getStepLabel()}</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder={getStepPlaceholder()}
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            field.onChange(value);
-                            setSchoolInput(value);
-                            setShowSuggestions(value.length > 0);
-                          }}
-                          onBlur={() => {
-                            setTimeout(() => setShowSuggestions(false), 200);
-                          }}
-                          onFocus={() => {
-                            if (schoolInput.length > 0) setShowSuggestions(true);
-                          }}
-                          className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
-                          data-testid="input-school"
-                        />
-                        {showSuggestions && filteredSuggestions.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg">
-                            {filteredSuggestions.map((school, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                onClick={() => {
-                                  field.onChange(school);
-                                  setSchoolInput(school);
-                                  setShowSuggestions(false);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-blue-50 first:rounded-t-xl last:rounded-b-xl transition-colors"
-                              >
-                                {school}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <Input
+                        placeholder={getStepPlaceholder()}
+                        {...field}
+                        className="border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0"
+                        data-testid="input-school"
+                      />
                     </FormControl>
                     <FormMessage />
-                    <p className="text-xs text-gray-500">
-                      한글명으로 작성해주세요
-                    </p>
                   </FormItem>
                 )}
               />
