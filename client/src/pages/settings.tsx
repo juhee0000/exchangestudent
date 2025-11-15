@@ -153,23 +153,7 @@ export default function Settings() {
 
       <main className="max-w-md mx-auto p-4 space-y-6">
         
-        {/* 알림 설정 */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4 flex items-center">
-            <Bell className="w-5 h-5 mr-2" />
-            알림 설정
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="push-notifications">푸시 알림</Label>
-              <Switch
-                id="push-notifications"
-                checked={notifications.push}
-                onCheckedChange={(checked) => handleNotificationUpdate("push", checked)}
-              />
-            </div>
-          </div>
-        </Card>
+        
 
         {/* 기타 */}
         <Card className="p-4">

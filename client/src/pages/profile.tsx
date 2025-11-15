@@ -166,7 +166,7 @@ export default function Profile() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* 기본 정보 */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">기본 정보</h3>
+                  <h3 className="text-lg font-medium text-gray-900">[기본 정보]</h3>
                   <FormField
                     control={form.control}
                     name="username"
@@ -207,7 +207,7 @@ export default function Profile() {
 
                 {/* 위치 정보 */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">위치 정보</h3>
+                  <h3 className="text-lg font-medium text-gray-900">[해외 정보]</h3>
 
                   <FormField
                     control={form.control}
@@ -239,10 +239,10 @@ export default function Profile() {
                     name="school"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>해외 학교</FormLabel>
+                        <FormLabel>해외 학교명</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="학교명을 입력하세요" 
+                            placeholder="학교명을 입력하세요(한글명)" 
                             {...field}
                             className="bg-white"
                           />
@@ -253,69 +253,7 @@ export default function Profile() {
                   />
                 </div>
 
-                {/* 비밀번호 변경 */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">비밀번호 변경</h3>
-                  <p className="text-sm text-gray-600">비밀번호를 변경하려면 아래 필드를 입력하세요.</p>
-
-                  <FormField
-                    control={form.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>현재 비밀번호</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password"
-                            placeholder="현재 비밀번호를 입력하세요" 
-                            {...field}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>새 비밀번호</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password"
-                            placeholder="새 비밀번호를 입력하세요" 
-                            {...field}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>새 비밀번호 확인</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password"
-                            placeholder="새 비밀번호를 다시 입력하세요" 
-                            {...field}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
+                
                 {/* 저장 버튼 */}
                 <div className="pt-4 space-y-4">
                   <Button 
