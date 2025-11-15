@@ -18,14 +18,14 @@ type User,
 type InsertItem,
 type InsertCommunityPost,
 type InsertComment,
-messages,
-chatRooms,
 comments,
-notifications
+notifications,
+favorites,
+items
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 // --- TypeScript 타입 확장 ---
 declare global {
@@ -621,46 +621,32 @@ console.log(`🗑️ 계정 삭제 시작: ${userId}`);
 
 // Delete in correct order to avoid foreign key constraint violations
 
-// 1. Delete all messages in user's chat rooms
-const userChatRooms = await storage.getChatRooms(userId);
-for (const room of userChatRooms) {
-  await db.delete(messages).where(eq(messages.roomId, room.id));
-}
-console.log(`✅ 사용자 채팅 메시지 삭제 완료`);
-
-// 2. Delete all chat rooms where user is buyer or seller
-await db.delete(chatRooms).where(
-  or(
-    eq(chatRooms.buyerId, userId),
-    eq(chatRooms.sellerId, userId)
-  )
-);
-console.log(`✅ 사용자 채팅방 삭제 완료`);
-
-// 3. Delete all comments written by user
+// 1. Delete all comments written by user
 await db.delete(comments).where(eq(comments.authorId, userId));
 console.log(`✅ 사용자 댓글 삭제 완료`);
 
-// 4. Delete all community posts by user
+// 2. Delete all community posts by user
 const userPosts = await storage.getCommunityPostsByAuthor(userId);
 for (const post of userPosts) {
   await storage.deleteCommunityPost(post.id);
 }
 console.log(`✅ 사용자 커뮤니티 게시글 ${userPosts.length}개 삭제 완료`);
 
-// 5. Delete user's favorites
-const userFavorites = await storage.getUserFavorites(userId);
-for (const favorite of userFavorites) {
-  await storage.removeFavorite(userId, favorite.id);
-}
-console.log(`✅ 즐겨찾기 ${userFavorites.length}개 삭제 완료`);
-
-// 6. Delete user's notifications
+// 3. Delete user's notifications
 await db.delete(notifications).where(eq(notifications.userId, userId));
 console.log(`✅ 사용자 알림 삭제 완료`);
 
-// 7. Delete all user's items (now safe because chat rooms are deleted)
+// 4. Get all user's items
 const userItems = await storage.getUserItems(userId);
+console.log(`📦 사용자 아이템 ${userItems.length}개 발견`);
+
+// 5. Delete all favorites related to user's items (including favorites by other users)
+for (const item of userItems) {
+  await db.delete(favorites).where(eq(favorites.itemId, item.id));
+}
+console.log(`✅ 사용자 아이템에 대한 모든 즐겨찾기 삭제 완료`);
+
+// 6. Delete all user's items
 for (const item of userItems) {
   await storage.deleteItem(item.id);
 }
