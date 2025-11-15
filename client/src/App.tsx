@@ -16,8 +16,7 @@ import Meetings from "@/pages/meetings";
 import MyPage from "@/pages/my";
 import Profile from "@/pages/profile";
 import Login from "@/pages/auth/login";
-import EmailLogin from "@/pages/auth/email-login";
-import Register from "@/pages/auth/register";
+
 import CompleteRegistration from "@/pages/auth/complete-registration";
 import CreateItem from "@/pages/items/create";
 import EditItem from "@/pages/items/edit";
@@ -98,10 +97,8 @@ function Router() {
     <div className={isAdminPage ? "bg-gray-50 min-h-screen" : "max-w-md mx-auto bg-white min-h-screen relative"}>
       <Switch>
         <Route path="/auth/login" component={Login} />
-        <Route path="/auth/email-login" component={EmailLogin} />
-        <Route path="/auth/register" component={Register} />
-        <Route path="/register" component={Register} />
-        <Route path="/auth/complete-registration" component={CompleteRegistration} />
+       
+     
         <Route path="/" component={Home} />
         <Route path="/search" component={SearchPage} />
         <Route path="/search/:query" component={SearchResults} />

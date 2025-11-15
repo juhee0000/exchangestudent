@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import logoImage from "@assets/logo_1756706278060.png";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -121,29 +121,6 @@ export default function Login() {
               <path fill="currentColor" d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/>
             </svg>
             카카오로 시작하기
-          </Button>
-
-          {/* 이메일 로그인 버튼 */}
-          <Button 
-            onClick={() => navigate('/auth/email-login')}
-            className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium rounded-xl flex items-center justify-center gap-3"
-          >
-            <Mail className="w-6 h-6" />
-            이메일로 시작하기
-          </Button>
-        </div>
-
-        {/* 하단 텍스트 */}
-        <div className="mt-12 text-center space-y-3">
-          <p className="text-gray-500 text-sm">
-            계정이 없으신가요?
-          </p>
-          <Button
-            variant="link"
-            className="p-0 text-gray-600 text-sm underline"
-            onClick={() => navigate("/auth/register")}
-          >
-            회원가입하기
           </Button>
         </div>
       </div>
