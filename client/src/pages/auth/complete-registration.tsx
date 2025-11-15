@@ -13,56 +13,6 @@ import { COUNTRIES } from "@/lib/countries";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 
-// 학교명 약칭 → 정식명칭 매핑
-const SCHOOL_NAME_MAPPING: Record<string, string> = {
-  "서울대": "서울대학교",
-  "연세대": "연세대학교",
-  "고려대": "고려대학교",
-  "성균관대": "성균관대학교",
-  "경희대": "경희대학교",
-  "중앙대": "중앙대학교",
-  "한양대": "한양대학교",
-  "이화여대": "이화여자대학교",
-  "홍익대": "홍익대학교",
-  "건국대": "건국대학교",
-  "동국대": "동국대학교",
-  "국민대": "국민대학교",
-  "숙명여대": "숙명여자대학교",
-  "서강대": "서강대학교",
-  "카이스트": "한국과학기술원",
-  "KAIST": "한국과학기술원",
-  "포스텍": "포항공과대학교",
-  "POSTECH": "포항공과대학교",
-  "도쿄대": "도쿄대학교",
-  "교토대": "교토대학교",
-  "와세다대": "와세다대학교",
-  "게이오대": "게이오대학교",
-  "베이징대": "베이징대학교",
-  "칭화대": "칭화대학교"
-};
-
-// 학교명 정규화 함수
-const normalizeSchoolName = (input: string): string => {
-  if (!input) return "";
-  
-  // 1. 띄어쓰기와 특수문자 제거
-  let normalized = input.replace(/[\s\-_.,;:!?()[\]{}'"]/g, "");
-  
-  // 2. 약칭 → 정식명칭 변환 (대소문자 구분 없이)
-  const upperNormalized = normalized.toUpperCase();
-  for (const [key, value] of Object.entries(SCHOOL_NAME_MAPPING)) {
-    if (key.toUpperCase() === upperNormalized || key === normalized) {
-      normalized = value;
-      break;
-    }
-  }
-  
-  // 3. 한글만 남기기 (정규화 후에는 한글만 저장)
-  normalized = normalized.replace(/[^가-힣]/g, "");
-  
-  return normalized;
-};
-
 // 대학교 입력 단계별 스키마
 const schoolSchema = z.object({
   school: z.string().min(1, "학교명을 입력해주세요"),
@@ -190,9 +140,6 @@ export default function CompleteRegistration() {
 
     const submitData = finalFormData || formData;
     
-    // 학교명 정규화 처리
-    const normalizedSchool = submitData.school ? normalizeSchoolName(submitData.school) : "";
-    
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/complete-oauth-registration', {
@@ -202,7 +149,7 @@ export default function CompleteRegistration() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          school: normalizedSchool,
+          school: submitData.school || "",
           country: submitData.country || "",
         }),
       });
