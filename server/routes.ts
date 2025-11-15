@@ -369,7 +369,23 @@ authProvider: 'kakao',
 kakaoId,
 kakaoAccessToken: tokenData.access_token
 });
-
+} else {
+// 기존 사용자 - 카카오 정보 업데이트
+if (!user.kakaoId) {
+// 카카오 계정 연동
+await storage.updateUser(user.id, {
+kakaoId,
+kakaoAccessToken: tokenData.access_token,
+authProvider: user.authProvider === 'email' ? 'email,kakao' : user.authProvider + ',kakao'
+});
+} else {
+// 기존 카카오 연동 사용자 - 토큰만 업데이트
+await storage.updateUser(user.id, {
+kakaoAccessToken: tokenData.access_token
+});
+}
+// 업데이트된 사용자 정보 다시 가져오기
+user = await storage.getUser(user.id);
 }
 
 // 4. JWT 토큰 생성 및 리다이렉트
