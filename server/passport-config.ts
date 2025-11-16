@@ -50,9 +50,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       // Check if user exists with this email
       let user = await storage.getUserByEmail(email);
       
-      // Check if user was deleted
+      // 삭제된 계정인 경우 완전히 삭제하고 새로 생성
       if (user && user.status === 'deleted') {
-        return done(new Error('삭제된 계정입니다.'), null);
+        console.log('🗑️ 삭제된 계정 발견 (Google), 완전 삭제 후 새로 생성:', user.id);
+        await storage.deleteUser(user.id);
+        user = null; // 새로 생성하도록 설정
       }
       
       if (!user) {
@@ -195,6 +197,13 @@ if (process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET) {
       // Check if user exists with this email
       const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
       let user = existingUser[0] || null;
+      
+      // 삭제된 계정인 경우 완전히 삭제하고 새로 생성
+      if (user && user.status === 'deleted') {
+        console.log('🗑️ 삭제된 계정 발견 (Naver), 완전 삭제 후 새로 생성:', user.id);
+        await storage.deleteUser(user.id);
+        user = null; // 새로 생성하도록 설정
+      }
       
       if (!user) {
         // Create new user from Naver profile - needs additional info

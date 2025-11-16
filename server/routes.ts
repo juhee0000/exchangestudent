@@ -350,8 +350,11 @@ throw new Error('카카오 계정에서 이메일을 가져올 수 없습니다.
 // 3. 사용자 처리
 let user = await storage.getUserByEmail(email);
 
+// 삭제된 계정인 경우 완전히 삭제하고 새로 생성
 if (user && user.status === 'deleted') {
-return res.redirect('/auth/login?error=deleted_account&message=' + encodeURIComponent('삭제된 계정입니다. 카카오 연동을 해제하고 다시 시도해주세요.'));
+console.log('🗑️ 삭제된 계정 발견, 완전 삭제 후 새로 생성:', user.id);
+await storage.deleteUser(user.id);
+user = null; // 새로 생성하도록 설정
 }
 
 if (!user) {
