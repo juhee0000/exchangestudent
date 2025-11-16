@@ -2,19 +2,6 @@
 
 This is a modern mobile-first marketplace web application designed for students to buy and sell items within their school communities. The platform combines e-commerce functionality with social features, allowing users to browse items, engage in real-time chat, and participate in community discussions. Built as a Progressive Web App (PWA) with a mobile-first design approach, it targets the student market with location-based filtering by school and country.
 
-## Recent Changes (November 2025)
-- **Nickname Registration System (November 16, 2025)**:
-  - Added nickname field to user schema for personalized user identification
-  - Updated registration flow: nickname → country → school (3-step process)
-  - Modified welcome message to display user's nickname after first step
-  - Added "한글명으로 입력해주세요" guidance text below school input field
-- **Settings Page Updates (November 16, 2025)**:
-  - Replaced logout button with account deletion button in settings page
-  - Increased spacing in settings "기타" section for better readability
-  - Implemented contact form with dialog interface and completion popup
-  - Contact form currently logs to server console (email integration pending)
-  - Note: Email sending to park36470805@gmail.com requires integration setup (Resend/SendGrid/Gmail)
-
 ## Recent Changes (January 2025)
 - Added comprehensive admin dashboard with separate authentication flow
 - Implemented scroll position restoration for improved navigation experience

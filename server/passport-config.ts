@@ -65,7 +65,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           email,
           password: '', // OAuth users don't need password
           fullName: profile.displayName || username,
-          nickname: profile.displayName || username,
           school: '',
           country: '',
           profileImage: profile.photos?.[0]?.value || null,
@@ -139,7 +138,6 @@ if (process.env.KAKAO_CLIENT_ID && process.env.KAKAO_CLIENT_SECRET) {
             email,
             password: '', // OAuth users don't need password
             fullName: nickname || username,
-            nickname: nickname || username,
             school: '',
             country: '',
             profileImage: profile._json?.properties?.profile_image || null,
@@ -225,7 +223,6 @@ if (process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET) {
             email,
             password: '', // OAuth users don't need password
             fullName: nickname || username,
-            nickname: nickname || username,
             school: '',
             country: '',
             profileImage: profile.profile_image || null,
