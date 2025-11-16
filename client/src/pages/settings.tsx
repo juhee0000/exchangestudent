@@ -158,7 +158,7 @@ export default function Settings() {
         {/* 기타 */}
         <Card className="p-4">
           <h3 className="font-semibold mb-4">기타</h3>
-          <div className="space-y-3">
+          <div className="space-y-6">
             <Button variant="outline" className="w-full justify-start">
               문의하기
               <ChevronRight className="w-4 h-4 ml-auto" />
@@ -186,46 +186,36 @@ export default function Settings() {
         <Card className="p-4">
           <h3 className="font-semibold mb-4">계정 관리</h3>
           <div className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-red-600 hover:text-red-700"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              로그아웃
-            </Button>
-            
-            {/* 작고 잘 안 보이는 회원탈퇴 링크 */}
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <button 
-                    className="text-xs text-gray-400 hover:text-gray-500 underline"
-                    data-testid="button-delete-account"
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-red-600 hover:text-red-700"
+                  data-testid="button-delete-account"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  회원탈퇴
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
+                    등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    className="bg-red-500 hover:bg-red-600"
                   >
                     회원탈퇴
-                  </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
-                      등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      className="bg-red-500 hover:bg-red-600"
-                    >
-                      회원탈퇴
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </Card>
       </main>
