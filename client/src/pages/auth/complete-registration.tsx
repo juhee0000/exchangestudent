@@ -13,11 +13,6 @@ import { COUNTRIES } from "@/lib/countries";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 
-// 닉네임 입력 단계별 스키마
-const nicknameSchema = z.object({
-  nickname: z.string().min(1, "닉네임을 입력해주세요"),
-});
-
 // 대학교 입력 단계별 스키마
 const schoolSchema = z.object({
   school: z.string().min(1, "학교명을 입력해주세요"),
@@ -28,31 +23,26 @@ const countrySchema = z.object({
   country: z.string().min(1, "국가를 선택해주세요"),
 });
 
-type RegisterStep = 'nickname' | 'school' | 'country';
+type RegisterStep = 'school' | 'country';
 
 interface FormData {
-  nickname?: string;
   school?: string;
   country?: string;
 }
 
 export default function CompleteRegistration() {
-  const [currentStep, setCurrentStep] = useState<RegisterStep>('nickname');
+  const [currentStep, setCurrentStep] = useState<RegisterStep>('country');
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { login, user } = useAuth();
   
-  // 닉네임 입력을 위한 별도 state
-  const [nicknameInput, setNicknameInput] = useState("");
-  const [nicknameError, setNicknameError] = useState("");
-  
   // 학교명 입력을 위한 별도 state
   const [schoolInput, setSchoolInput] = useState("");
   const [schoolError, setSchoolError] = useState("");
 
-  const stepOrder: RegisterStep[] = ['nickname', 'country', 'school'];
+  const stepOrder: RegisterStep[] = ['country', 'school'];
   const currentStepIndex = stepOrder.indexOf(currentStep);
   const isLastStep = currentStepIndex === stepOrder.length - 1;
 
@@ -88,16 +78,6 @@ export default function CompleteRegistration() {
 
   const handleNext = async (data?: any) => {
     const newData = { ...formData };
-    
-    // 닉네임 단계 처리
-    if (currentStep === 'nickname') {
-      if (!nicknameInput.trim()) {
-        setNicknameError("닉네임을 입력해주세요");
-        return;
-      }
-      newData.nickname = nicknameInput.trim();
-      setNicknameError("");
-    }
     
     // 학교명 단계 처리
     if (currentStep === 'school') {
@@ -152,7 +132,6 @@ export default function CompleteRegistration() {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          nickname: submitData.nickname || "",
           school: submitData.school || "",
           country: submitData.country || "",
         }),
@@ -182,7 +161,6 @@ export default function CompleteRegistration() {
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'nickname': return '닉네임 입력';
       case 'school': return '해외 교환학교 선택';
       case 'country': return '국가 선택';
       default: return '';
@@ -191,7 +169,6 @@ export default function CompleteRegistration() {
 
   const getStepLabel = () => {
     switch (currentStep) {
-      case 'nickname': return '닉네임';
       case 'school': return '학교/대학교';
       case 'country': return '거주 국가';
       default: return '';
@@ -200,7 +177,6 @@ export default function CompleteRegistration() {
 
   const getStepPlaceholder = () => {
     switch (currentStep) {
-      case 'nickname': return '닉네임을 입력하세요';
       case 'school': return '예: 서울대학교, Seoul National University';
       case 'country': return '국가를 선택하세요';
       default: return '';
@@ -209,31 +185,6 @@ export default function CompleteRegistration() {
 
   const getCurrentForm = () => {
     switch (currentStep) {
-      case 'nickname':
-        return (
-          <div className="space-y-8">
-            <div className="space-y-2">
-              <label className="text-sm text-blue-500 font-medium">
-                {getStepLabel()}
-              </label>
-              <input
-                type="text"
-                placeholder={getStepPlaceholder()}
-                value={nicknameInput}
-                onChange={(e) => {
-                  setNicknameInput(e.target.value);
-                  if (nicknameError) setNicknameError("");
-                }}
-                className="w-full border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0 focus:outline-none"
-                data-testid="input-nickname"
-              />
-              {nicknameError && (
-                <p className="text-sm text-red-500">{nicknameError}</p>
-              )}
-            </div>
-          </div>
-        );
-
       case 'school':
         return (
           <div className="space-y-8">
@@ -255,7 +206,6 @@ export default function CompleteRegistration() {
               {schoolError && (
                 <p className="text-sm text-red-500">{schoolError}</p>
               )}
-              <p className="text-sm text-gray-500">한글명으로 입력해주세요</p>
             </div>
           </div>
         );
@@ -338,13 +288,8 @@ export default function CompleteRegistration() {
       <div className="px-6 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            환영합니다{formData.nickname ? ` ${formData.nickname}님!` : ', ' + user.fullName + '님!'}
+            환영합니다, {user.fullName}님!
           </h2>
-          {currentStep === 'nickname' && (
-            <p className="text-gray-600">
-              닉네임을 입력해주세요
-            </p>
-          )}
           {currentStep === 'country' && (
             <p className="text-gray-600">
               어느 나라로 교환학생을 가시나요?
@@ -365,7 +310,7 @@ export default function CompleteRegistration() {
             type="button"
             disabled={isLoading}
             onClick={() => {
-              if (currentStep === 'nickname' || currentStep === 'school') {
+              if (currentStep === 'school') {
                 handleNext();
               } else {
                 countryForm.handleSubmit(handleNext)();

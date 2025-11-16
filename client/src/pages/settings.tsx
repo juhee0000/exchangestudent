@@ -39,15 +39,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -65,9 +56,6 @@ export default function Settings() {
   });
   const [language, setLanguage] = useState("ko");
   const [showProfileEdit, setShowProfileEdit] = useState(false);
-  const [showContactForm, setShowContactForm] = useState(false);
-  const [contactMessage, setContactMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.username || "",
     email: user?.email || "",
@@ -150,42 +138,6 @@ export default function Settings() {
     }
   };
 
-  const handleContactSubmit = async () => {
-    if (!contactMessage.trim()) {
-      toast({
-        title: "문의 내용을 입력해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await apiRequest("POST", "/api/contact", { 
-        message: contactMessage,
-        userEmail: user?.email || "anonymous",
-        userName: user?.username || "익명"
-      });
-      
-      setContactMessage("");
-      setShowContactForm(false);
-      
-      toast({
-        title: "문의가 접수되었습니다",
-        description: "빠른 시일 내에 답변 드리겠습니다.",
-        variant: "default",
-      });
-    } catch (error) {
-      toast({
-        title: "문의 전송 실패",
-        description: "다시 시도해주세요.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white border-b border-gray-200 p-4">
@@ -206,49 +158,11 @@ export default function Settings() {
         {/* 기타 */}
         <Card className="p-4">
           <h3 className="font-semibold mb-4">기타</h3>
-          <div className="space-y-6">
-            <Dialog open={showContactForm} onOpenChange={setShowContactForm}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  문의하기
-                  <ChevronRight className="w-4 h-4 ml-auto" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>문의하기</DialogTitle>
-                  <DialogDescription>
-                    문의 내용을 작성해주시면 빠르게 답변 드리겠습니다.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Textarea
-                    placeholder="문의 내용을 입력해주세요"
-                    value={contactMessage}
-                    onChange={(e) => setContactMessage(e.target.value)}
-                    rows={6}
-                    className="resize-none"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowContactForm(false);
-                      setContactMessage("");
-                    }}
-                  >
-                    취소
-                  </Button>
-                  <Button
-                    onClick={handleContactSubmit}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "전송 중..." : "문의 전송"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+          <div className="space-y-3">
+            <Button variant="outline" className="w-full justify-start">
+              문의하기
+              <ChevronRight className="w-4 h-4 ml-auto" />
+            </Button>
             
             {/* 이용약관 */}
             <Link to="/terms">
@@ -272,36 +186,46 @@ export default function Settings() {
         <Card className="p-4">
           <h3 className="font-semibold mb-4">계정 관리</h3>
           <div className="space-y-3">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-red-600 hover:text-red-700"
-                  data-testid="button-delete-account"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  회원탈퇴
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
-                    등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDeleteAccount}
-                    className="bg-red-500 hover:bg-red-600"
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-red-600 hover:text-red-700"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              로그아웃
+            </Button>
+            
+            {/* 작고 잘 안 보이는 회원탈퇴 링크 */}
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button 
+                    className="text-xs text-gray-400 hover:text-gray-500 underline"
+                    data-testid="button-delete-account"
                   >
                     회원탈퇴
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
+                      등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      회원탈퇴
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </Card>
       </main>

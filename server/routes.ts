@@ -555,15 +555,14 @@ app.get('/api/auth/me', authenticateToken, (req, res) => res.json({ user: req.us
 // OAuth Registration Completion
 app.post('/api/auth/complete-oauth-registration', authenticateToken, async (req, res) => {
 try {
-const { nickname, school, country } = req.body;
+const { school, country } = req.body;
 
-if (!nickname || !school || !country) {
-return res.status(400).json({ error: '닉네임, 학교, 국가를 모두 입력해주세요.' });
+if (!school || !country) {
+return res.status(400).json({ error: '학교와 국가를 모두 입력해주세요.' });
 }
 
 // Update user with additional info
 const updatedUser = await storage.updateUser(req.user!.id, {
-nickname,
 school,
 country
 });
@@ -1398,35 +1397,6 @@ res.json(result);
 } catch (error) {
 console.log('Database error in /api/notifications/unread-count:', (error as Error).message);
 res.json({ count: 0 }); // Return 0 if database is not available
-}
-});
-
-// Contact Form - 문의하기
-app.post('/api/contact', authenticateToken, async (req, res) => {
-try {
-const { message, userEmail, userName } = req.body;
-
-if (!message || !message.trim()) {
-return res.status(400).json({ error: '문의 내용을 입력해주세요.' });
-}
-
-// 문의 내용 로깅 (나중에 이메일 발송으로 변경 예정)
-console.log('📧 문의 접수:', {
-from: `${userName} <${userEmail}>`,
-message: message.trim(),
-timestamp: new Date().toISOString()
-});
-
-// TODO: 이메일 발송 기능 추가 (Resend 또는 다른 이메일 서비스 사용)
-// 목적지: park36470805@gmail.com
-
-res.json({ 
-success: true,
-message: '문의가 접수되었습니다.' 
-});
-} catch (error) {
-console.error('Contact form error:', error);
-res.status(500).json({ error: '문의 전송에 실패했습니다.' });
 }
 });
 
