@@ -188,7 +188,12 @@ export const insertReportSchema = createInsertSchema(reports);
 // Types inferred from Zod schemas
 export type User = z.infer<typeof selectUserSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Item = z.infer<typeof selectItemSchema> & { seller?: User };
+
+// Safe author/seller type (without sensitive data)
+export type SafeAuthor = Pick<User, 'username' | 'fullName' | 'status'>;
+
+export type Item = z.infer<typeof selectItemSchema>;
+export type ItemWithSeller = Item & { seller?: SafeAuthor };
 export type InsertItem = z.infer<typeof insertItemSchema>;
 export type Favorite = z.infer<typeof selectFavoriteSchema> & { item?: Item };
 export type ChatRoom = z.infer<typeof selectChatRoomSchema>;
@@ -196,8 +201,14 @@ export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
 export type Message = z.infer<typeof selectMessageSchema>;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type CommunityPost = z.infer<typeof selectCommunityPostSchema>;
+export type CommunityPostWithAuthor = CommunityPost & { author?: SafeAuthor };
 export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
 export type Comment = z.infer<typeof selectCommentSchema>;
+export type CommentWithAuthor = Comment & {
+  authorUsername?: string | null;
+  authorFullName?: string | null;
+  authorStatus?: string | null;
+};
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Notification = z.infer<typeof selectNotificationSchema>;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;

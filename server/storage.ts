@@ -14,15 +14,19 @@ import {
   reports,
   type User, 
   type InsertUser,
-  type Item, 
+  type Item,
+  type ItemWithSeller,
+  type SafeAuthor,
   type InsertItem,
   type ChatRoom, 
   type InsertChatRoom,
   type Message, 
   type InsertMessage,
-  type CommunityPost, 
+  type CommunityPost,
+  type CommunityPostWithAuthor,
   type InsertCommunityPost,
-  type Comment, 
+  type Comment,
+  type CommentWithAuthor,
   type InsertComment,
   type Favorite, 
   type InsertFavorite,
@@ -43,7 +47,7 @@ export interface IStorage {
 
   // Item methods
   getItems(): Promise<Item[]>;
-  getItem(id: string): Promise<(Item & { seller?: User }) | undefined>;
+  getItem(id: string): Promise<ItemWithSeller | undefined>;
   createItem(insertItem: InsertItem): Promise<Item>;
   updateItem(id: string, updates: Partial<InsertItem>): Promise<Item | undefined>;
   updateItemStatus(id: string, status: string): Promise<Item | undefined>;
@@ -71,18 +75,18 @@ export interface IStorage {
   findOrCreateChatRoom(itemId: string, buyerId: string, sellerId: string): Promise<ChatRoom>;
 
   // Community methods
-  getCommunityPosts(): Promise<CommunityPost[]>;
-  getCommunityPost(id: string): Promise<CommunityPost | undefined>;
+  getCommunityPosts(): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPost(id: string): Promise<CommunityPostWithAuthor | undefined>;
   createCommunityPost(insertPost: InsertCommunityPost): Promise<CommunityPost>;
   updateCommunityPost(id: string, updateData: Partial<InsertCommunityPost>): Promise<CommunityPost | undefined>;
   deleteCommunityPost(postId: string): Promise<boolean>;
-  getCommunityPostsByCategory(category: string): Promise<CommunityPost[]>;
-  getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]>;
-  getCommunityPostsBySchool(school: string): Promise<CommunityPost[]>;
-  getCommunityPostsByCountry(country: string): Promise<CommunityPost[]>;
-  getCommunityPostsByAuthor(authorId: string): Promise<CommunityPost[]>;
-  getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]>;
-  getPostComments(postId: string): Promise<Comment[]>;
+  getCommunityPostsByCategory(category: string): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPostsBySchool(school: string): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPostsByCountry(country: string): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPostsByAuthor(authorId: string): Promise<CommunityPostWithAuthor[]>;
+  getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPostWithAuthor[]>;
+  getPostComments(postId: string): Promise<CommentWithAuthor[]>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   deleteComment(commentId: string, userId: string): Promise<boolean>;
 
@@ -235,11 +239,15 @@ export class DatabaseStorage implements IStorage {
     return await query.orderBy(desc(items.createdAt));
   }
 
-  async getItem(id: string): Promise<(Item & { seller?: User }) | undefined> {
+  async getItem(id: string): Promise<ItemWithSeller | undefined> {
     const [result] = await db
       .select({
         item: items,
-        seller: users,
+        seller: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
       })
       .from(items)
       .leftJoin(users, eq(items.sellerId, users.id))
@@ -249,7 +257,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...result.item,
-      seller: result.seller || undefined,
+      seller: result.seller.status !== null ? result.seller : undefined,
     };
   }
 
@@ -468,13 +476,46 @@ export class DatabaseStorage implements IStorage {
     return await this.createChatRoom({ itemId, buyerId, sellerId });
   }
 
-  async getCommunityPosts(): Promise<CommunityPost[]> {
-    return await db.select().from(communityPosts).orderBy(desc(communityPosts.createdAt));
+  async getCommunityPosts(): Promise<CommunityPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
+      .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPost(id: string): Promise<CommunityPost | undefined> {
-    const [post] = await db.select().from(communityPosts).where(eq(communityPosts.id, id));
-    return post || undefined;
+  async getCommunityPost(id: string): Promise<CommunityPostWithAuthor | undefined> {
+    const [result] = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
+      .where(eq(communityPosts.id, id));
+
+    if (!result) return undefined;
+
+    return {
+      ...result.post,
+      author: result.author.status !== null ? result.author : undefined,
+    };
   }
 
   async createCommunityPost(insertPost: InsertCommunityPost): Promise<CommunityPost> {
@@ -515,13 +556,28 @@ export class DatabaseStorage implements IStorage {
   }
   }
 
-  async getCommunityPostsByCategory(category: string): Promise<CommunityPost[]> {
-    return await db.select().from(communityPosts)
+  async getCommunityPostsByCategory(category: string): Promise<CommunityPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(eq(communityPosts.category, category))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPost[]> {
+  async getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPostWithAuthor[]> {
     const whereConditions = [eq(communityPosts.category, query.category)];
 
     if (query.country) {
@@ -536,30 +592,90 @@ export class DatabaseStorage implements IStorage {
       ));
     }
 
-    return await db.select().from(communityPosts)
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(and(...whereConditions))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPostsBySchool(school: string): Promise<CommunityPost[]> {
-    return await db.select().from(communityPosts)
+  async getCommunityPostsBySchool(school: string): Promise<CommunityPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(eq(communityPosts.school, school))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPostsByCountry(country: string): Promise<CommunityPost[]> {
-    return await db.select().from(communityPosts)
+  async getCommunityPostsByCountry(country: string): Promise<CommunityPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(eq(communityPosts.country, country))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPostsByAuthor(authorId: string): Promise<CommunityPost[]> {
-    return await db.select().from(communityPosts)
+  async getCommunityPostsByAuthor(authorId: string): Promise<CommunityPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(eq(communityPosts.authorId, authorId))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
-  async getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPost[]> {
+  async getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPostWithAuthor[]> {
     const commentResults = await db
       .select({ postId: comments.postId })
       .from(comments)
@@ -570,9 +686,24 @@ export class DatabaseStorage implements IStorage {
     }
 
     const uniquePostIds = [...new Set(commentResults.map(row => row.postId))];
-    return await db.select().from(communityPosts)
+    const results = await db
+      .select({
+        post: communityPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(communityPosts)
+      .leftJoin(users, eq(communityPosts.authorId, users.id))
       .where(inArray(communityPosts.id, uniquePostIds))
       .orderBy(desc(communityPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
   }
 
   async incrementCommunityPostViews(id: string): Promise<void> {
@@ -587,7 +718,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(communityPosts.id, id));
   }
 
-  async getPostComments(postId: string): Promise<Comment[]> {
+  async getPostComments(postId: string): Promise<CommentWithAuthor[]> {
     const results = await db
       .select({
         id: comments.id,
@@ -597,13 +728,14 @@ export class DatabaseStorage implements IStorage {
         createdAt: comments.createdAt,
         authorUsername: users.username,
         authorFullName: users.fullName,
+        authorStatus: users.status,
       })
       .from(comments)
       .leftJoin(users, eq(comments.authorId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(comments.createdAt);
 
-    return results as any;
+    return results;
   }
 
   async createComment(comment: InsertComment & { authorId: string }): Promise<Comment> {

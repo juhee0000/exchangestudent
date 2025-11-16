@@ -34,7 +34,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useExchangeRates } from "@/hooks/use-exchange";
 import { apiRequest } from "@/lib/queryClient";
-import type { Item } from "@shared/schema";
+import type { ItemWithSeller } from "@shared/schema";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ export default function ItemDetail() {
   const touchEndX = useRef<number | null>(null);
   const { toast } = useToast();
 
-  const { data: item, isLoading } = useQuery<Item>({
+  const { data: item, isLoading } = useQuery<ItemWithSeller>({
     queryKey: ["/api/items", id],
     enabled: !!id,
   });
@@ -534,7 +534,12 @@ export default function ItemDetail() {
                 <AvatarFallback>{item.seller?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium" data-testid="text-seller-username">{item.seller?.username || '판매자'}</p>
+                <p className="font-medium" data-testid="text-seller-username">
+                  {item.seller?.username || '판매자'}
+                  {item.seller?.status === 'deleted' && (
+                    <span className="text-gray-500 ml-1">(탈퇴)</span>
+                  )}
+                </p>
                 <p className="text-sm text-gray-600">{item.school}</p>
               </div>
             </div>

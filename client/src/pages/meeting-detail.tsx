@@ -26,9 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { Comment, CommunityPost } from "@shared/schema";
+import type { CommentWithAuthor, CommunityPostWithAuthor } from "@shared/schema";
 
-interface DetailedPost extends CommunityPost {}
+interface DetailedPost extends CommunityPostWithAuthor {}
 
 export default function MeetingDetail() {
   const [, params] = useRoute("/meetings/:id");
@@ -58,7 +58,7 @@ export default function MeetingDetail() {
     enabled: !!postId, 
   });
 
-  const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
+  const { data: comments = [], isLoading: commentsLoading } = useQuery<CommentWithAuthor[]>({
     queryKey: ["/api/community/posts", postId, "comments"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
@@ -321,6 +321,14 @@ export default function MeetingDetail() {
 
           {/* Title */}
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
+          {post.author && (
+            <div className="text-sm text-gray-600 mb-2">
+              작성자: {post.author.fullName || post.author.username}
+              {post.author.status === 'deleted' && (
+                <span className="text-gray-500 ml-1">(탈퇴)</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Content */}
