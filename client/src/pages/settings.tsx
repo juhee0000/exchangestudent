@@ -163,14 +163,22 @@ export default function Settings() {
               문의하기
               <ChevronRight className="w-4 h-4 ml-auto" />
             </Button>
-            <Button variant="outline" className="w-full justify-start">
-              서비스 이용약관
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              개인정보 처리방침
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
+            
+            {/* 이용약관 */}
+            <Link to="/terms">
+              <Button variant="outline" className="w-full justify-start">
+                서비스 이용약관
+                <ChevronRight className="w-4 h-4 ml-auto" />
+              </Button>
+            </Link>
+
+            {/* 개인정보처리방침 */}
+            <Link to="/privacy">
+              <Button variant="outline" className="w-full justify-start">
+                개인정보 처리방침
+                <ChevronRight className="w-4 h-4 ml-auto" />
+              </Button>
+            </Link>
           </div>
         </Card>
 

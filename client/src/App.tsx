@@ -16,7 +16,8 @@ import Meetings from "@/pages/meetings";
 import MyPage from "@/pages/my";
 import Profile from "@/pages/profile";
 import Login from "@/pages/auth/login";
-
+import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
 import CompleteRegistration from "@/pages/auth/complete-registration";
 import CreateItem from "@/pages/items/create";
 import EditItem from "@/pages/items/edit";
@@ -127,6 +128,8 @@ function Router() {
         <Route path="/items/:id" component={ItemDetail} />
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/privacy" component={PrivacyPage} />
         <Route component={NotFound} />
       </Switch>
       
