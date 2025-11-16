@@ -555,14 +555,15 @@ app.get('/api/auth/me', authenticateToken, (req, res) => res.json({ user: req.us
 // OAuth Registration Completion
 app.post('/api/auth/complete-oauth-registration', authenticateToken, async (req, res) => {
 try {
-const { school, country } = req.body;
+const { nickname, school, country } = req.body;
 
-if (!school || !country) {
-return res.status(400).json({ error: '학교와 국가를 모두 입력해주세요.' });
+if (!nickname || !school || !country) {
+return res.status(400).json({ error: '닉네임, 학교, 국가를 모두 입력해주세요.' });
 }
 
 // Update user with additional info
 const updatedUser = await storage.updateUser(req.user!.id, {
+nickname,
 school,
 country
 });
