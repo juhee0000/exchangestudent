@@ -39,6 +39,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -56,6 +65,9 @@ export default function Settings() {
   });
   const [language, setLanguage] = useState("ko");
   const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [profileData, setProfileData] = useState({
     name: user?.username || "",
     email: user?.email || "",
@@ -138,6 +150,42 @@ export default function Settings() {
     }
   };
 
+  const handleContactSubmit = async () => {
+    if (!contactMessage.trim()) {
+      toast({
+        title: "문의 내용을 입력해주세요",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await apiRequest("POST", "/api/contact", { 
+        message: contactMessage,
+        userEmail: user?.email || "anonymous",
+        userName: user?.username || "익명"
+      });
+      
+      setContactMessage("");
+      setShowContactForm(false);
+      
+      toast({
+        title: "문의가 접수되었습니다",
+        description: "빠른 시일 내에 답변 드리겠습니다.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "문의 전송 실패",
+        description: "다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white border-b border-gray-200 p-4">
@@ -159,10 +207,48 @@ export default function Settings() {
         <Card className="p-4">
           <h3 className="font-semibold mb-4">기타</h3>
           <div className="space-y-6">
-            <Button variant="outline" className="w-full justify-start">
-              문의하기
-              <ChevronRight className="w-4 h-4 ml-auto" />
-            </Button>
+            <Dialog open={showContactForm} onOpenChange={setShowContactForm}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  문의하기
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>문의하기</DialogTitle>
+                  <DialogDescription>
+                    문의 내용을 작성해주시면 빠르게 답변 드리겠습니다.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder="문의 내용을 입력해주세요"
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    rows={6}
+                    className="resize-none"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowContactForm(false);
+                      setContactMessage("");
+                    }}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    onClick={handleContactSubmit}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "전송 중..." : "문의 전송"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             
             {/* 이용약관 */}
             <Link to="/terms">
