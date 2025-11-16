@@ -1,6 +1,23 @@
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export default function Terms() {
+  const handleClose = () => {
+    window.history.back();
+  };
+
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 right-4"
+        onClick={handleClose}
+        data-testid="button-close-terms"
+      >
+        <X className="h-5 w-5" />
+      </Button>
+
       <h1 className="text-2xl font-bold mb-4">교환마켓 서비스 이용약관</h1>
       <p className="text-sm text-gray-500 mb-8">
         공고일자: 2025년 11월 15일 | 시행일자: 2025년 11월 22일
@@ -94,8 +111,8 @@ export default function Terms() {
         <li>이용자는 서비스 관련 분쟁 발생 시 고객센터를 통해 우선적으로 문의할 수 있습니다.</li>
       </ul>
 
-      <h2 className="text-xl font-semibold mt-8">제13조 (기타)</h2>
-      <ul className="list-decimal pl-6 mt-2 space-y-1">
+      <h2 className="text-xl font-semibold mt-8 mb-8">제13조 (기타)</h2>
+      <ul className="list-decimal pl-6 mt-2 space-y-1 mb-16">
         <li>본 약관에 명시되지 않은 사항은 관련 법령, 회사 정책 및 일반 상관례에 따릅니다.</li>
       </ul>
     </div>

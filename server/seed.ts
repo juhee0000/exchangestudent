@@ -60,16 +60,25 @@ export async function seedDatabase() {
       }
     ];
 
-    // Check if users already exist and skip seeding if they do
+    // Check if users already exist
     const existingUsers = await db.select().from(users);
+    let insertedUsers;
+    
     if (existingUsers.length > 0) {
       console.log('Users already exist, skipping user seeding');
-      return; // Skip seeding completely
+      insertedUsers = existingUsers.slice(0, 4); // Use first 4 existing users
+    } else {
+      // Insert users
+      insertedUsers = await db.insert(users).values(testUsers).returning();
+      console.log(`Created ${insertedUsers.length} test users`);
     }
 
-    // Insert users
-    const insertedUsers = await db.insert(users).values(testUsers).returning();
-    console.log(`Created ${insertedUsers.length} test users`);
+    // Check if items already exist
+    const existingItems = await db.select().from(items);
+    if (existingItems.length > 0) {
+      console.log('Items already exist, skipping item seeding');
+      return;
+    }
 
     // Create test items
     const testItems = [
@@ -84,6 +93,7 @@ export async function seedDatabase() {
         school: insertedUsers[0].school,
         country: insertedUsers[0].country,
         location: "Tokyo, Japan",
+        openChatLink: "https://open.kakao.com/o/test1",
         isAvailable: true,
         views: 25,
         likes: 3
@@ -99,6 +109,7 @@ export async function seedDatabase() {
         school: insertedUsers[1].school,
         country: insertedUsers[1].country,
         location: "Seoul, Korea",
+        openChatLink: "https://open.kakao.com/o/test2",
         isAvailable: true,
         views: 18,
         likes: 5
@@ -114,6 +125,7 @@ export async function seedDatabase() {
         school: insertedUsers[2].school,
         country: insertedUsers[2].country,
         location: "Beijing, China",
+        openChatLink: "https://open.kakao.com/o/test3",
         isAvailable: true,
         views: 8,
         likes: 1
@@ -129,6 +141,7 @@ export async function seedDatabase() {
         school: insertedUsers[3].school,
         country: insertedUsers[3].country,
         location: "Boston, USA",
+        openChatLink: "https://open.kakao.com/o/test4",
         isAvailable: true,
         views: 12,
         likes: 2
@@ -144,6 +157,7 @@ export async function seedDatabase() {
         school: insertedUsers[0].school,
         country: insertedUsers[0].country,
         location: "Tokyo, Japan",
+        openChatLink: "https://open.kakao.com/o/test5",
         isAvailable: true,
         views: 15,
         likes: 4
@@ -159,6 +173,7 @@ export async function seedDatabase() {
         school: insertedUsers[1].school,
         country: insertedUsers[1].country,
         location: "Seoul, Korea",
+        openChatLink: "https://open.kakao.com/o/test6",
         isAvailable: true,
         views: 22,
         likes: 6
