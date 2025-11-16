@@ -128,8 +128,8 @@ function Router() {
         <Route path="/items/:id" component={ItemDetail} />
         <Route path="/admin" component={AdminLogin} />
         <Route path="/admin/dashboard" component={AdminDashboard} />
-        <Route path="/terms" component={TermsPage} />
-        <Route path="/privacy" component={PrivacyPage} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/privacy" component={Privacy} />
         <Route component={NotFound} />
       </Switch>
       
