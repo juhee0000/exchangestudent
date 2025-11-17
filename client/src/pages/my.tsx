@@ -106,7 +106,7 @@ export default function MyPage() {
               <MenuItem
                 icon={Settings}
                 title="설정"
-                description="알림, 문의하기"
+                description="문의하기, 이용약관, 탈퇴"
                 onClick={() => navigate("/settings")}
               />
               <MenuItem
