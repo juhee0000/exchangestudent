@@ -34,9 +34,11 @@ export default function CompleteRegistration() {
   const [currentStep, setCurrentStep] = useState<RegisterStep>('country');
   const [formData, setFormData] = useState<Partial<FormData>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { login, user } = useAuth();
+  const { login } = useAuth();
   
   // 학교명 입력을 위한 별도 state
   const [schoolInput, setSchoolInput] = useState("");
@@ -53,16 +55,41 @@ export default function CompleteRegistration() {
     mode: "onChange"
   });
 
-  // Handle OAuth callback parameters
+  // Fetch user data if userData is missing (hoisted function)
+  async function fetchUserData(authToken: string) {
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (response.ok) {
+        const user = await response.json();
+        setUserData(user);
+      } else {
+        navigate('/auth/login');
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      navigate('/auth/login');
+    }
+  }
+
+  // Handle OAuth callback parameters - do NOT call login yet
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    const tokenParam = urlParams.get('token');
     const userStr = urlParams.get('user');
     
-    if (token && userStr) {
+    if (tokenParam && userStr) {
       try {
-        const userData = JSON.parse(decodeURIComponent(userStr));
-        login(token, userData);
+        const user = JSON.parse(decodeURIComponent(userStr));
+        setToken(tokenParam);
+        setUserData(user);
+        
+        // Store token for API calls but don't log in yet
+        localStorage.setItem('token', tokenParam);
         
         // Clear URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -70,11 +97,18 @@ export default function CompleteRegistration() {
         console.error('OAuth callback error:', error);
         navigate('/auth/login');
       }
-    } else if (!user) {
-      // If no OAuth data and no existing user, redirect to login
-      navigate('/auth/login');
+    } else if (!token) {
+      // Check if token exists in localStorage
+      const storedToken = localStorage.getItem('token');
+      if (!storedToken) {
+        navigate('/auth/login');
+      } else {
+        setToken(storedToken);
+        // Fetch user data from API
+        fetchUserData(storedToken);
+      }
     }
-  }, [login, navigate, user]);
+  }, [navigate]);
 
   const handleNext = async (data?: any) => {
     const newData = { ...formData };
@@ -112,12 +146,13 @@ export default function CompleteRegistration() {
   };
 
   const handleSubmit = async (finalFormData?: Partial<FormData>) => {
-    if (!user) {
+    if (!token) {
       toast({
         title: "오류",
-        description: "사용자 정보를 찾을 수 없습니다.",
+        description: "인증 정보를 찾을 수 없습니다.",
         variant: "destructive",
       });
+      navigate('/auth/login');
       return;
     }
 
@@ -129,7 +164,7 @@ export default function CompleteRegistration() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           school: submitData.school || "",
@@ -144,8 +179,8 @@ export default function CompleteRegistration() {
 
       const updatedUser = await response.json();
       
-      // Update user in auth context
-      login(localStorage.getItem('token')!, updatedUser.user);
+      // NOW call login() after successful completion
+      login(token, updatedUser.user);
       
       navigate('/');
     } catch (error: any) {
@@ -247,7 +282,7 @@ export default function CompleteRegistration() {
     }
   };
 
-  if (!user) {
+  if (!token && !userData) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -288,7 +323,7 @@ export default function CompleteRegistration() {
       <div className="px-6 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            환영합니다, {user.fullName}님!
+            환영합니다, {userData?.username}님!
           </h2>
           {currentStep === 'country' && (
             <p className="text-gray-600">

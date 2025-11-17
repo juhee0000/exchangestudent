@@ -67,21 +67,19 @@ function Router() {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
         
-        // 닉네임 설정이 필요한지 확인 (kakao_로 시작하는 경우)
-        const needsNickname = user.username && user.username.startsWith('kakao_');
-        
-        if (needsNickname) {
-          // 닉네임 설정 페이지가 아니면 리다이렉트
-          if (!location.startsWith('/auth/nickname')) {
+        // 온보딩 미완료 시 항상 닉네임 페이지부터 시작
+        if (user.onboardingComplete === false) {
+          // 닉네임 또는 complete-registration 페이지가 아니면 닉네임 페이지로 리다이렉트
+          if (!location.startsWith('/auth/nickname') && !location.startsWith('/auth/complete-registration')) {
             window.history.replaceState({}, document.title, `/auth/nickname?token=${token}&user=${encodeURIComponent(userStr)}`);
             navigate(`/auth/nickname?token=${token}&user=${encodeURIComponent(userStr)}`);
           }
-          // 닉네임 페이지에 있든 아니든, 더 이상 진행하지 않음 (login 호출 방지)
+          // 더 이상 진행하지 않음 (login 호출 방지)
           return;
         }
         
-        // 추가 정보가 필요한지 확인 (needsAdditionalInfo 플래그 또는 school/country 빈 값)
-        const needsInfo = user.needsAdditionalInfo || !user.school || !user.country || user.school === '' || user.country === '';
+        // 온보딩 완료되었지만 school/country가 비어있는 경우 (백업 체크)
+        const needsInfo = !user.school || !user.country || user.school === '' || user.country === '';
         
         if (needsInfo) {
           // Clear URL parameters and navigate to complete-registration
@@ -90,7 +88,7 @@ function Router() {
           return;
         }
         
-        // 모든 정보가 있으면 로그인 후 메인 페이지로 이동
+        // 모든 정보가 완료되었으면 로그인 후 메인 페이지로 이동
         login(token, user);
         
         // Clear URL parameters and navigate to home

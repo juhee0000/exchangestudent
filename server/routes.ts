@@ -631,10 +631,11 @@ if (!school || !country) {
 return res.status(400).json({ error: '학교와 국가를 모두 입력해주세요.' });
 }
 
-// Update user with additional info
+// Update user with additional info and mark onboarding as complete
 const updatedUser = await storage.updateUser(req.user!.id, {
 school,
-country
+country,
+onboardingComplete: true
 });
 
 res.json({ 

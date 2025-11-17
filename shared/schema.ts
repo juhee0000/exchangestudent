@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   kakaoId: text("kakao_id"),
   kakaoAccessToken: text("kakao_access_token"), // 카카오 연결 해제용 토큰
   naverId: text("naver_id"),
+  onboardingComplete: boolean("onboarding_complete").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

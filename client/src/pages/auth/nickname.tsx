@@ -30,6 +30,13 @@ export default function NicknamePage() {
         setToken(tokenParam);
         setUserData(user);
         
+        // If username is already set (not kakao_), pre-fill it and mark as available
+        if (user.username && !user.username.startsWith('kakao_')) {
+          setUsername(user.username);
+          setIsAvailable(true);
+          setCheckMessage("사용 가능한 닉네임입니다");
+        }
+        
         // Store token for API calls but don't log in yet
         localStorage.setItem('token', tokenParam);
         
@@ -113,27 +120,34 @@ export default function NicknamePage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/update-username', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ username }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '닉네임 설정에 실패했습니다.');
-      }
-
-      const data = await response.json();
+      // Check if username is already set (not changed)
+      const isUsernameAlreadySet = userData?.username && !userData.username.startsWith('kakao_') && userData.username === username;
       
-      // NOW login with the updated user (username no longer starts with kakao_)
-      login(token, data.user);
+      let updatedUser = userData;
+      
+      // Only call API if username changed or not yet set
+      if (!isUsernameAlreadySet) {
+        const response = await fetch('/api/auth/update-username', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ username }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '닉네임 설정에 실패했습니다.');
+        }
+
+        const data = await response.json();
+        updatedUser = data.user;
+      }
       
       // Navigate to complete registration with token/user params
-      const userPayload = encodeURIComponent(JSON.stringify(data.user));
+      // Do NOT call login() yet - keep onboardingComplete check active until final completion
+      const userPayload = encodeURIComponent(JSON.stringify(updatedUser));
       navigate(`/auth/complete-registration?token=${token}&user=${userPayload}`);
     } catch (error: any) {
       toast({
