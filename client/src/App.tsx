@@ -19,6 +19,7 @@ import Login from "@/pages/auth/login";
 import Terms from "@/pages/terms";
 import Privacy from "@/pages/privacy";
 import CompleteRegistration from "@/pages/auth/complete-registration";
+import NicknamePage from "@/pages/auth/nickname";
 import CreateItem from "@/pages/items/create";
 import EditItem from "@/pages/items/edit";
 import ItemDetail from "@/pages/items/detail";
@@ -66,15 +67,30 @@ function Router() {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
         
-        // 추가 정보가 필요한지 우선 확인
-        if (user.needsAdditionalInfo) {
+        // 닉네임 설정이 필요한지 확인 (kakao_로 시작하는 경우)
+        const needsNickname = user.username && user.username.startsWith('kakao_');
+        
+        if (needsNickname) {
+          // 닉네임 설정 페이지가 아니면 리다이렉트
+          if (!location.startsWith('/auth/nickname')) {
+            window.history.replaceState({}, document.title, `/auth/nickname?token=${token}&user=${encodeURIComponent(userStr)}`);
+            navigate(`/auth/nickname?token=${token}&user=${encodeURIComponent(userStr)}`);
+          }
+          // 닉네임 페이지에 있든 아니든, 더 이상 진행하지 않음 (login 호출 방지)
+          return;
+        }
+        
+        // 추가 정보가 필요한지 확인 (needsAdditionalInfo 플래그 또는 school/country 빈 값)
+        const needsInfo = user.needsAdditionalInfo || !user.school || !user.country || user.school === '' || user.country === '';
+        
+        if (needsInfo) {
           // Clear URL parameters and navigate to complete-registration
           window.history.replaceState({}, document.title, `/auth/complete-registration?token=${token}&user=${encodeURIComponent(userStr)}`);
           navigate(`/auth/complete-registration?token=${token}&user=${encodeURIComponent(userStr)}`);
           return;
         }
         
-        // needsAdditionalInfo가 false이면 로그인 후 메인 페이지로 이동
+        // 모든 정보가 있으면 로그인 후 메인 페이지로 이동
         login(token, user);
         
         // Clear URL parameters and navigate to home
@@ -90,12 +106,13 @@ function Router() {
         });
       }
     }
-  }, [login, toast, navigate]);
+  }, [login, toast, navigate, location]);
 
   return (
     <div className={isAdminPage ? "bg-gray-50 min-h-screen" : "max-w-md mx-auto bg-white min-h-screen relative"}>
       <Switch>
         <Route path="/auth/login" component={Login} />
+        <Route path="/auth/nickname" component={NicknamePage} />
         <Route path="/auth/complete-registration" component={CompleteRegistration} />
         
         <Route path="/" component={Home} />

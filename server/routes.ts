@@ -395,9 +395,13 @@ user = await storage.getUser(user.id);
 const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
 const userPayload = encodeURIComponent(JSON.stringify({ ...user, password: undefined }));
 
+// 닉네임이 kakao_로 시작하면 닉네임 설정 페이지로 리다이렉트
+const needsNickname = user.username.startsWith('kakao_');
 const needsInfo = !user.school || !user.country || user.school === '' || user.country === '';
 
-if (needsInfo) {
+if (needsNickname) {
+res.redirect(`/auth/nickname?token=${token}&user=${userPayload}`);
+} else if (needsInfo) {
 res.redirect(`/auth/complete-registration?token=${token}&user=${userPayload}`);
 } else {
 res.redirect(`/?token=${token}&user=${userPayload}`);
@@ -551,6 +555,72 @@ res.status(500).json({ error: 'Login failed. Please try again later.' });
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => res.json({ user: req.user }));
+
+// Check username availability
+app.get('/api/auth/check-username', async (req, res) => {
+  try {
+    const { username } = req.query;
+    
+    if (!username || typeof username !== 'string') {
+      return res.status(400).json({ error: '닉네임을 입력해주세요.' });
+    }
+    
+    // Validate username format: 한글, 영문, 숫자만 허용, 8자 이내
+    const usernameRegex = /^[가-힣a-zA-Z0-9]{1,8}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({ 
+        error: '닉네임은 한글, 영문, 숫자만 사용 가능하며 8자 이내여야 합니다.' 
+      });
+    }
+    
+    const existingUser = await storage.getUserByUsername(username);
+    
+    if (existingUser) {
+      return res.json({ available: false, message: '이미 사용 중인 닉네임입니다.' });
+    }
+    
+    res.json({ available: true, message: '사용 가능한 닉네임입니다.' });
+  } catch (error) {
+    console.error('Username check error:', error);
+    res.status(500).json({ error: '닉네임 확인 중 오류가 발생했습니다.' });
+  }
+});
+
+// Update username for OAuth users
+app.post('/api/auth/update-username', authenticateToken, async (req, res) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username) {
+      return res.status(400).json({ error: '닉네임을 입력해주세요.' });
+    }
+    
+    // Validate username format
+    const usernameRegex = /^[가-힣a-zA-Z0-9]{1,8}$/;
+    if (!usernameRegex.test(username)) {
+      return res.status(400).json({ 
+        error: '닉네임은 한글, 영문, 숫자만 사용 가능하며 8자 이내여야 합니다.' 
+      });
+    }
+    
+    // Check if username already exists
+    const existingUser = await storage.getUserByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: '이미 사용 중인 닉네임입니다.' });
+    }
+    
+    // Update user's username
+    const updatedUser = await storage.updateUser(req.user!.id, { username });
+    
+    res.json({ 
+      message: '닉네임이 설정되었습니다!', 
+      user: { ...updatedUser, password: undefined }
+    });
+  } catch (error) {
+    console.error('Username update error:', error);
+    res.status(500).json({ error: '닉네임 설정에 실패했습니다.' });
+  }
+});
 
 // OAuth Registration Completion
 app.post('/api/auth/complete-oauth-registration', authenticateToken, async (req, res) => {
