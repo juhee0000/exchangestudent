@@ -197,7 +197,9 @@ export default function CompleteRegistration() {
                 placeholder={getStepPlaceholder()}
                 value={schoolInput}
                 onChange={(e) => {
-                  setSchoolInput(e.target.value);
+                  // 한글만 입력 가능하도록 필터링
+                  const koreanOnly = e.target.value.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣\s]/g, '');
+                  setSchoolInput(koreanOnly);
                   if (schoolError) setSchoolError("");
                 }}
                 className="w-full border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0 focus:outline-none"
