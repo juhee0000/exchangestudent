@@ -183,7 +183,7 @@ export default function MeetingCreate() {
                   <FormLabel className={`text-base font-normal ${form.formState.errors.title ? 'text-red-600' : 'text-gray-900'}`}>모임 이름</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="26-2 000대학교 준비방"
+                      placeholder="ex)26-2 000대학교 준비방"
                       {...field} 
                       className="bg-gray-50 border-gray-300"
                     />
@@ -234,7 +234,7 @@ export default function MeetingCreate() {
                   <FormLabel className={`text-base font-normal ${form.formState.errors.content ? 'text-red-600' : 'text-gray-900'}`}>간단한 설명</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="000 대학교로 교환가시는 분들 같이 준비해요!"
+                      placeholder="ex)000 대학교로 교환가시는 분들 같이 준비해요!"
                       className="min-h-[200px] text-sm resize-none bg-gray-50 border-gray-300"
                       {...field} 
                     />
