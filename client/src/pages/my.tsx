@@ -57,11 +57,11 @@ export default function MyPage() {
           <Avatar className="w-16 h-16">
             <AvatarImage src={user.profileImage || undefined} />
             <AvatarFallback className="bg-primary text-primary-foreground text-xl">
-              {user.fullName.charAt(0)}
+              {user.username?.charAt(0) || user.fullName.charAt(0)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-xl font-semibold text-gray-900">{user.fullName}</h1>
+            <h1 className="text-xl font-semibold text-gray-900">{user.username || user.fullName}</h1>
            
             <p className="text-sm text-gray-500">{user.country} • {user.school}</p>
           </div>

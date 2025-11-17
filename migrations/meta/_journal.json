@@ -15,6 +15,13 @@
       "when": 1763355223539,
       "tag": "0001_closed_midnight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763365704471,
+      "tag": "0002_dazzling_domino",
+      "breakpoints": true
     }
   ]
 }

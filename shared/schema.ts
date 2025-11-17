@@ -89,6 +89,7 @@ export const communityPosts = pgTable("community_posts", {
 export const comments = pgTable("comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   postId: text("post_id").notNull().references(() => communityPosts.id),
+  parentCommentId: text("parent_comment_id"),
   authorId: text("author_id").notNull().references(() => users.id),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

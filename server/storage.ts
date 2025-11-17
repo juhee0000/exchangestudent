@@ -87,6 +87,7 @@ export interface IStorage {
   getCommunityPostsByAuthor(authorId: string): Promise<CommunityPostWithAuthor[]>;
   getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPostWithAuthor[]>;
   getPostComments(postId: string): Promise<CommentWithAuthor[]>;
+  getCommentById(commentId: string): Promise<Comment | undefined>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   deleteComment(commentId: string, userId: string): Promise<boolean>;
 
@@ -744,6 +745,15 @@ export class DatabaseStorage implements IStorage {
       .values(comment)
       .returning();
     return newComment;
+  }
+
+  async getCommentById(commentId: string): Promise<Comment | undefined> {
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.id, commentId))
+      .limit(1);
+    return comment;
   }
 
   // 댓글 삭제 메서드

@@ -1379,11 +1379,26 @@ try {
 const commentData = insertCommentSchema.parse({ ...req.body, postId: req.params.id, authorId: req.user!.id });
 const comment = await storage.createComment(commentData as InsertComment & { authorId: string });
 await storage.incrementCommunityPostCommentsCount(req.params.id);
+
+// 대댓글인 경우 원 댓글 작성자에게 알림
+if (req.body.parentCommentId) {
+  const parentComment = await storage.getCommentById(req.body.parentCommentId);
+  if (parentComment && parentComment.authorId !== req.user!.id) {
+    await storage.createNotification({
+      userId: parentComment.authorId,
+      type: 'new_reply',
+      content: `${req.user!.username}님이 댓글에 답글을 남겼습니다.`,
+      link: `/community/post/${req.params.id}`
+    });
+  }
+}
+
+// 게시글 작성자에게 알림 (자신의 글이 아닌 경우)
 const post = await storage.getCommunityPost(req.params.id);
 if (post && post.authorId !== req.user!.id) {
 await storage.createNotification({
 userId: post.authorId, type: 'new_comment',
-content: `${req.user!.fullName}님이 게시글에 댓글을 남겼습니다.`,
+content: `${req.user!.username}님이 게시글에 댓글을 남겼습니다.`,
 link: `/community/post/${req.params.id}`
 });
 }
@@ -1469,6 +1484,34 @@ res.json(result);
 console.log('Database error in /api/notifications/unread-count:', (error as Error).message);
 res.json({ count: 0 }); // Return 0 if database is not available
 }
+});
+
+// 알림 목록 조회
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+    const notifications = await storage.getNotifications(req.user.id);
+    res.json(notifications);
+  } catch (error) {
+    console.error('Database error in GET /api/notifications:', error);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// 알림 읽음 처리
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+    const success = await storage.markNotificationAsRead(req.params.id);
+    if (success) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Notification not found' });
+    }
+  } catch (error) {
+    console.error('Database error in PUT /api/notifications/:id/read:', error);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
 });
 
 // ... (Admin, Chat, and other routes can be added here following the same pattern)
