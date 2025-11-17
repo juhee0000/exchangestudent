@@ -733,7 +733,7 @@ export default function Register() {
           )}
           {currentStep === 'school' && (
             <p className="text-gray-600">
-              학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
+              같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
             </p>
           )}
         </div>

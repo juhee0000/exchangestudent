@@ -187,7 +187,7 @@ export default function NicknamePage() {
       <div className="px-6 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            환영합니다{userData?.fullName ? `, ${userData.fullName}님` : ''}!
+            환영합니다!
           </h2>
           <p className="text-gray-600">
             사용하실 닉네임을 정해주세요
@@ -235,9 +235,7 @@ export default function NicknamePage() {
           </div>
 
           <div className="text-xs text-gray-500 space-y-1">
-            <p>• 한글, 영문, 숫자만 사용 가능합니다</p>
-            <p>• 8자 이내로 입력해주세요</p>
-            <p>• 중복확인 후 사용 가능합니다</p>
+           
           </div>
         </div>
 
