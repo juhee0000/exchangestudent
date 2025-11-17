@@ -277,7 +277,7 @@ export default function CommunityCreate() {
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-normal text-gray-700">어느 국가와 관련된 내용인가요?</FormLabel>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.country ? 'text-red-600' : 'text-gray-700'}`}>어느 국가와 관련된 내용인가요?</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -309,6 +309,7 @@ export default function CommunityCreate() {
               name="title"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.title ? 'text-red-600' : 'text-gray-700'}`}>제목</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="제목을 입력하세요"
@@ -327,6 +328,7 @@ export default function CommunityCreate() {
               name="content"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.content ? 'text-red-600' : 'text-gray-700'}`}>내용</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="내용을 입력하세요"

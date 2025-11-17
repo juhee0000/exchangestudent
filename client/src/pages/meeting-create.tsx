@@ -180,7 +180,7 @@ export default function MeetingCreate() {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-normal text-gray-900">모임 이름</FormLabel>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.title ? 'text-red-600' : 'text-gray-900'}`}>모임 이름</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="26-2 000대학교 준비방"
@@ -231,7 +231,7 @@ export default function MeetingCreate() {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-normal text-gray-900">간단한 설명</FormLabel>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.content ? 'text-red-600' : 'text-gray-900'}`}>간단한 설명</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="000 대학교로 교환가시는 분들 같이 준비해요!"
@@ -250,7 +250,7 @@ export default function MeetingCreate() {
               name="openChatLink"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-normal text-gray-900">오픈채팅 주소</FormLabel>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.openChatLink ? 'text-red-600' : 'text-gray-900'}`}>오픈채팅 주소</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="https://open.kakao.com/o/..."
