@@ -28,7 +28,7 @@ const emailSchema = z.object({
 const nicknameSchema = z.object({
   nickname: z.string()
     .min(2, "닉네임은 2글자 이상이어야 합니다")
-    .max(8, "닉네임은 8글자 이하로 입력해주세요")
+    .max(15, "닉네임은 15글자 이하로 입력해주세요")
     .regex(/^[ㄱ-ㅎㅏ-ㅣ가-힣a-zA-Z0-9]+$/, "한글, 영문, 숫자만 사용 가능합니다"),
 });
 
@@ -491,7 +491,7 @@ export default function Register() {
                       <p className="text-sm text-green-500">사용 가능한 닉네임입니다</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      2-8글자, 한글/영문/숫자만 사용 가능. 중복 허용 불가
+                      2-15글자, 한글/영문/숫자만 사용 가능. 중복 허용 불가
                     </p>
                   </FormItem>
                 )}
@@ -623,13 +623,10 @@ export default function Register() {
                         onChange={(e) => {
                           const newValue = e.target.value;
                           
-                          // 한글만 입력 가능하도록 필터링
-                          const koreanOnly = newValue.replace(/[^ㄱ-ㅎㅏ-ㅣ가-힣\s]/g, '');
-                          
                           // === 학교 입력값 처리 ===
                           try {
-                            field.onChange(koreanOnly);
-                            schoolForm.setValue('school', koreanOnly, { 
+                            field.onChange(newValue);
+                            schoolForm.setValue('school', newValue, { 
                               shouldValidate: true,
                               shouldDirty: true,
                               shouldTouch: true 
