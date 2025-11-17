@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Eye, Heart } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -252,10 +252,6 @@ export default function MyItems() {
                           <span className="flex items-center">
                             <Eye className="w-3 h-3 mr-1" />
                             {item.views}
-                          </span>
-                          <span className="flex items-center">
-                            <Heart className="w-3 h-3 mr-1" />
-                            {item.likes}
                           </span>
                         </div>
                       </div>

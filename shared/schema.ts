@@ -45,7 +45,6 @@ export const items = pgTable("items", {
   status: text("status").default("거래가능").notNull(),
   isAvailable: boolean("is_available").default(true).notNull(),
   views: integer("views").default(0).notNull(),
-  likes: integer("likes").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -80,7 +79,6 @@ export const communityPosts = pgTable("community_posts", {
   school: text("school").notNull(),
   country: text("country").notNull(),
   images: text("images").array().notNull().default(sql`'{}'::text[]`),
-  likes: integer("likes").default(0).notNull(),
   views: integer("views").default(0).notNull(),
   commentsCount: integer("comments_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -93,13 +91,6 @@ export const comments = pgTable("comments", {
   authorId: text("author_id").notNull().references(() => users.id),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const favorites = pgTable("favorites", {
-    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-    userId: text("user_id").notNull().references(() => users.id),
-    itemId: text("item_id").notNull().references(() => items.id),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const notifications = pgTable("notifications", {
@@ -163,8 +154,7 @@ export const insertItemSchema = z.object({
   ]).optional().nullable(),
   status: z.string().optional(),
   isAvailable: z.boolean().optional(),
-  views: z.number().optional(),
-  likes: z.number().optional()
+  views: z.number().optional()
 });
 export const insertCommunityPostSchema = createInsertSchema(communityPosts);
 export const insertCommentSchema = createInsertSchema(comments);
@@ -172,7 +162,6 @@ export const insertCommentSchema = createInsertSchema(comments);
 // Select Schemas for types
 export const selectUserSchema = createSelectSchema(users);
 export const selectItemSchema = createSelectSchema(items);
-export const selectFavoriteSchema = createSelectSchema(favorites);
 export const selectChatRoomSchema = createSelectSchema(chatRooms);
 export const selectMessageSchema = createSelectSchema(messages);
 export const selectCommunityPostSchema = createSelectSchema(communityPosts);
@@ -183,7 +172,6 @@ export const selectReportSchema = createSelectSchema(reports);
 // Insert Schemas for additional types
 export const insertChatRoomSchema = createInsertSchema(chatRooms);
 export const insertMessageSchema = createInsertSchema(messages);
-export const insertFavoriteSchema = createInsertSchema(favorites);
 export const insertNotificationSchema = createInsertSchema(notifications);
 export const insertReportSchema = createInsertSchema(reports);
 
@@ -197,7 +185,6 @@ export type SafeAuthor = Pick<User, 'username' | 'fullName' | 'status'>;
 export type Item = z.infer<typeof selectItemSchema>;
 export type ItemWithSeller = Item & { seller?: SafeAuthor };
 export type InsertItem = z.infer<typeof insertItemSchema>;
-export type Favorite = z.infer<typeof selectFavoriteSchema> & { item?: Item };
 export type ChatRoom = z.infer<typeof selectChatRoomSchema>;
 export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
 export type Message = z.infer<typeof selectMessageSchema>;
@@ -216,7 +203,6 @@ export type Notification = z.infer<typeof selectNotificationSchema>;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Report = z.infer<typeof selectReportSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
-export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 
 // Auth schemas
 export const loginSchema = z.object({

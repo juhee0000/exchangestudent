@@ -46,6 +46,14 @@ This is a modern mobile-first marketplace web application designed for students 
   - Streamlined MY page by removing favorites menu option
   - Removed heart/like button from item detail bottom action bar
   - Deleted favorites-related pages (/favorites, /my/favorites) and hooks (use-favorites)
+- **Complete Removal of Favorites/Likes System (November 17, 2025)**:
+  - Removed favorites table from database schema completely
+  - Dropped likes field from items and communityPosts tables
+  - Deleted all favorites-related API endpoints (GET/POST/DELETE /api/favorites, POST /api/items/:id/toggle-like)
+  - Removed all favorites-related methods from storage layer (getUserFavorites, addFavorite, removeFavorite, isFavorite, toggleItemLike)
+  - Cleaned up all client-side code referencing likes field
+  - Applied database migration to remove deprecated columns and tables
+  - Service optimization: reduced code complexity and database storage overhead
 
 # User Preferences
 
@@ -63,7 +71,7 @@ The server implements a REST API architecture using Express.js with TypeScript. 
 The system uses JWT (JSON Web Tokens) for stateless authentication with bcrypt for password hashing. Authentication state is managed client-side through React Context with tokens stored in localStorage. Protected routes require valid JWT tokens passed via Authorization headers. The authentication flow supports both login and registration with user session persistence.
 
 ## Data Storage Strategy
-The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations and migrations. The database schema supports users, items, chat rooms, messages, community posts, comments, and favorites with proper foreign key relationships. Neon Database is used as the PostgreSQL provider for serverless database hosting.
+The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations and migrations. The database schema supports users, items, chat rooms, messages, community posts, comments, notifications, and reports with proper foreign key relationships. Neon Database is used as the PostgreSQL provider for serverless database hosting.
 
 ## File Upload & Storage
 File uploads are handled through Uppy.js on the frontend with support for drag-and-drop, progress tracking, and multiple file selection. The backend integrates with Google Cloud Storage for scalable file storage with AWS S3 compatibility as a fallback option. Images are stored as arrays in the database with cloud storage URLs.

@@ -18,7 +18,6 @@ import { z } from "zod";
 const editMeetingPostSchema = insertCommunityPostSchema.omit({
   id: true,
   authorId: true,
-  likes: true,
   views: true,
   commentsCount: true,
   createdAt: true,

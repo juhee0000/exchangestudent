@@ -9,7 +9,6 @@ import {
   messages, 
   communityPosts, 
   comments, 
-  favorites,
   notifications,
   reports,
   type User, 
@@ -28,8 +27,6 @@ import {
   type Comment,
   type CommentWithAuthor,
   type InsertComment,
-  type Favorite, 
-  type InsertFavorite,
   type Notification,
   type InsertNotification,
   type Report,
@@ -91,12 +88,6 @@ export interface IStorage {
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   deleteComment(commentId: string, userId: string): Promise<boolean>;
 
-  // Favorites methods
-  getUserFavorites(userId: string): Promise<Favorite[]>;
-  addFavorite(userId: string, itemId: string): Promise<Favorite>;
-  removeFavorite(userId: string, itemId: string): Promise<boolean>;
-  isFavorite(userId: string, itemId: string): Promise<boolean>;
-
   // Report methods
   createReport(insertReport: InsertReport & { reporterId: string }): Promise<Report>;
   getUserReports(userId: string): Promise<Report[]>;
@@ -136,7 +127,6 @@ export interface IStorage {
   getAdminUsers(search?: string): Promise<User[]>;
   updateUserStatus(userId: string, status: string): Promise<void>;
   updateUser(userId: string, updates: Partial<InsertUser>): Promise<User | undefined>;
-  toggleItemLike(itemId: string, userId: string): Promise<boolean>;
   getComments(postId: string): Promise<Comment[]>;
 
   // New methods for My pages
@@ -901,19 +891,6 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async toggleItemLike(itemId: string, userId: string): Promise<boolean> {
-    // Check if already liked
-    const existingFavorite = await this.isFavorite(userId, itemId);
-
-    if (existingFavorite) {
-      await this.removeFavorite(userId, itemId);
-      return false;
-    } else {
-      await this.addFavorite(userId, itemId);
-      return true;
-    }
-  }
-
   async getComments(postId: string): Promise<Comment[]> {
     return await this.getPostComments(postId);
   }
@@ -955,61 +932,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(chatRooms.id, roomId));
 
     return result.rowCount > 0;
-  }
-
-  // Favorites operations
-  async getUserFavorites(userId: string): Promise<any[]> {
-    const favoriteItems = await db.select({
-      id: favorites.id,
-      userId: favorites.userId,
-      itemId: favorites.itemId,
-      createdAt: favorites.createdAt,
-      item: {
-        id: items.id,
-        title: items.title,
-        description: items.description,
-        price: items.price,
-        currency: items.currency,
-        images: items.images,
-        school: items.school,
-        status: items.status,
-        location: items.location,
-        createdAt: items.createdAt
-      }
-    })
-    .from(favorites)
-    .leftJoin(items, eq(favorites.itemId, items.id))
-    .where(eq(favorites.userId, userId))
-    .orderBy(desc(favorites.createdAt));
-
-    return favoriteItems;
-  }
-
-  async addFavorite(userId: string, itemId: string): Promise<any> {
-    const [favorite] = await db.insert(favorites)
-      .values({ userId, itemId })
-      .returning();
-    return favorite;
-  }
-
-  async removeFavorite(userId: string, itemId: string): Promise<boolean> {
-    const result = await db.delete(favorites)
-      .where(and(
-        eq(favorites.userId, userId),
-        eq(favorites.itemId, itemId)
-      ));
-    return result.rowCount > 0;
-  }
-
-  async isFavorite(userId: string, itemId: string): Promise<boolean> {
-    const [result] = await db.select()
-      .from(favorites)
-      .where(and(
-        eq(favorites.userId, userId),
-        eq(favorites.itemId, itemId)
-      ))
-      .limit(1);
-    return !!result;
   }
 
   // Notification methods

@@ -20,7 +20,6 @@ type InsertCommunityPost,
 type InsertComment,
 comments,
 notifications,
-favorites,
 items
 } from "@shared/schema";
 import { z } from "zod";
@@ -1197,44 +1196,7 @@ res.status(500).json({ error: 'Failed to delete chat room' });
 }
 });
 
-// Favorite & Report Routes
-app.get('/api/favorites', authenticateToken, async (req, res) => {
-try {
-res.json(await storage.getUserFavorites(req.user!.id));
-} catch (error) {
-console.error('Database error in /api/favorites:', error);
-res.status(500).json({ error: 'Failed to fetch favorites' });
-}
-});
-
-app.post('/api/favorites', authenticateToken, async (req, res) => {
-try {
-res.status(201).json(await storage.addFavorite(req.user!.id, req.body.itemId));
-} catch (error) {
-console.error('Database error in POST /api/favorites:', error);
-res.status(500).json({ error: 'Failed to add favorite' });
-}
-});
-
-app.delete('/api/favorites/:itemId', authenticateToken, async (req, res) => {
-try {
-await storage.removeFavorite(req.user!.id, req.params.itemId);
-res.status(204).send();
-} catch (error) {
-console.error('Database error in DELETE /api/favorites:', error);
-res.status(500).json({ error: 'Failed to remove favorite' });
-}
-});
-
-app.post('/api/items/:id/toggle-like', authenticateToken, async (req, res) => {
-try {
-res.json({ isLiked: await storage.toggleItemLike(req.params.id, req.user!.id) });
-} catch (error) {
-console.error('Database error in POST /api/items/:id/toggle-like:', error);
-res.status(500).json({ error: 'Failed to toggle like' });
-}
-});
-
+// Report Routes
 app.post('/api/items/:id/report', authenticateToken, async (req, res) => {
 try {
 const { reason, description } = req.body;
