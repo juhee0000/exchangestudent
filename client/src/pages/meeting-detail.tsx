@@ -319,16 +319,25 @@ export default function MeetingDetail() {
             </span>
           </div>
 
-          {/* Title */}
-          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
+          {/* Author Profile */}
           {post.author && (
-            <div className="text-sm text-gray-600 mb-2">
-              작성자: {post.author.fullName || post.author.username}
-              {post.author.status === 'deleted' && (
-                <span className="text-gray-500 ml-1">(탈퇴)</span>
-              )}
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-base font-medium text-gray-600">
+                  {post.author.username?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <span className="font-medium text-gray-900">
+                {post.author.username}
+                {post.author.status === 'deleted' && (
+                  <span className="text-gray-500 ml-1 text-sm">(탈퇴)</span>
+                )}
+              </span>
             </div>
           )}
+
+          {/* Title */}
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
         {/* Content */}
@@ -409,12 +418,11 @@ export default function MeetingDetail() {
                           <div className="flex items-center space-x-2">
                             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                               <span className="text-sm font-medium text-gray-600">
-                                {comment.authorFullName?.charAt(0)?.toUpperCase() ||
-                                 comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
+                                {comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
                               </span>
                             </div>
                             <span className="font-medium text-gray-900">
-                              {comment.authorFullName || comment.authorUsername || '알 수 없음'}
+                              {comment.authorUsername || '알 수 없음'}
                             </span>
                           </div>
                           <div className="flex items-center space-x-2">
@@ -471,8 +479,7 @@ export default function MeetingDetail() {
                 <div className="flex space-x-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-blue-600">
-                      {user.fullName?.charAt(0)?.toUpperCase() ||
-                       user.username?.charAt(0)?.toUpperCase() || 'M'}
+                      {user.username?.charAt(0)?.toUpperCase() || 'M'}
                     </span>
                   </div>
                   <div className="flex-1">

@@ -127,7 +127,7 @@ export default function ItemDetail() {
   }, [item?.id]);
 
   // 상품 상태 확인
-  const getItemStatus = (item: Item) => {
+  const getItemStatus = (item: ItemWithSeller) => {
     if (item.status === "거래완료") return "거래완료";
     if (item.status === "거래기간만료") return "거래기간만료";
     
