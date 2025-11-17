@@ -48,6 +48,7 @@ export default function CreateItem() {
   const [priceValue, setPriceValue] = useState("");
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState("");
   const [customDeliveryMethod, setCustomDeliveryMethod] = useState("");
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user } = useRequireAuth();
@@ -282,12 +283,23 @@ export default function CreateItem() {
     console.log('📋 Form valid:', form.formState.isValid);
     console.log('📋 Form errors:', form.formState.errors);
     
+    setHasAttemptedSubmit(true);
+    
     if (images.length === 0) {
       console.log('❌ 이미지 없음 - 토스트 표시');
       toast({
         variant: "destructive",
         title: "사진을 업로드해주세요",
         description: "최소 1장의 사진이 필요합니다.",
+      });
+      return;
+    }
+    
+    if (!priceValue || priceValue.trim() === "") {
+      toast({
+        variant: "destructive",
+        title: "가격을 입력해주세요",
+        description: "가격은 필수 항목입니다.",
       });
       return;
     }
@@ -350,7 +362,7 @@ export default function CreateItem() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Image Upload */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">상품 사진 <span className="text-red-500">*</span></label>
+                  <label className={`text-sm font-medium ${hasAttemptedSubmit && images.length === 0 ? 'text-red-600' : ''}`}>상품 사진 <span className="text-red-500">*</span></label>
                   
                   {/* Upload Area */}
                   {images.length === 0 ? (
@@ -535,7 +547,7 @@ export default function CreateItem() {
 
                 {/* Price with Currency Selection */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">가격 <span className="text-red-500">*</span></label>
+                  <label className={`text-sm font-medium ${hasAttemptedSubmit && (!priceValue || priceValue.trim() === '') ? 'text-red-600' : ''}`}>가격 <span className="text-red-500">*</span></label>
                   
                   {/* Original Currency Price */}
                   <div className="flex gap-2">
