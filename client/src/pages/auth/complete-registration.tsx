@@ -196,7 +196,7 @@ export default function CompleteRegistration() {
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 'school': return '해외 교환학교 선택';
+      case 'school': return '해외 교환학교 입력';
       case 'country': return '국가 선택';
       default: return '';
     }
@@ -204,7 +204,7 @@ export default function CompleteRegistration() {
 
   const getStepLabel = () => {
     switch (currentStep) {
-      case 'school': return '학교/대학교';
+      case 'school': return '해외 대학명';
       case 'country': return '거주 국가';
       default: return '';
     }
@@ -212,7 +212,7 @@ export default function CompleteRegistration() {
 
   const getStepPlaceholder = () => {
     switch (currentStep) {
-      case 'school': return '예: 서울대학교, Seoul National University';
+      case 'school': return '예: 쾰른대학교, 뮌헨대학교';
       case 'country': return '국가를 선택하세요';
       default: return '';
     }
