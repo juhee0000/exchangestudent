@@ -212,7 +212,7 @@ export default function CompleteRegistration() {
 
   const getStepPlaceholder = () => {
     switch (currentStep) {
-      case 'school': return '예: 쾰른대학교, 뮌헨대학교';
+      case 'school': return '예: 런던대학교, 뮌헨대학교';
       case 'country': return '국가를 선택하세요';
       default: return '';
     }
