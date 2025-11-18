@@ -329,10 +329,7 @@ export default function MeetingDetail() {
               </div>
               <div>
                 <div className="text-xs font-medium text-gray-900">
-                  {post.author.username}
-                  {post.author.status === 'deleted' && (
-                    <span className="text-gray-500 ml-1 text-xs">(탈퇴)</span>
-                  )}
+                  {post.author.status === 'deleted' ? '(탈퇴한 사용자)' : post.author.username}
                 </div>
                 <div className="text-xs text-gray-500">
                   {new Date(post.createdAt).toLocaleDateString('ko-KR')}
@@ -427,7 +424,7 @@ export default function MeetingDetail() {
                               </span>
                             </div>
                             <span className="text-sm font-medium text-gray-900">
-                              {comment.authorUsername || '알 수 없음'}
+                              {comment.authorStatus === 'deleted' ? '(탈퇴한 사용자)' : (comment.authorUsername || '알 수 없음')}
                             </span>
                           </div>
                           <div className="flex items-center space-x-2">
