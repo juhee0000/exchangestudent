@@ -272,15 +272,6 @@ export default function CommunityDetail() {
       <div className="p-4 pb-20">
         {/* Post Header */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
-              {post.country}
-            </div>
-            <span className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
-            </span>
-          </div>
-
           {/* Author Profile */}
           {post.author && (
             <div className="flex items-center space-x-2 mb-3">
@@ -299,6 +290,15 @@ export default function CommunityDetail() {
               </div>
             </div>
           )}
+
+          <div className="flex items-center justify-between mb-3">
+            <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
+              {post.country}
+            </div>
+            <span className="text-sm text-gray-500">
+              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+            </span>
+          </div>
 
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
