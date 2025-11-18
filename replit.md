@@ -63,9 +63,11 @@ This is a modern mobile-first marketplace web application designed for students 
   - Comment sections: reduced avatar sizes in comments and input area (w-8 h-8 → w-6 h-6)
   - Overall improvement: cleaner, more compact UI optimized for mobile viewing
 - **Account Deletion System (November 18, 2025)**:
-  - Implemented complete account deletion: all user data is permanently removed upon withdrawal
+  - Implemented complete account deletion with cascade delete: all user data is permanently removed upon withdrawal
+  - Fixed deletion bug: properly deletes all dependent data (notifications, reports, favorites, messages, chat rooms, comments, posts, items) before deleting user
   - Users who withdraw and re-register via OAuth are treated as new users (must complete signup flow again)
   - OAuth accounts (Kakao, Google, Naver) that were deleted are automatically purged and recreated as new accounts
+  - Added error handling and user cache clearing for reliable deletion
   - Notification icon removed from header UI for cleaner interface
   - Contact feature: Added mailto link to 문의하기 button directing to park36470805@gmail.com
   - Enhanced error logging for Kakao OAuth to improve debugging
