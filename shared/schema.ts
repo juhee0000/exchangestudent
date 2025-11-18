@@ -120,6 +120,16 @@ export const exchangeRates = pgTable("exchange_rates", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const inquiries = pgTable("inquiries", {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: text("user_id").references(() => users.id),
+    email: text("email").notNull(),
+    subject: text("subject").notNull(),
+    content: text("content").notNull(),
+    status: text("status").default("pending").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 
 // Zod Schemas for validation
 export const insertUserSchema = createInsertSchema(users);
@@ -168,12 +178,14 @@ export const selectCommunityPostSchema = createSelectSchema(communityPosts);
 export const selectCommentSchema = createSelectSchema(comments);
 export const selectNotificationSchema = createSelectSchema(notifications);
 export const selectReportSchema = createSelectSchema(reports);
+export const selectInquirySchema = createSelectSchema(inquiries);
 
 // Insert Schemas for additional types
 export const insertChatRoomSchema = createInsertSchema(chatRooms);
 export const insertMessageSchema = createInsertSchema(messages);
 export const insertNotificationSchema = createInsertSchema(notifications);
 export const insertReportSchema = createInsertSchema(reports);
+export const insertInquirySchema = createInsertSchema(inquiries).omit({ id: true, createdAt: true });
 
 // Types inferred from Zod schemas
 export type User = z.infer<typeof selectUserSchema>;
@@ -203,6 +215,9 @@ export type Notification = z.infer<typeof selectNotificationSchema>;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Report = z.infer<typeof selectReportSchema>;
 export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Inquiry = z.infer<typeof selectInquirySchema>;
+export type InsertInquiry = z.infer<typeof insertInquirySchema>;
+export type InquiryWithUser = Inquiry & { username?: string | null };
 
 // Auth schemas
 export const loginSchema = z.object({
