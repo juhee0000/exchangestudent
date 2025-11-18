@@ -30,8 +30,8 @@ export default function BottomNav() {
                 )}
                 data-testid={`nav-${item.label}`}
               >
-                <Icon className="h-4 w-4 mb-0.5" />
-                <span className="text-[10px]">{item.label}</span>
+                <Icon className="h-6 w-6 mb-1" />
+                <span className="text-sm">{item.label}</span>
               </button>
             );
           })}
