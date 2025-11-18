@@ -1017,11 +1017,19 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('🗑️ 사용자 완전 삭제 시작:', userId);
 
-      // 1. Delete all favorites first (foreign key constraint)
+      // 1. Delete notifications (foreign key to users)
+      await db.delete(notifications).where(eq(notifications.userId, userId));
+      console.log('✅ 알림 삭제 완료');
+
+      // 2. Delete reports created by user (foreign key to users)
+      await db.delete(reports).where(eq(reports.reporterId, userId));
+      console.log('✅ 신고 내역 삭제 완료');
+
+      // 3. Delete all favorites (foreign key constraint)
       await db.delete(favorites).where(eq(favorites.userId, userId));
       console.log('✅ 찜 목록 삭제 완료');
 
-      // 2. Delete all messages in rooms where user participated
+      // 4. Delete all messages in rooms where user participated
       const userRooms = await db.select({ id: chatRooms.id })
         .from(chatRooms)
         .where(or(eq(chatRooms.sellerId, userId), eq(chatRooms.buyerId, userId)));
@@ -1031,31 +1039,32 @@ export class DatabaseStorage implements IStorage {
         await db.delete(messages).where(inArray(messages.roomId, roomIds));
         console.log('✅ 채팅 메시지 삭제 완료');
 
-        // 3. Delete chat rooms
+        // 5. Delete chat rooms
         await db.delete(chatRooms)
           .where(or(eq(chatRooms.sellerId, userId), eq(chatRooms.buyerId, userId)));
         console.log('✅ 채팅방 삭제 완료');
       }
 
-      // 4. Delete community post comments
+      // 6. Delete community post comments
       await db.delete(comments).where(eq(comments.authorId, userId));
       console.log('✅ 커뮤니티 댓글 삭제 완료');
 
-      // 5. Delete community posts
+      // 7. Delete community posts
       await db.delete(communityPosts).where(eq(communityPosts.authorId, userId));
       console.log('✅ 커뮤니티 글 삭제 완료');
 
-      // 6. Delete all items posted by user
+      // 8. Delete all items posted by user
       await db.delete(items).where(eq(items.sellerId, userId));
       console.log('✅ 등록 물품 삭제 완료');
 
-      // 7. Finally delete the user
+      // 9. Finally delete the user
       const result = await db.delete(users).where(eq(users.id, userId));
       console.log('✅ 사용자 계정 삭제 완료');
 
-      return result.rowCount > 0;
+      return result.rowCount !== undefined && result.rowCount > 0;
     } catch (error) {
       console.error('❌ 사용자 삭제 중 오류:', error);
+      console.error('오류 상세:', (error as Error).message);
       return false;
     }
   }
