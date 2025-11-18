@@ -349,11 +349,11 @@ throw new Error('카카오 계정에서 이메일을 가져올 수 없습니다.
 // 3. 사용자 처리
 let user = await storage.getUserByEmail(email);
 
-// 삭제된 계정인 경우 완전히 삭제하고 새로 생성
+// 삭제된 계정인 경우 재활성화
 if (user && user.status === 'deleted') {
-console.log('🗑️ 삭제된 계정 발견, 완전 삭제 후 새로 생성:', user.id);
-await storage.deleteUser(user.id);
-user = null; // 새로 생성하도록 설정
+console.log('🔄 삭제된 계정 재활성화:', user.id);
+await storage.updateUserStatus(user.id, 'active');
+user = await storage.getUser(user.id); // 업데이트된 사용자 정보 가져오기
 }
 
 if (!user) {
@@ -407,6 +407,7 @@ res.redirect(`/?token=${token}&user=${userPayload}`);
 }
 
 } catch (error) {
+console.error('❌ 카카오 로그인 오류:', error);
 res.redirect('/auth/login?error=auth_failed');
 }
 });
