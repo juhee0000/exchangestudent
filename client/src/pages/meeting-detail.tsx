@@ -322,13 +322,13 @@ export default function MeetingDetail() {
           {/* Author Profile */}
           {post.author && (
             <div className="flex items-center space-x-2 mb-3">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-600">
+              <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-xs font-medium text-gray-600">
                   {post.author.username?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-xs font-medium text-gray-900">
                   {post.author.username}
                   {post.author.status === 'deleted' && (
                     <span className="text-gray-500 ml-1 text-xs">(탈퇴)</span>
@@ -418,15 +418,15 @@ export default function MeetingDetail() {
                   {comments.map((comment: any) => {
                     const canDelete = user?.id === comment.authorId;
                     return (
-                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
+                      <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-600">
+                            <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                              <span className="text-xs font-medium text-gray-600">
                                 {comment.authorUsername?.charAt(0)?.toUpperCase() || 'U'}
                               </span>
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="text-sm font-medium text-gray-900">
                               {comment.authorUsername || '알 수 없음'}
                             </span>
                           </div>
@@ -482,8 +482,8 @@ export default function MeetingDetail() {
               {/* Comment Form */}
               <div className="mt-6">
                 <div className="flex space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-blue-600">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-medium text-blue-600">
                       {user.username?.charAt(0)?.toUpperCase() || 'M'}
                     </span>
                   </div>
@@ -492,7 +492,7 @@ export default function MeetingDetail() {
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="댓글을 입력해주세요"
-                      className="min-h-[80px] resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="min-h-[60px] resize-none border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       disabled={createCommentMutation.isPending}
                     />
                     <div className="flex justify-end mt-2">
