@@ -13,25 +13,25 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="marketplace-bottom-nav">
-      <div className="max-w-md mx-auto px-4 py-2">
+    <nav className="marketplace-bottom-nav fixed bottom-0 w-full bg-white border-t border-gray-200 py-1">
+      <div className="max-w-md mx-auto px-4">
         <div className="flex justify-around">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.path;
-            
+
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "marketplace-nav-item",
-                  isActive && "active"
+                  "marketplace-nav-item flex flex-col items-center px-2 py-1 text-[10px] text-gray-700",
+                  isActive && "text-blue-500"
                 )}
                 data-testid={`nav-${item.label}`}
               >
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs">{item.label}</span>
+                <Icon className="h-4 w-4 mb-0.5" />
+                <span className="text-[10px]">{item.label}</span>
               </button>
             );
           })}
