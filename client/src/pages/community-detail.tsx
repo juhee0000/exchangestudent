@@ -272,6 +272,15 @@ export default function CommunityDetail() {
       <div className="p-4 pb-20">
         {/* Post Header */}
         <div className="mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
+              {post.country}
+            </div>
+            <span className="text-sm text-gray-500">
+              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
+            </span>
+          </div>
+
           {/* Author Profile */}
           {post.author && (
             <div className="flex items-center space-x-2 mb-3">
@@ -291,15 +300,6 @@ export default function CommunityDetail() {
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-3">
-            <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium border ${getCountryColor(post.country)}`}>
-              {post.country}
-            </div>
-            <span className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
-            </span>
-          </div>
-
           <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
@@ -310,14 +310,14 @@ export default function CommunityDetail() {
 
         {/* Stats */}
         <div className="flex items-center justify-end py-4">
-          <div className="text-xs text-gray-500">조회 {post.views || 0}</div>
+          <div className="text-sm text-gray-500">조회 {post.views || 0}</div>
         </div>
 
         {/* Comments Section */}
         <div className="mt-6 border-t border-gray-200 pt-6">
           {user ? (
             <>
-              <h3 className="text-base font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 댓글 {comments.length}개
               </h3>
 

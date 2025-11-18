@@ -541,7 +541,10 @@ export default function ItemDetail() {
               </Avatar>
               <div>
                 <p className="font-medium" data-testid="text-seller-username">
-                  {item.seller?.status === 'deleted' ? '(탈퇴한 사용자)' : (item.seller?.username || '판매자')}
+                  {item.seller?.username || '판매자'}
+                  {item.seller?.status === 'deleted' && (
+                    <span className="text-gray-500 ml-1">(탈퇴)</span>
+                  )}
                 </p>
                 <p className="text-sm text-gray-600">{item.school}</p>
               </div>
