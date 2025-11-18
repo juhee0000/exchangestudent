@@ -54,6 +54,14 @@ This is a modern mobile-first marketplace web application designed for students 
   - Cleaned up all client-side code referencing likes field
   - Applied database migration to remove deprecated columns and tables
   - Service optimization: reduced code complexity and database storage overhead
+- **UI Component Size Optimization (November 18, 2025)**:
+  - Item creation page: "상품 사진" label turns red when photos not uploaded (validation enhancement)
+  - Community & Meeting detail pages: reduced profile avatar size (w-8 h-8 → w-6 h-6) for better mobile UX
+  - Community & Meeting detail pages: reduced username and date text size (text-sm → text-xs)
+  - Comment sections: reduced comment card padding (p-4 → p-3) for compact display
+  - Comment sections: reduced comment input area height (min-h-[80px] → min-h-[60px])
+  - Comment sections: reduced avatar sizes in comments and input area (w-8 h-8 → w-6 h-6)
+  - Overall improvement: cleaner, more compact UI optimized for mobile viewing
 
 # User Preferences
 
