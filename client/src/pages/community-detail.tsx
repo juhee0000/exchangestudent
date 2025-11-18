@@ -280,15 +280,30 @@ export default function CommunityDetail() {
               {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko })}
             </span>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
+
+          {/* Author Profile */}
           {post.author && (
-            <div className="text-sm text-gray-600 mb-2">
-              작성자: {post.author.username}
-              {post.author.status === 'deleted' && (
-                <span className="text-gray-500 ml-1">(탈퇴)</span>
-              )}
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-base font-medium text-gray-600">
+                  {post.author.username?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div>
+                <div className="font-medium text-gray-900">
+                  {post.author.username}
+                  {post.author.status === 'deleted' && (
+                    <span className="text-gray-500 ml-1 text-sm">(탈퇴)</span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(post.createdAt).toLocaleDateString('ko-KR')}
+                </div>
+              </div>
             </div>
           )}
+
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h1>
         </div>
 
         {/* Content */}

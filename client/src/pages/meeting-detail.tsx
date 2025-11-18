@@ -327,12 +327,17 @@ export default function MeetingDetail() {
                   {post.author.username?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
-              <span className="font-medium text-gray-900">
-                {post.author.username}
-                {post.author.status === 'deleted' && (
-                  <span className="text-gray-500 ml-1 text-sm">(탈퇴)</span>
-                )}
-              </span>
+              <div>
+                <div className="font-medium text-gray-900">
+                  {post.author.username}
+                  {post.author.status === 'deleted' && (
+                    <span className="text-gray-500 ml-1 text-sm">(탈퇴)</span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(post.createdAt).toLocaleDateString('ko-KR')}
+                </div>
+              </div>
             </div>
           )}
 
