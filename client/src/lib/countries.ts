@@ -53,8 +53,7 @@ export const COUNTRIES = [
   "카타르",
   "쿠웨이트",
   "대한민국",
-  "기타",
-  "미정"
+  "기타"
 ] as const;
 
 export type Country = typeof COUNTRIES[number];

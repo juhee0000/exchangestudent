@@ -45,7 +45,6 @@ export default function CreateItem() {
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState(CURRENCIES[0]); // KRW가 기본값
-  const [priceValue, setPriceValue] = useState("");
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState("");
   const [customDeliveryMethod, setCustomDeliveryMethod] = useState("");
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -56,9 +55,6 @@ export default function CreateItem() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-
-  // KRW로 환산된 가격 계산 (formatPrice 함수 사용)
-  const convertedPrice = priceValue && selectedCurrency ? formatPrice(parseFloat(priceValue), selectedCurrency.code) : "";
 
   const form = useForm<InsertItem>({
     resolver: zodResolver(insertItemSchema),
@@ -81,14 +77,14 @@ export default function CreateItem() {
   });
 
   // Image compression function with progressive compression
-  const compressImage = (file: File, maxWidth: number = 600, quality: number = 0.5): Promise<string> => {
+  const compressImage = (file: File, maxWidth: number = 800, quality: number = 0.75): Promise<string> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions (smaller for mobile)
+        // Calculate new dimensions (optimized for better quality)
         let { width, height } = img;
         if (width > height) {
           if (width > maxWidth) {
@@ -105,6 +101,10 @@ export default function CreateItem() {
         canvas.width = width;
         canvas.height = height;
         
+        // Enable image smoothing for better quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
         // Draw and compress progressively
         ctx.drawImage(img, 0, 0, width, height);
         
@@ -112,9 +112,9 @@ export default function CreateItem() {
         let compressedDataUrl = canvas.toDataURL('image/jpeg', currentQuality);
         let sizeInBytes = (compressedDataUrl.length * 3) / 4;
         
-        // Keep compressing until under 200KB or quality gets too low
-        while (sizeInBytes > 200 * 1024 && currentQuality > 0.05) {
-          currentQuality *= 0.7;
+        // Keep compressing until under 300KB or quality gets too low
+        while (sizeInBytes > 300 * 1024 && currentQuality > 0.3) {
+          currentQuality *= 0.8;
           compressedDataUrl = canvas.toDataURL('image/jpeg', currentQuality);
           sizeInBytes = (compressedDataUrl.length * 3) / 4;
         }
@@ -216,16 +216,10 @@ export default function CreateItem() {
     setDraggedIndex(null);
   };
 
-  // Update price when currency or value changes
+  // Update currency when it changes
   useEffect(() => {
-    if (priceValue && selectedCurrency) {
-      // 입력된 가격을 그대로 저장 (환율 변환은 표시할 때만)
-      form.setValue('price', priceValue);
-      form.setValue('currency', selectedCurrency.code);
-    } else {
-      form.setValue('price', '');
-    }
-  }, [priceValue, selectedCurrency, form]);
+    form.setValue('currency', selectedCurrency.code);
+  }, [selectedCurrency, form]);
 
   const createItemMutation = useMutation({
     mutationFn: async (data: InsertItem) => {
@@ -295,7 +289,7 @@ export default function CreateItem() {
       return;
     }
     
-    if (!priceValue || priceValue.trim() === "") {
+    if (!data.price || data.price.trim() === "") {
       toast({
         variant: "destructive",
         title: "가격을 입력해주세요",
@@ -315,7 +309,7 @@ export default function CreateItem() {
         ...data,
         sellerId: user?.id || data.sellerId, // sellerId 확실히 설정
         images,
-        price: priceValue, // 직접 priceValue 사용
+        price: data.price, // form에서 가격 가져오기
         school: user?.school || "",
         country: user?.country || "",
         location: data.location || user?.school || "",
@@ -366,7 +360,7 @@ export default function CreateItem() {
                   
                   {/* Upload Area */}
                   {images.length === 0 ? (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <div className={`border-2 border-dashed rounded-lg p-8 text-center ${hasAttemptedSubmit && images.length === 0 ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}>
                       <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 mb-4">사진을 업로드하세요</p>
                       <div className="flex gap-2 justify-center">
@@ -485,8 +479,7 @@ export default function CreateItem() {
                       </div>
                       
                       <div className="text-xs text-gray-500 space-y-1">
-                        <p>• 첫 번째 사진이 대표 사진으로 설정됩니다</p>
-                        <p>• 사진을 드래그해서 순서를 변경할 수 있습니다</p>
+                        
                         <p>• ⭐ 버튼을 클릭하면 해당 사진을 대표 사진으로 설정합니다</p>
                       </div>
                     </div>
@@ -534,7 +527,7 @@ export default function CreateItem() {
                       <FormLabel>설명 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="상품에 대한 자세한 설명을 입력하세요"
+            placeholder="ex) 사용감은 중간 정도예요. 일괄 판매합니다 :)"
                           rows={4}
                           {...field}
                           data-testid="input-description"
@@ -546,70 +539,81 @@ export default function CreateItem() {
                 />
 
                 {/* Price with Currency Selection */}
-                <div className="space-y-3">
-                  <label className={`text-sm font-medium ${hasAttemptedSubmit && (!priceValue || priceValue.trim() === '') ? 'text-red-600' : ''}`}>가격 <span className="text-red-500">*</span></label>
-                  
-                  {/* Original Currency Price */}
-                  <div className="flex gap-2">
-                    {/* Currency Selector */}
-                    <Select
-                      value={selectedCurrency.code}
-                      onValueChange={(value) => {
-                        const currency = CURRENCIES.find(c => c.code === value);
-                        if (currency) setSelectedCurrency(currency);
-                      }}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue>
-                          {selectedCurrency.symbol} {selectedCurrency.code}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CURRENCIES.map((currency) => (
-                          <SelectItem key={currency.code} value={currency.code}>
-                            <div className="flex items-center gap-2">
-                              <span>{currency.symbol}</span>
-                              <span>{currency.code}</span>
-                              <span className="text-xs text-gray-500">{currency.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {/* Price Input */}
-                    <Input
-                      placeholder="0"
-                      type="number"
-                      step="0.01"
-                      value={priceValue}
-                      onChange={(e) => setPriceValue(e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
-                  
-                  {/* KRW Conversion Display - KRW가 아닌 경우에만 표시 */}
-                  {selectedCurrency.code !== "KRW" && (
-                    <>
-                      <div className="flex gap-2">
-                        <div className="w-32 flex items-center justify-center bg-gray-100 rounded-md px-3 py-2">
-                          <span className="text-sm font-medium text-gray-600">₩ KRW</span>
-                        </div>
-                        <Input
-                          placeholder="0"
-                          type="text"
-                          value={priceValue ? formatPrice(parseFloat(priceValue), selectedCurrency.code) : ""}
-                          readOnly
-                          className="flex-1 bg-gray-50 text-gray-600"
-                        />
-                      </div>
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={hasAttemptedSubmit && (!field.value || field.value.trim() === '') ? 'text-red-600' : ''}>
+                        가격 <span className="text-red-500">*</span>
+                      </FormLabel>
                       
-                      <p className="text-xs text-gray-500">
-                        원화로 자동 환산되어 보여집니다
-                      </p>
-                    </>
+                      {/* Original Currency Price */}
+                      <div className="flex gap-2">
+                        {/* Currency Selector */}
+                        <Select
+                          value={selectedCurrency.code}
+                          onValueChange={(value) => {
+                            const currency = CURRENCIES.find(c => c.code === value);
+                            if (currency) setSelectedCurrency(currency);
+                          }}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue>
+                              {selectedCurrency.symbol} {selectedCurrency.code}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map((currency) => (
+                              <SelectItem key={currency.code} value={currency.code}>
+                                <div className="flex items-center gap-2">
+                                  <span>{currency.symbol}</span>
+                                  <span>{currency.code}</span>
+                                  <span className="text-xs text-gray-500">{currency.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        {/* Price Input */}
+                        <FormControl>
+                          <Input
+                            placeholder="0"
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            className={`flex-1 ${hasAttemptedSubmit && (!field.value || field.value.trim() === '') ? 'border-red-500 bg-red-50' : ''}`}
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
+
+                
+                {/* KRW Conversion Display - KRW가 아닌 경우에만 표시 */}
+                {selectedCurrency.code !== "KRW" && form.watch("price") && (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="w-32 flex items-center justify-center bg-gray-100 rounded-md px-3 py-2">
+                        <span className="text-sm font-medium text-gray-600">₩ KRW</span>
+                      </div>
+                      <Input
+                        placeholder="0"
+                        type="text"
+                        value={form.watch("price") ? formatPrice(parseFloat(form.watch("price")), selectedCurrency.code) : ""}
+                        readOnly
+                        className="flex-1 bg-gray-50 text-gray-600"
+                      />
+                    </div>
+                    
+                    <p className="text-xs text-gray-500">
+                      원화로 자동 환산되어 보여집니다
+                    </p>
+                  </div>
+                )}
 
 
 
@@ -644,10 +648,10 @@ export default function CreateItem() {
                   name="school"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>해당 학교</FormLabel>
+                      <FormLabel>해당 해외 학교</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="학교를 입력하세요"
+                          placeholder="해당 학교명(국문)을 입력해주세요"
                           {...field} 
                           data-testid="input-school"
                         />

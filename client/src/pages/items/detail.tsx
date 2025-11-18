@@ -401,7 +401,8 @@ export default function ItemDetail() {
       <main className="pb-20">
         {/* Image Gallery */}
         <div 
-          className="relative bg-black cursor-pointer"
+          className="relative bg-white cursor-pointer flex items-center justify-center"
+          style={{ height: '320px' }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
@@ -410,7 +411,8 @@ export default function ItemDetail() {
           <img
             src={item.images[currentImageIndex] || "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"}
             alt={`${item.title} - ${currentImageIndex + 1}`}
-            className="w-full h-80 object-cover"
+            className="max-w-full max-h-full object-contain"
+            style={{ imageRendering: 'auto' }}
           />
           {item.images.length > 1 && (
             <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded-full">
@@ -488,7 +490,11 @@ export default function ItemDetail() {
             <div className="border-t pt-4 mt-4 space-y-3 text-sm">
               <div className="flex">
                 <span className="text-gray-500 w-32 flex-shrink-0">거래 방법</span>
-                <p className="font-medium">{item.deliveryMethod || '-'}</p>
+                <p className="font-medium">
+                  {item.deliveryMethod === "기타" && item.customDeliveryMethod 
+                    ? item.customDeliveryMethod 
+                    : item.deliveryMethod || '-'}
+                </p>
               </div>
               <div className="flex">
                 <span className="text-gray-500 w-32 flex-shrink-0">거래 희망 장소</span>

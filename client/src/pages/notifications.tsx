@@ -12,9 +12,9 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+        <h3 className="text-2xl font-semibold text-gray-900 mb-6">
           서비스 준비 중입니다 :)
-        </h1>
+        </h3>
         <Button 
           onClick={handleClose}
           className="bg-blue-500 hover:bg-blue-600 text-white"
