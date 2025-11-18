@@ -157,13 +157,21 @@ export default function Settings() {
         {/* 기타 */}
         <Card className="p-4">
           <h3 className="font-semibold mb-4">기타</h3>
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
+
+          {/* 세로 버튼 그룹 + 버튼 사이 간격 space-y */}
+          <div className="flex flex-col space-y-2">
+            {/* 1번째 버튼: 문의하기 */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={() => window.location.href = 'mailto:park36470805@gmail.com?subject=문의사항'}
+              data-testid="button-contact"
+            >
               문의하기
               <ChevronRight className="w-4 h-4 ml-auto" />
             </Button>
-            
-            {/* 이용약관 */}
+
+            {/* 2번째 버튼: 이용약관 */}
             <Link to="/terms">
               <Button variant="outline" className="w-full justify-start">
                 서비스 이용약관
@@ -171,7 +179,7 @@ export default function Settings() {
               </Button>
             </Link>
 
-            {/* 개인정보처리방침 */}
+            {/* 3번째 버튼: 개인정보 처리방침 */}
             <Link to="/privacy">
               <Button variant="outline" className="w-full justify-start">
                 개인정보 처리방침
@@ -198,10 +206,12 @@ export default function Settings() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>정말로 회원탈퇴를 하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogTitle>회원탈퇴를 하시겠습니까?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    이 작업은 되돌릴 수 없습니다. 모든 데이터가 영구적으로 삭제되며, 
-                    등록된 상품, 채팅 내역, 리뷰 등이 모두 사라집니다.
+                    탈퇴하면 계정 정보와 개인 데이터는 모두 삭제되며 복구할 수 없습니다.
+                    작성했던 게시글과 댓글은 서비스 운영 및 안전한 거래 기록 보존을 위해
+                    작성자 정보만 ‘탈퇴한 사용자’로 변경된 상태로 유지됩니다.
+                    
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
