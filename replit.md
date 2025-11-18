@@ -65,10 +65,15 @@ This is a modern mobile-first marketplace web application designed for students 
 - **Account Deletion Improvement (November 18, 2025)**:
   - Changed account deletion behavior: posts, comments, and items are now preserved when user withdraws
   - User status is updated to 'deleted' instead of deleting the entire account
-  - Deleted users' nicknames are displayed as '(탈퇴한 사용자)' throughout the application
+  - Deleted users' nicknames are displayed as '(탈퇴한 사용자)' throughout the application (not '닉네임(탈퇴)')
+  - Applied to all pages: item detail, community detail, meeting detail, and all comment sections
   - Only user notifications are removed during account deletion
   - OAuth connections (Kakao, Google, Naver) are still disconnected when deleting account
   - Contact feature: Added mailto link to 문의하기 button directing to park36470805@gmail.com
+- **Community & Meeting Detail Page Layout Update (November 18, 2025)**:
+  - Swapped position of country tag and profile section for better visual hierarchy
+  - New order: Author Profile → Country Tag & Timestamp → Title
+  - Applied to both 자유게시판 (community) and 모임방 (meeting) detail pages
 
 # User Preferences
 
