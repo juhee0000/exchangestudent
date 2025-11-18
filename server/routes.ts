@@ -709,13 +709,6 @@ const user = req.user!;
 
 console.log(`🗑️ 계정 탈퇴 시작: ${userId}`);
 
-// 게시글, 댓글, 아이템은 유지하되 사용자 상태만 'deleted'로 변경
-// 이렇게 하면 작성했던 글과 판매 물품은 남아있지만 작성자는 '(탈퇴한 사용자)'로 표시됨
-
-// 1. Delete user's notifications (알림만 삭제)
-await db.delete(notifications).where(eq(notifications.userId, userId));
-console.log(`✅ 사용자 알림 삭제 완료`);
-
 // OAuth 연동 해제 처리
 let oauthGuideMessage = '';
 let kakaoDisconnectSuccess = false;
@@ -744,9 +737,17 @@ oauthGuideMessage = '구글 연동이 해제되었습니다. 다시 가입하시
 oauthGuideMessage = '네이버 연동이 해제되었습니다. 다시 가입하시려면 네이버 계정에서 연동을 해제하고 새로 동의해주세요.';
 }
 
-// Delete the user account completely
-await storage.deleteUser(userId);
+// Delete the user account completely (including all dependent data)
+const deleteSuccess = await storage.deleteUser(userId);
+
+if (!deleteSuccess) {
+throw new Error('사용자 데이터 삭제에 실패했습니다.');
+}
+
 console.log(`✅ 계정 완전 삭제 완료: ${userId}`);
+
+// Clear user cache
+userCache.delete(userId);
 
 // 로그아웃 처리: 세션 종료
 if (req.session) {
