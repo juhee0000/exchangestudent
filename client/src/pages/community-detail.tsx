@@ -284,16 +284,16 @@ export default function CommunityDetail() {
           {/* Author Profile */}
           {post.author && (
             <div className="flex items-center space-x-2 mb-3">
-              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-base font-medium text-gray-600">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-gray-600">
                   {post.author.username?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
               <div>
-                <div className="font-medium text-gray-900">
+                <div className="text-sm font-medium text-gray-900">
                   {post.author.username}
                   {post.author.status === 'deleted' && (
-                    <span className="text-gray-500 ml-1 text-sm">(탈퇴)</span>
+                    <span className="text-gray-500 ml-1 text-xs">(탈퇴)</span>
                   )}
                 </div>
                 <div className="text-xs text-gray-500">

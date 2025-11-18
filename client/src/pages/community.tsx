@@ -84,8 +84,8 @@ export default function Community() {
         </div>
       </header>
 
-      <div className="px-4 py-3 bg-white border-b">
-        <div className="flex space-x-2 overflow-x-auto scrollbar-hide">
+      <div className="px-4 py-3 bg-white border-b overflow-hidden">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-hide -mr-4 pr-8">
           <button
             onClick={() => setSelectedCountry("전체")}
             className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
