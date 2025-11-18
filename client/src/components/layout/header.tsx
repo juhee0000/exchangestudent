@@ -1,28 +1,19 @@
-import { Search, Bell } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 
 interface HeaderProps {
   title: string;
   showSearch?: boolean;
-  showNotifications?: boolean;
-  notificationCount?: number;
   onSearchClick?: () => void;
 }
 
 export default function Header({ 
   title, 
   showSearch = true, 
-  showNotifications = true,
-  notificationCount = 0,
   onSearchClick
 }: HeaderProps) {
   const [, navigate] = useLocation();
-  const { data: liveNotificationCount } = useUnreadNotificationCount();
-  
-  // Use live notification count if no explicit count is provided
-  const displayCount = notificationCount || (liveNotificationCount as { count: number } | undefined)?.count || 0;
 
   const handleSearchClick = () => {
     if (onSearchClick) {
@@ -47,21 +38,6 @@ export default function Header({
               onClick={handleSearchClick}
             >
               <Search className="h-5 w-5" />
-            </Button>
-          )}
-          {showNotifications && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-600 hover:text-primary relative"
-              onClick={() => navigate("/notifications")}
-            >
-              <Bell className="h-5 w-5" />
-              {displayCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  {displayCount > 99 ? "99+" : displayCount}
-                </span>
-              )}
             </Button>
           )}
         </div>
