@@ -349,11 +349,11 @@ throw new Error('카카오 계정에서 이메일을 가져올 수 없습니다.
 // 3. 사용자 처리
 let user = await storage.getUserByEmail(email);
 
-// 삭제된 계정인 경우 재활성화
+// 삭제된 계정인 경우 완전히 삭제하고 새로 생성
 if (user && user.status === 'deleted') {
-console.log('🔄 삭제된 계정 재활성화:', user.id);
-await storage.updateUserStatus(user.id, 'active');
-user = await storage.getUser(user.id); // 업데이트된 사용자 정보 가져오기
+console.log('🗑️ 삭제된 계정 발견, 완전 삭제 후 새로 생성:', user.id);
+await storage.deleteUser(user.id);
+user = null; // 새로 생성하도록 설정
 }
 
 if (!user) {
@@ -744,9 +744,9 @@ oauthGuideMessage = '구글 연동이 해제되었습니다. 다시 가입하시
 oauthGuideMessage = '네이버 연동이 해제되었습니다. 다시 가입하시려면 네이버 계정에서 연동을 해제하고 새로 동의해주세요.';
 }
 
-// Update user status to 'deleted' instead of deleting the account
-await storage.updateUserStatus(userId, 'deleted');
-console.log(`✅ 계정 상태 변경 완료 (deleted): ${userId}`);
+// Delete the user account completely
+await storage.deleteUser(userId);
+console.log(`✅ 계정 완전 삭제 완료: ${userId}`);
 
 // 로그아웃 처리: 세션 종료
 if (req.session) {
