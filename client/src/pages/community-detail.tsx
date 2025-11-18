@@ -310,14 +310,14 @@ export default function CommunityDetail() {
 
         {/* Stats */}
         <div className="flex items-center justify-end py-4">
-          <div className="text-sm text-gray-500">조회 {post.views || 0}</div>
+          <div className="text-xs text-gray-500">조회 {post.views || 0}</div>
         </div>
 
         {/* Comments Section */}
         <div className="mt-6 border-t border-gray-200 pt-6">
           {user ? (
             <>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-base font-semibold text-gray-900 mb-4">
                 댓글 {comments.length}개
               </h3>
 
