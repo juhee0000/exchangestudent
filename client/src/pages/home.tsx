@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Plus, Loader2, Search, Bell } from "lucide-react";
+import { Plus, Loader2, Search } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import FilterBar from "@/components/items/filter-bar";
 import ItemCard from "@/components/items/item-card";
-import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import type { Item } from "@shared/schema";
 
 export default function Home() {
@@ -18,8 +17,6 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const [showSchoolPrompt, setShowSchoolPrompt] = useState(false);
-  const { data: notificationData } = useUnreadNotificationCount();
-  const notificationCount = (notificationData as { count: number } | undefined)?.count || 0;
 
   // 국가별 필터 선택 시 사용자 국가를 디폴트로 설정
   useEffect(() => {
@@ -151,22 +148,7 @@ export default function Home() {
   return (
     <>
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-gray-900">교환마켓</h1>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-600 hover:text-primary relative"
-            onClick={() => navigate("/notifications")}
-          >
-            <Bell className="h-5 w-5" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </span>
-            )}
-          </Button>
-        </div>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">교환마켓</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
