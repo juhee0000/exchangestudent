@@ -67,9 +67,9 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-500 border-b border-blue-600 px-4 py-3 sticky top-0 z-50">
+      <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
         <div className="mb-3">
-          <h1 className="text-xl font-bold text-white">자유게시판</h1>
+          <h1 className="text-xl font-bold text-gray-900">자유게시판</h1>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
