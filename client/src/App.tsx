@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "./hooks/use-auth";
 import { WebSocketProvider } from "./hooks/use-websocket";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, lazy } from "react";
+import { initAmplitude } from "./lib/amplitude";
 
 import Home from "@/pages/home";
 import Chat from "@/pages/chat";
@@ -154,6 +155,10 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    initAmplitude();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
