@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, navigate] = useLocation();
 
   const logout = () => {
+    console.log('[Auth] Logging out');
     resetUser();
     setToken(null);
     setUser(null);
@@ -31,20 +32,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    console.log('[Auth] Initializing auth from localStorage');
     const storedToken = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
     
     if (storedToken && storedUser) {
+      console.log('[Auth] Found stored user, restoring session');
       const parsedUser = JSON.parse(storedUser);
       setToken(storedToken);
       setUser(parsedUser);
       
+      console.log('[Auth] Calling identifyUser for stored user:', parsedUser.id);
       identifyUser(parsedUser.id, {
         username: parsedUser.username,
         country: parsedUser.country,
         school: parsedUser.school,
         provider: parsedUser.provider || 'email',
       });
+    } else {
+      console.log('[Auth] No stored user found');
     }
     
     setIsLoading(false);
@@ -54,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (newToken: string, newUser: User) => {
+    console.log('[Auth] Login called with user:', newUser);
+    
     // Clear all previous session data to prevent conflicts
     localStorage.clear();
     
@@ -61,6 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
+    
+    console.log('[Auth] Calling identifyUser with:', {
+      id: newUser.id,
+      username: newUser.username,
+      country: newUser.country,
+      school: newUser.school,
+      provider: newUser.provider || 'email',
+    });
     
     identifyUser(newUser.id, {
       username: newUser.username,
