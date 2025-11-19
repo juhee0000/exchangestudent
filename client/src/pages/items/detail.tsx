@@ -129,14 +129,14 @@ export default function ItemDetail() {
   // 상품 상태 확인
   const getItemStatus = (item: ItemWithSeller) => {
     if (item.status === "거래완료") return "거래완료";
-    if (item.status === "거래기간만료") return "거래기간만료";
+    if (item.status === "기간만료") return "기간만료";
     
     // 거래 기간 만료 자동 확인
     if (item.availableTo) {
       const now = new Date();
       const availableTo = new Date(item.availableTo);
       if (now > availableTo) {
-        return "거래기간만료";
+        return "기간만료";
       }
     }
     
@@ -147,7 +147,7 @@ export default function ItemDetail() {
     switch (status) {
       case "거래완료":
         return "bg-gray-500 text-white";
-      case "거래기간만료":
+      case "기간만료":
         return "bg-red-500 text-white";
       default:
         return "bg-green-500 text-white";
@@ -437,7 +437,7 @@ export default function ItemDetail() {
                     <SelectContent>
                       <SelectItem value="거래가능">거래가능</SelectItem>
                       <SelectItem value="거래완료">거래완료</SelectItem>
-                      <SelectItem value="거래기간만료">거래기간만료</SelectItem>
+                      <SelectItem value="기간만료">기간만료</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
