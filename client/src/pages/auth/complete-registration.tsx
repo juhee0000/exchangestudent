@@ -232,7 +232,8 @@ export default function CompleteRegistration() {
                 placeholder={getStepPlaceholder()}
                 value={schoolInput}
                 onChange={(e) => {
-                  setSchoolInput(e.target.value);
+                  const valueWithoutSpaces = e.target.value.replace(/\s/g, '');
+                  setSchoolInput(valueWithoutSpaces);
                   if (schoolError) setSchoolError("");
                 }}
                 className="w-full border-2 border-blue-200 rounded-xl p-4 text-base focus:border-blue-500 focus:ring-0 focus:outline-none"
