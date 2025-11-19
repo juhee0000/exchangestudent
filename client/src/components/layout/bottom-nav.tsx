@@ -13,7 +13,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="marketplace-bottom-nav fixed bottom-0 w-full bg-white border-t border-gray-200 py-1">
+    <nav className="marketplace-bottom-nav fixed bottom-0 w-full bg-white border-t border-gray-200 py-2">
       <div className="max-w-md mx-auto px-4">
         <div className="flex justify-around">
           {navItems.map((item) => {
@@ -30,8 +30,8 @@ export default function BottomNav() {
                 )}
                 data-testid={`nav-${item.label}`}
               >
-                <Icon className="h-6 w-6 mb-1" />
-                <span className="text-sm">{item.label}</span>
+                <Icon className="h-5 w-5 mb-1" />
+                <span className="text-xs">{item.label}</span>
               </button>
             );
           })}
