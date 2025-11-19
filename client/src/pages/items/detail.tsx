@@ -37,6 +37,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { ItemWithSeller } from "@shared/schema";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/amplitude";
 
 const formatTimeAgo = (date: Date) => {
   const now = new Date();
@@ -124,6 +125,22 @@ export default function ItemDetail() {
   // Reset image index when item changes
   useEffect(() => {
     setCurrentImageIndex(0);
+  }, [item?.id]);
+
+  // Track item view
+  useEffect(() => {
+    if (item) {
+      trackEvent('Item Viewed', {
+        item_id: item.id,
+        title: item.title,
+        price: item.price,
+        currency: item.currency || 'KRW',
+        status: getItemStatus(item),
+        country: item.country,
+        school: item.school,
+        is_own_item: item.sellerId === user?.id,
+      });
+    }
   }, [item?.id]);
 
   // 상품 상태 확인

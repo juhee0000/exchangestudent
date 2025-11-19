@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 import { setGlobalLogoutHandler } from "@/lib/queryClient";
+import { identifyUser, resetUser, trackEvent } from "@/lib/amplitude";
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, navigate] = useLocation();
 
   const logout = () => {
+    resetUser();
     setToken(null);
     setUser(null);
     localStorage.removeItem("token");
@@ -33,8 +35,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem("user");
     
     if (storedToken && storedUser) {
+      const parsedUser = JSON.parse(storedUser);
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      setUser(parsedUser);
+      
+      identifyUser(parsedUser.id, {
+        username: parsedUser.username,
+        country: parsedUser.country,
+        school: parsedUser.school,
+        provider: parsedUser.provider || 'email',
+      });
     }
     
     setIsLoading(false);
@@ -51,7 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
-    // 자동 페이지 이동 제거 - App.tsx에서 처리
+    
+    identifyUser(newUser.id, {
+      username: newUser.username,
+      country: newUser.country,
+      school: newUser.school,
+      provider: newUser.provider || 'email',
+    });
+    
+    trackEvent('User Login', {
+      method: newUser.provider || 'email',
+      country: newUser.country,
+      school: newUser.school,
+    });
   };
 
   const updateUser = (userData: User) => {

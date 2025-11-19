@@ -23,6 +23,7 @@ import { insertItemSchema, type InsertItem } from "@shared/schema";
 import { COUNTRIES, CURRENCIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/use-exchange";
+import { trackEvent } from "@/lib/amplitude";
 
 
 
@@ -231,7 +232,7 @@ export default function CreateItem() {
       const res = await apiRequest("POST", "/api/items", data);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // 모든 상품 관련 쿼리 무효화
       queryClient.invalidateQueries({ 
         queryKey: ["/api/items"], 
@@ -241,6 +242,17 @@ export default function CreateItem() {
       // 사용자 통계도 무효화 (새 상품 등록으로 통계 변경됨)
       queryClient.invalidateQueries({ 
         queryKey: ["/api/users/stats"]
+      });
+      
+      // Amplitude 이벤트 트래킹
+      trackEvent('Item Created', {
+        title: data.title,
+        price: data.price,
+        currency: data.currency || 'KRW',
+        country: user?.country,
+        school: user?.school,
+        delivery_method: data.deliveryMethod,
+        has_open_chat: !!data.openChatLink,
       });
       
       // 성공 토스트 표시
