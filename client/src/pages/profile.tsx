@@ -153,7 +153,7 @@ export default function Profile() {
               <Avatar className="w-20 h-20">
                 <AvatarImage src={user.profileImage || undefined} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                  {user.fullName.charAt(0)}
+                  {user.username.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <Button variant="outline" size="sm">

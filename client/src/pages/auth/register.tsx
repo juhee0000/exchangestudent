@@ -763,18 +763,7 @@ export default function Register() {
           {isLoading ? "처리 중..." : isLastStep ? "회원가입 완료" : "다음"}
         </Button>
 
-        {/* 건너뛰기 버튼 (선택 단계에서만) */}
-        {isOptionalStep && (
-          <Button 
-            variant="ghost"
-            onClick={handleSkip}
-            className="w-full text-gray-500 py-4 text-base"
-            disabled={isLoading}
-            data-testid="button-skip"
-          >
-            건너뛰기
-          </Button>
-        )}
+        
 
         {/* 진행 표시줄 */}
         <div className="flex justify-center">

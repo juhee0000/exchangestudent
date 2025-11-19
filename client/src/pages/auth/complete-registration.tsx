@@ -204,8 +204,8 @@ export default function CompleteRegistration() {
 
   const getStepLabel = () => {
     switch (currentStep) {
-      case 'school': return '해외 대학명';
-      case 'country': return '거주 국가';
+      case 'school': return '해외 대학명(한글명)';
+      case 'country': return '해당 국가';
       default: return '';
     }
   };
@@ -241,6 +241,9 @@ export default function CompleteRegistration() {
               {schoolError && (
                 <p className="text-sm text-red-500">{schoolError}</p>
               )}
+              <p className="text-sm text-gray-500 mt-2">
+                오타없이 작성 되어야 내 학교 물품 필터링이 정확해져요 :)
+              </p>
             </div>
           </div>
         );
@@ -332,7 +335,7 @@ export default function CompleteRegistration() {
           )}
           {currentStep === 'school' && (
             <p className="text-gray-600">
-              학교를 입력하면, 같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
+              같은 학교 교환학생들이 올린 물품을 쉽게 확인할 수 있어요!
             </p>
           )}
         </div>

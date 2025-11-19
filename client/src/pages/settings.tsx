@@ -209,8 +209,6 @@ export default function Settings() {
                   <AlertDialogTitle>회원탈퇴를 하시겠습니까?</AlertDialogTitle>
                   <AlertDialogDescription>
                     탈퇴하면 계정 정보와 개인 데이터는 모두 삭제되며 복구할 수 없습니다.
-                    작성했던 게시글과 댓글은 서비스 운영 및 안전한 거래 기록 보존을 위해
-                    작성자 정보만 ‘탈퇴한 사용자’로 변경된 상태로 유지됩니다.
                     
                   </AlertDialogDescription>
                 </AlertDialogHeader>

@@ -558,8 +558,8 @@ export default function CreateItem() {
                             if (currency) setSelectedCurrency(currency);
                           }}
                         >
-                          <SelectTrigger className="w-32">
-                            <SelectValue>
+                          <SelectTrigger className="w-32 bg-blue-500 text-white border-blue-600">
+                            <SelectValue className="text-white">
                               {selectedCurrency.symbol} {selectedCurrency.code}
                             </SelectValue>
                           </SelectTrigger>
