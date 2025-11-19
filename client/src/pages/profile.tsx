@@ -185,24 +185,7 @@ export default function Profile() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>이메일</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email"
-                            placeholder="이메일을 입력하세요" 
-                            {...field}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            
                 </div>
 
                 {/* 위치 정보 */}

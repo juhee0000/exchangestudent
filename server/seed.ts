@@ -8,8 +8,21 @@ export async function seedDatabase() {
 
     // Create test users
     const hashedPassword = await bcrypt.hash("password123", 10);
+    const adminPassword = await bcrypt.hash("admin123", 10);
     
     const testUsers = [
+      {
+        username: "admin",
+        email: "admin@example.com",
+        password: adminPassword,
+        fullName: "Administrator",
+        school: "System",
+        country: "Korea",
+        profileImage: null,
+        preferredCurrency: "KRW",
+        role: "admin",
+        status: "active"
+      },
       {
         username: "john_doe",
         email: "john@test.com",
@@ -66,7 +79,7 @@ export async function seedDatabase() {
     
     if (existingUsers.length > 0) {
       console.log('Users already exist, skipping user seeding');
-      insertedUsers = existingUsers.slice(0, 4); // Use first 4 existing users
+      insertedUsers = existingUsers.slice(0, 5); // Use first 5 existing users (including admin)
     } else {
       // Insert users
       insertedUsers = await db.insert(users).values(testUsers).returning();
