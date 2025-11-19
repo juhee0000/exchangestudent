@@ -156,7 +156,10 @@ function Router() {
 
 function App() {
   useEffect(() => {
-    initAmplitude();
+    // Initialize Amplitude as early as possible
+    initAmplitude().catch(error => {
+      console.error('Failed to initialize Amplitude:', error);
+    });
   }, []);
 
   return (
