@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import FilterBar from "@/components/items/filter-bar";
 import ItemCard from "@/components/items/item-card";
 import type { Item } from "@shared/schema";
+import { trackEvent } from "@/lib/amplitude";
 
 export default function Home() {
   const [filter, setFilter] = useState("all");
@@ -28,6 +29,22 @@ export default function Home() {
       }
     }
   }, [filter, user?.country]);
+
+  // Track search events
+  useEffect(() => {
+    if (searchKeyword.trim()) {
+      const timer = setTimeout(() => {
+        trackEvent('Item Search', {
+          search_query: searchKeyword,
+          filter_type: filter,
+          country: filter === 'country' ? selectedCountry : undefined,
+          school: filter === 'school' ? user?.school : undefined,
+        });
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchKeyword, filter, selectedCountry, user?.school]);
 
   const {
     data,
@@ -125,6 +142,15 @@ export default function Home() {
         return;
       }
     }
+    
+    // Track filter change
+    trackEvent('Filter Changed', {
+      filter_type: newFilter,
+      previous_filter: filter,
+      country: newFilter === 'country' ? selectedCountry : undefined,
+      school: newFilter === 'school' ? user?.school : undefined,
+    });
+    
     setFilter(newFilter);
     setShowSchoolPrompt(false);
   };

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import moment from "moment-timezone";
 import type { Message, ChatRoom, User, Item } from "@shared/schema";
 import { Link } from "wouter";
+import { trackEvent } from "@/lib/amplitude";
 
 interface ChatRoomWithDetails extends ChatRoom {
   item: Item;
@@ -76,9 +77,17 @@ export default function ChatRoomPage() {
     onMutate: () => {
       setIsSending(true);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setMessage("");
       setIsSending(false);
+      
+      // Amplitude 이벤트 트래킹
+      trackEvent('Chat Message Sent', {
+        room_id: roomId,
+        item_id: chatRoom?.itemId,
+        message_length: data.content?.length || 0,
+      });
+      
       // 메시지 목록 캐시 무효화로 즉시 업데이트
       queryClient.invalidateQueries({
         queryKey: ["/api/chat/rooms", roomId, "messages"]

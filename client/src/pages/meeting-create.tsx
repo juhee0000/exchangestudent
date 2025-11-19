@@ -14,6 +14,7 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCommunityPostSchema } from "@shared/schema";
 import { z } from "zod";
+import { trackEvent } from "@/lib/amplitude";
 
 const createMeetingPostSchema = insertCommunityPostSchema.omit({
   id: true,
@@ -68,8 +69,18 @@ export default function MeetingCreate() {
       const response = await apiRequest("POST", "/api/community/posts", postData);
       return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
+      
+      trackEvent('Meeting Post Created', {
+        title: data.title,
+        category: '모임방',
+        country: data.country,
+        school: data.school,
+        semester: data.semester,
+        has_open_chat: !!data.openChatLink,
+      });
+      
       navigate("/meetings");
     },
     onError: (error: any) => {

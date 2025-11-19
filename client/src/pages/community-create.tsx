@@ -14,6 +14,7 @@ import { useRequireAuth } from "@/hooks/use-require-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCommunityPostSchema } from "@shared/schema";
 import { z } from "zod";
+import { trackEvent } from "@/lib/amplitude";
 
 const createPostSchema = insertCommunityPostSchema.omit({
   id: true,
@@ -67,8 +68,18 @@ export default function CommunityCreate() {
       const response = await apiRequest("POST", "/api/community/posts", postData);
       return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
+      
+      trackEvent('Community Post Created', {
+        title: data.title,
+        category: '자유게시판',
+        country: data.country,
+        school: data.school,
+        has_images: (uploadedImages?.length || 0) > 0,
+        image_count: uploadedImages?.length || 0,
+      });
+      
       navigate("/community");
     },
     onError: (error: any) => {
