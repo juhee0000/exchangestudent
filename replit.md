@@ -72,6 +72,9 @@ This is a modern mobile-first marketplace web application designed for students 
   - Notification icon removed from home page header for cleaner UI
   - Contact feature: Added mailto link to 문의하기 button directing to park36470805@gmail.com
   - Enhanced error logging for Kakao OAuth to improve debugging
+- **UI/UX Improvements (November 19, 2025)**:
+  - Profile page: Avatar fallback now displays first letter of username instead of fullName
+  - Registration flow: Added helpful hint text below school input ("오타없이 작성 되어야 내 학교 물품 필터링이 정확해져요 :)") to ensure accurate school filtering
 
 # User Preferences
 
