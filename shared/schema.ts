@@ -73,7 +73,20 @@ export const communityPosts = pgTable("community_posts", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   category: text("category").notNull(),
-  semester: text("semester"),
+  authorId: text("author_id").notNull().references(() => users.id),
+  school: text("school").notNull(),
+  country: text("country").notNull(),
+  images: text("images").array().notNull().default(sql`'{}'::text[]`),
+  views: integer("views").default(0).notNull(),
+  commentsCount: integer("comments_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const meetingPosts = pgTable("meeting_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  semester: text("semester").notNull(),
   openChatLink: text("open_chat_link"),
   authorId: text("author_id").notNull().references(() => users.id),
   school: text("school").notNull(),
@@ -86,7 +99,8 @@ export const communityPosts = pgTable("community_posts", {
 
 export const comments = pgTable("comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  postId: text("post_id").notNull().references(() => communityPosts.id),
+  postId: text("post_id").notNull(),
+  postType: text("post_type").notNull().default("community"),
   parentCommentId: text("parent_comment_id"),
   authorId: text("author_id").notNull().references(() => users.id),
   content: text("content").notNull(),
@@ -123,6 +137,7 @@ export const exchangeRates = pgTable("exchange_rates", {
 
 // Zod Schemas for validation
 export const insertUserSchema = createInsertSchema(users);
+export const insertMeetingPostSchema = createInsertSchema(meetingPosts);
 
 // 상품 등록을 위한 커스텀 스키마 - 날짜 필드 변환 처리
 export const insertItemSchema = z.object({
@@ -165,6 +180,7 @@ export const selectItemSchema = createSelectSchema(items);
 export const selectChatRoomSchema = createSelectSchema(chatRooms);
 export const selectMessageSchema = createSelectSchema(messages);
 export const selectCommunityPostSchema = createSelectSchema(communityPosts);
+export const selectMeetingPostSchema = createSelectSchema(meetingPosts);
 export const selectCommentSchema = createSelectSchema(comments);
 export const selectNotificationSchema = createSelectSchema(notifications);
 export const selectReportSchema = createSelectSchema(reports);
@@ -192,6 +208,9 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type CommunityPost = z.infer<typeof selectCommunityPostSchema>;
 export type CommunityPostWithAuthor = CommunityPost & { author?: SafeAuthor };
 export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
+export type MeetingPost = z.infer<typeof selectMeetingPostSchema>;
+export type MeetingPostWithAuthor = MeetingPost & { author?: SafeAuthor };
+export type InsertMeetingPost = z.infer<typeof insertMeetingPostSchema>;
 export type Comment = z.infer<typeof selectCommentSchema>;
 export type CommentWithAuthor = Comment & {
   authorUsername?: string | null;
