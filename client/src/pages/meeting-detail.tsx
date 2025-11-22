@@ -350,46 +350,47 @@ export default function MeetingDetail() {
         </div>
 
         {/* Open Chat Link */}
-        {post.openChatLink && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-blue-900 mb-1">오픈 카톡방</h3>
-                <p className="text-sm text-blue-700">아래 링크를 클릭하여 참여하세요</p>
-              </div>
-              <Button
-                onClick={() => {
-                  if (!user) {
-                    toast({
-                      title: "로그인이 필요합니다",
-                      description: "오픈 카톡방에 참여하려면 로그인해주세요.",
-                      variant: "destructive",
-                    });
-                    navigate("/auth/login");
-                    return;
-                  }
-
-                  // 로그인 상태일 때만 링크 열기
-                  if (post.openChatLink) {
-                    window.open(post.openChatLink, "_blank", "noopener,noreferrer");
-                  } else {
-                    toast({
-                      title: "링크가 존재하지 않습니다",
-                      description: "해당 모임에는 오픈카톡 링크가 없습니다.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-                data-testid="button-openchat"
-              >
-                <ExternalLink className="w-4 h-4 mr-1" />
-                참여하기
-              </Button>
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-blue-900 mb-1">오픈 카톡방</h3>
+              <p className="text-sm text-blue-700">
+                {post.openChatLink ? "아래 링크를 클릭하여 참여하세요" : "오픈카톡 링크가 설정되지 않았습니다"}
+              </p>
             </div>
+            <Button
+              onClick={() => {
+                if (!user) {
+                  toast({
+                    title: "로그인이 필요합니다",
+                    description: "오픈 카톡방에 참여하려면 로그인해주세요.",
+                    variant: "destructive",
+                  });
+                  navigate("/auth/login");
+                  return;
+                }
+
+                // 로그인 상태일 때 링크 확인 후 열기
+                if (post.openChatLink && post.openChatLink.trim()) {
+                  window.open(post.openChatLink, "_blank", "noopener,noreferrer");
+                } else {
+                  toast({
+                    title: "링크가 설정되지 않았습니다",
+                    description: "해당 모임에는 오픈카톡 링크가 설정되지 않았습니다.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              disabled={!post.openChatLink || !post.openChatLink.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+              size="sm"
+              data-testid="button-openchat"
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              참여하기
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* Stats */}
         <div className="flex items-center justify-end py-4">
