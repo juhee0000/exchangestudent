@@ -652,20 +652,40 @@ res.status(500).json({ error: '회원가입 완료에 실패했습니다.' });
 
 // User Routes
 app.put('/api/users/:id', authenticateToken, async (req, res) => {
-if (req.user!.id !== req.params.id) return res.status(403).json({ error: 'Access denied' });
-const { currentPassword, newPassword, ...updateData } = req.body;
-if (newPassword) {
-if (!currentPassword || !await bcrypt.compare(currentPassword, req.user!.password)) {
-return res.status(400).json({ error: 'Current password is incorrect' });
-}
-updateData.password = await bcrypt.hash(newPassword, 10);
-}
-const updatedUser = await storage.updateUser(req.user!.id, updateData);
-res.json(updatedUser);
+  try {
+    if (req.user!.id !== req.params.id) return res.status(403).json({ error: 'Access denied' });
+    const { currentPassword, newPassword, ...updateData } = req.body;
+    if (newPassword) {
+      if (!currentPassword || !await bcrypt.compare(currentPassword, req.user!.password)) {
+        return res.status(400).json({ error: 'Current password is incorrect' });
+      }
+      updateData.password = await bcrypt.hash(newPassword, 10);
+    }
+    const updatedUser = await storage.updateUser(req.user!.id, updateData);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Database error in PUT /api/users/:id:', error);
+    res.status(500).json({ error: 'Failed to update user profile' });
+  }
 });
 
-app.get('/api/users/stats', authenticateToken, async (req, res) => res.json(await storage.getUserStats(req.user!.id)));
-app.get('/api/users/items', authenticateToken, async (req, res) => res.json(await storage.getUserItems(req.user!.id)));
+app.get('/api/users/stats', authenticateToken, async (req, res) => {
+  try {
+    res.json(await storage.getUserStats(req.user!.id));
+  } catch (error) {
+    console.error('Database error in GET /api/users/stats:', error);
+    res.status(500).json({ error: 'Failed to fetch user stats' });
+  }
+});
+
+app.get('/api/users/items', authenticateToken, async (req, res) => {
+  try {
+    res.json(await storage.getUserItems(req.user!.id));
+  } catch (error) {
+    console.error('Database error in GET /api/users/items:', error);
+    res.status(500).json({ error: 'Failed to fetch user items' });
+  }
+});
 
 // 카카오 연결 해제 함수
 const disconnectKakaoAccount = async (accessToken: string): Promise<boolean> => {
