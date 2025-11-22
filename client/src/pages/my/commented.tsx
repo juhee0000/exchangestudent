@@ -36,16 +36,41 @@ export default function MyCommentedPosts() {
     }
   };
 
+  // 자유게시판 댓글 단 글
   const { 
-    data: posts = [], 
-    isLoading: isPostsLoading,
-    isError,
-    refetch,
+    data: communityPosts = [], 
+    isLoading: isCommunityLoading,
+    isError: isCommunityError,
+    refetch: refetchCommunity,
   } = useQuery<CommunityPost[], Error>({
-    // 이 경로(queryKey)는 백엔드 routes.ts에 정의되어 있습니다.
     queryKey: ["/api/community/posts/commented"], 
     enabled: !!user,
   });
+
+  // 모임방 댓글 단 글
+  const { 
+    data: meetingPosts = [], 
+    isLoading: isMeetingLoading,
+    isError: isMeetingError,
+    refetch: refetchMeeting,
+  } = useQuery<CommunityPost[], Error>({
+    queryKey: ["/api/meeting/posts/commented"], 
+    enabled: !!user,
+  });
+
+  // 두 종류의 글을 합치기
+  const posts = [...communityPosts, ...meetingPosts].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA; // 최신순 정렬
+  });
+
+  const isPostsLoading = isCommunityLoading || isMeetingLoading;
+  const isError = isCommunityError || isMeetingError;
+  const refetch = () => {
+    refetchCommunity();
+    refetchMeeting();
+  };
 
   if (isAuthLoading || !user) {
     return null; // 인증 로딩 중이거나 사용자가 없으면 렌더링하지 않음

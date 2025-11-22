@@ -66,11 +66,11 @@ export default function MeetingCreate() {
         openChatLink: data.openChatLink,
       };
       
-      const response = await apiRequest("POST", "/api/community/posts", postData);
+      const response = await apiRequest("POST", "/api/meeting/posts", postData);
       return await response.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts"] });
       
       trackEvent('Meeting Post Created', {
         title: data.title,

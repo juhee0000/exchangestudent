@@ -46,7 +46,7 @@ export default function MyPosts() {
     }
   };
 
-  // 커뮤니티 글 가져오기
+  // 커뮤니티 글 가져오기 (자유게시판)
   const { 
     data: communityPosts = [], 
     isLoading: isPostsLoading,
@@ -54,6 +54,17 @@ export default function MyPosts() {
     refetch: refetchPosts,
   } = useQuery<CommunityPost[], Error>({
     queryKey: ["/api/community/posts/my"],
+    enabled: !!user,
+  });
+
+  // 모임방 글 가져오기
+  const { 
+    data: meetingPosts = [], 
+    isLoading: isMeetingLoading,
+    isError: isMeetingError,
+    refetch: refetchMeeting,
+  } = useQuery<CommunityPost[], Error>({
+    queryKey: ["/api/meeting/posts/my"],
     enabled: !!user,
   });
 
@@ -68,9 +79,10 @@ export default function MyPosts() {
     enabled: !!user,
   });
 
-  // 두 종류의 글을 하나로 합치기
+  // 세 종류의 글을 하나로 합치기
   const allPosts: UnifiedPost[] = [
     ...communityPosts.map(post => ({ ...post, postType: "community" as const })),
+    ...meetingPosts.map(post => ({ ...post, postType: "community" as const })),
     ...items.map(item => ({ ...item, postType: "item" as const }))
   ].sort((a, b) => {
     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -78,10 +90,11 @@ export default function MyPosts() {
     return dateB - dateA; // 최신순 정렬
   });
 
-  const isLoading = isPostsLoading || isItemsLoading;
-  const isError = isPostsError || isItemsError;
+  const isLoading = isPostsLoading || isMeetingLoading || isItemsLoading;
+  const isError = isPostsError || isMeetingError || isItemsError;
   const refetch = () => {
     refetchPosts();
+    refetchMeeting();
     refetchItems();
   };
 

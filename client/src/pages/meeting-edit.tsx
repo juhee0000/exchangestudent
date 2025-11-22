@@ -39,7 +39,7 @@ export default function MeetingEdit() {
   const postId = params?.id;
 
   const { data: post, isLoading } = useQuery({
-    queryKey: ["/api/community/posts", postId],
+    queryKey: ["/api/meeting/posts", postId],
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers: Record<string, string> = {};
@@ -47,7 +47,7 @@ export default function MeetingEdit() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`/api/community/posts/${postId}`, {
+      const response = await fetch(`/api/meeting/posts/${postId}`, {
         headers,
         credentials: "include",
       });
@@ -109,12 +109,12 @@ export default function MeetingEdit() {
         openChatLink: data.openChatLink,
       };
       
-      const response = await apiRequest("PUT", `/api/community/posts/${postId}`, postData);
+      const response = await apiRequest("PUT", `/api/meeting/posts/${postId}`, postData);
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts", postId] });
       navigate(`/meetings/${postId}`);
     },
     onError: (error: any) => {

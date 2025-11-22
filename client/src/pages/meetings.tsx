@@ -18,10 +18,9 @@ export default function Meetings() {
   const [, navigate] = useLocation();
 
   const { data: posts = [], isLoading, isFetching } = useQuery<CommunityPost[]>({
-    queryKey: ["/api/community/posts", "모임방", selectedCountry, searchKeyword],
+    queryKey: ["/api/meeting/posts", selectedCountry, searchKeyword],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.append("category", "모임방");
       if (selectedCountry !== "전체") {
         params.append("country", selectedCountry);
       }
@@ -35,7 +34,7 @@ export default function Meetings() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`/api/community/posts?${params}`, {
+      const response = await fetch(`/api/meeting/posts?${params}`, {
         headers,
         credentials: "include",
       });

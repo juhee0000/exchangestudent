@@ -26,9 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import type { CommentWithAuthor, CommunityPostWithAuthor } from "@shared/schema";
+import type { CommentWithAuthor, MeetingPostWithAuthor } from "@shared/schema";
 
-interface DetailedPost extends CommunityPostWithAuthor {}
+interface DetailedPost extends MeetingPostWithAuthor {}
 
 export default function MeetingDetail() {
   const [, params] = useRoute("/meetings/:id");
@@ -40,7 +40,7 @@ export default function MeetingDetail() {
   const [commentText, setCommentText] = useState("");
 
   const { data: post, isLoading } = useQuery<DetailedPost>({
-    queryKey: ["/api/community/posts", postId],
+    queryKey: ["/api/meeting/posts", postId],
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers: Record<string, string> = {};
@@ -48,7 +48,7 @@ export default function MeetingDetail() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/community/posts/${postId}`, {
+      const response = await fetch(`/api/meeting/posts/${postId}`, {
         headers,
         credentials: "include",
       });
@@ -59,7 +59,7 @@ export default function MeetingDetail() {
   });
 
   const { data: comments = [], isLoading: commentsLoading } = useQuery<CommentWithAuthor[]>({
-    queryKey: ["/api/community/posts", postId, "comments"],
+    queryKey: ["/api/meeting/posts", postId, "comments"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
       const headers: Record<string, string> = {};
@@ -67,7 +67,7 @@ export default function MeetingDetail() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/community/posts/${postId}/comments`, {
+      const response = await fetch(`/api/meeting/posts/${postId}/comments`, {
         headers,
         credentials: "include",
       });
@@ -84,12 +84,12 @@ export default function MeetingDetail() {
 
   const createCommentMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest('POST', `/api/community/posts/${postId}/comments`, { content });
+      return apiRequest('POST', `/api/meeting/posts/${postId}/comments`, { content });
     },
     onSuccess: () => {
       setCommentText("");
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId, "comments"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts", postId, "comments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts", postId] });
     },
     onError: (error: any) => {
       toast({
@@ -109,8 +109,8 @@ export default function MeetingDetail() {
         title: "댓글 삭제 완료",
         description: "댓글이 성공적으로 삭제되었습니다.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId, "comments"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/community/posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts", postId, "comments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meeting/posts", postId] });
     },
     onError: (error: any) => {
       console.error('❌ 댓글 삭제 오류:', error);
@@ -124,7 +124,7 @@ export default function MeetingDetail() {
 
   const deletePostMutation = useMutation({
     mutationFn: async () => {
-        return apiRequest('DELETE', `/api/community/posts/${postId}`);
+        return apiRequest('DELETE', `/api/meeting/posts/${postId}`);
     },
     onSuccess: () => {
         toast({
