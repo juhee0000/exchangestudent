@@ -13,10 +13,12 @@ import {
 registerSchema,
 insertItemSchema,
 insertCommunityPostSchema,
+insertMeetingPostSchema,
 insertCommentSchema,
 type User,
 type InsertItem,
 type InsertCommunityPost,
+type InsertMeetingPost,
 type InsertComment,
 comments,
 notifications,
@@ -1369,6 +1371,162 @@ return res.status(500).json({ error: 'Failed to delete comment due to server err
 }
 });
 
+// Meeting Posts Routes - 모임방 게시글
+app.get('/api/meeting/posts/my', authenticateToken, async (req, res) => {
+  try {
+    res.json(await storage.getMeetingPostsByAuthor(req.user!.id));
+  } catch (error) {
+    console.error('Database error in /api/meeting/posts/my:', error);
+    res.status(500).json({ error: 'Failed to fetch user meeting posts' });
+  }
+});
+
+app.get('/api/meeting/posts/commented', authenticateToken, async (req, res) => {
+  try {
+    res.json(await storage.getMeetingPostsCommentedByUser(req.user!.id));
+  } catch (error) {
+    console.error('Database error in /api/meeting/posts/commented:', error);
+    res.status(500).json({ error: 'Failed to fetch commented meeting posts' });
+  }
+});
+
+app.get('/api/meeting/posts', async (req, res) => {
+  try {
+    const { country, search } = req.query;
+    res.json(await storage.getMeetingPostsByQuery({ 
+      country: country as string,
+      search: search as string 
+    }));
+  } catch (error) {
+    console.error('Database error in /api/meeting/posts:', error);
+    res.status(500).json({ error: 'Failed to fetch meeting posts' });
+  }
+});
+
+app.get('/api/meeting/posts/:id', async (req, res) => {
+  try {
+    const post = await storage.getMeetingPost(req.params.id);
+    if (!post) {
+      return res.status(404).json({ error: 'Meeting post not found' });
+    }
+    await storage.incrementMeetingPostViews(req.params.id);
+    res.json(post);
+  } catch (error) {
+    console.error('Database error in /api/meeting/posts/:id:', error);
+    res.status(500).json({ error: 'Failed to fetch meeting post' });
+  }
+});
+
+app.post('/api/meeting/posts', authenticateToken, async (req, res) => {
+  try {
+    const postData = insertMeetingPostSchema.parse({ ...req.body, authorId: req.user!.id });
+    const post = await storage.createMeetingPost(postData as InsertMeetingPost);
+    res.status(201).json(post);
+  } catch (error) {
+    console.error('Database error in POST /api/meeting/posts:', error);
+    res.status(500).json({ error: 'Failed to create meeting post' });
+  }
+});
+
+app.put('/api/meeting/posts/:id', authenticateToken, async (req, res) => {
+  try {
+    const post = await storage.getMeetingPost(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Meeting post not found' });
+    if (post.authorId !== req.user!.id) return res.status(403).json({ error: 'Not authorized' });
+    
+    const updateData = {
+      title: req.body.title,
+      content: req.body.content,
+      country: req.body.country,
+      school: req.body.school,
+      images: req.body.images,
+      semester: req.body.semester,
+      openChatLink: req.body.openChatLink,
+    };
+    
+    const updatedPost = await storage.updateMeetingPost(req.params.id, updateData);
+    res.json(updatedPost);
+  } catch (error) {
+    console.error('Database error in PUT /api/meeting/posts/:id:', error);
+    res.status(500).json({ error: 'Failed to update meeting post' });
+  }
+});
+
+app.delete('/api/meeting/posts/:id', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Authentication required' });
+    
+    const postId = req.params.id;
+    const post = await storage.getMeetingPost(postId);
+    
+    if (!post) {
+      return res.status(404).json({ error: 'Meeting post not found' });
+    }
+    
+    if (post.authorId !== req.user!.id) {
+      return res.status(403).json({ error: 'Not authorized to delete this post' });
+    }
+    
+    const success = await storage.deleteMeetingPost(postId); 
+    
+    if (success) {
+      return res.status(204).send();
+    } else {
+      return res.status(500).json({ error: 'Failed to delete meeting post on database' }); 
+    }
+  } catch (error) {
+    console.error('Database error in DELETE /api/meeting/posts/:id:', error);
+    res.status(500).json({ error: 'Failed to delete meeting post due to server error' });
+  }
+});
+
+app.get('/api/meeting/posts/:id/comments', authenticateToken, async (req, res) => {
+  try {
+    res.json(await storage.getPostComments(req.params.id, 'meeting'));
+  } catch (error) {
+    console.error('Database error in /api/meeting/posts/:id/comments:', error);
+    res.status(500).json({ error: 'Failed to fetch meeting post comments' });
+  }
+});
+
+app.post('/api/meeting/posts/:id/comments', authenticateToken, async (req, res) => {
+  try {
+    const commentData = insertCommentSchema.parse({ 
+      ...req.body, 
+      postId: req.params.id, 
+      postType: 'meeting',
+      authorId: req.user!.id 
+    });
+    const comment = await storage.createComment(commentData as InsertComment & { authorId: string });
+    await storage.incrementMeetingPostCommentsCount(req.params.id);
+    
+    if (req.body.parentCommentId) {
+      const parentComment = await storage.getCommentById(req.body.parentCommentId);
+      if (parentComment && parentComment.authorId !== req.user!.id) {
+        await storage.createNotification({
+          userId: parentComment.authorId,
+          type: 'new_reply',
+          content: `${req.user!.username}님이 댓글에 답글을 남겼습니다.`,
+          link: `/meeting/post/${req.params.id}`
+        });
+      }
+    }
+    
+    const post = await storage.getMeetingPost(req.params.id);
+    if (post && post.authorId !== req.user!.id) {
+      await storage.createNotification({
+        userId: post.authorId, 
+        type: 'new_comment',
+        content: `${req.user!.username}님이 모임방 게시글에 댓글을 남겼습니다.`,
+        link: `/meeting/post/${req.params.id}`
+      });
+    }
+    res.status(201).json(comment);
+  } catch (error) {
+    console.error('Database error in POST /api/meeting/posts/:id/comments:', error);
+    res.status(500).json({ error: 'Failed to create meeting post comment' });
+  }
+});
 
 // 캐시된 응답을 위한 메모리 저장소
 const responseCache = new Map<string, { data: any; expires: number }>();

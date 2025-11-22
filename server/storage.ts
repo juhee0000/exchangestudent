@@ -7,7 +7,8 @@ import {
   items, 
   chatRooms, 
   messages, 
-  communityPosts, 
+  communityPosts,
+  meetingPosts,
   comments, 
   notifications,
   reports,
@@ -24,6 +25,9 @@ import {
   type CommunityPost,
   type CommunityPostWithAuthor,
   type InsertCommunityPost,
+  type MeetingPost,
+  type MeetingPostWithAuthor,
+  type InsertMeetingPost,
   type Comment,
   type CommentWithAuthor,
   type InsertComment,
@@ -83,7 +87,19 @@ export interface IStorage {
   getCommunityPostsByCountry(country: string): Promise<CommunityPostWithAuthor[]>;
   getCommunityPostsByAuthor(authorId: string): Promise<CommunityPostWithAuthor[]>;
   getCommunityPostsCommentedByUser(userId: string): Promise<CommunityPostWithAuthor[]>;
-  getPostComments(postId: string): Promise<CommentWithAuthor[]>;
+  
+  // Meeting methods
+  getMeetingPosts(): Promise<MeetingPostWithAuthor[]>;
+  getMeetingPost(id: string): Promise<MeetingPostWithAuthor | undefined>;
+  createMeetingPost(insertPost: InsertMeetingPost): Promise<MeetingPost>;
+  updateMeetingPost(id: string, updateData: Partial<InsertMeetingPost>): Promise<MeetingPost | undefined>;
+  deleteMeetingPost(postId: string): Promise<boolean>;
+  getMeetingPostsByQuery(query: { country?: string; search?: string }): Promise<MeetingPostWithAuthor[]>;
+  getMeetingPostsByAuthor(authorId: string): Promise<MeetingPostWithAuthor[]>;
+  getMeetingPostsCommentedByUser(userId: string): Promise<MeetingPostWithAuthor[]>;
+  
+  // Comment methods (shared between community and meeting posts)
+  getPostComments(postId: string, postType?: string): Promise<CommentWithAuthor[]>;
   getCommentById(commentId: string): Promise<Comment | undefined>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   deleteComment(commentId: string, userId: string): Promise<boolean>;
@@ -709,7 +725,190 @@ export class DatabaseStorage implements IStorage {
       .where(eq(communityPosts.id, id));
   }
 
-  async getPostComments(postId: string): Promise<CommentWithAuthor[]> {
+  // Meeting Posts methods
+  async getMeetingPosts(): Promise<MeetingPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: meetingPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(meetingPosts)
+      .leftJoin(users, eq(meetingPosts.authorId, users.id))
+      .orderBy(desc(meetingPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
+  }
+
+  async getMeetingPost(id: string): Promise<MeetingPostWithAuthor | undefined> {
+    const [result] = await db
+      .select({
+        post: meetingPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(meetingPosts)
+      .leftJoin(users, eq(meetingPosts.authorId, users.id))
+      .where(eq(meetingPosts.id, id))
+      .limit(1);
+
+    if (!result) return undefined;
+
+    return {
+      ...result.post,
+      author: result.author.status !== null ? result.author : undefined,
+    };
+  }
+
+  async createMeetingPost(insertPost: InsertMeetingPost): Promise<MeetingPost> {
+    const [post] = await db
+      .insert(meetingPosts)
+      .values(insertPost)
+      .returning();
+    return post;
+  }
+
+  async updateMeetingPost(id: string, updateData: Partial<InsertMeetingPost>): Promise<MeetingPost | undefined> {
+    const [post] = await db
+      .update(meetingPosts)
+      .set(updateData)
+      .where(eq(meetingPosts.id, id))
+      .returning();
+    return post;
+  }
+
+  async deleteMeetingPost(postId: string): Promise<boolean> {
+    try {
+      await db.delete(comments)
+        .where(and(
+          eq(comments.postId, postId),
+          eq(comments.postType, 'meeting')
+        ));
+
+      const result = await db
+        .delete(meetingPosts)
+        .where(eq(meetingPosts.id, postId))
+        .returning();
+
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting meeting post:', error);
+      return false;
+    }
+  }
+
+  async getMeetingPostsByQuery(query: { country?: string; search?: string }): Promise<MeetingPostWithAuthor[]> {
+    let whereConditions = [];
+
+    if (query.country) {
+      whereConditions.push(eq(meetingPosts.country, query.country));
+    }
+
+    if (query.search && query.search.trim()) {
+      const searchTerm = `%${query.search.trim().toLowerCase()}%`;
+      whereConditions.push(or(
+        sql`LOWER(${meetingPosts.title}) LIKE ${searchTerm}`,
+        sql`LOWER(${meetingPosts.content}) LIKE ${searchTerm}`
+      ));
+    }
+
+    const results = await db
+      .select({
+        post: meetingPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(meetingPosts)
+      .leftJoin(users, eq(meetingPosts.authorId, users.id))
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+      .orderBy(desc(meetingPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
+  }
+
+  async getMeetingPostsByAuthor(authorId: string): Promise<MeetingPostWithAuthor[]> {
+    const results = await db
+      .select({
+        post: meetingPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(meetingPosts)
+      .leftJoin(users, eq(meetingPosts.authorId, users.id))
+      .where(eq(meetingPosts.authorId, authorId))
+      .orderBy(desc(meetingPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
+  }
+
+  async getMeetingPostsCommentedByUser(userId: string): Promise<MeetingPostWithAuthor[]> {
+    const commentResults = await db
+      .select({ postId: comments.postId })
+      .from(comments)
+      .where(and(
+        eq(comments.authorId, userId),
+        eq(comments.postType, 'meeting')
+      ));
+
+    if (commentResults.length === 0) {
+      return [];
+    }
+
+    const uniquePostIds = [...new Set(commentResults.map(row => row.postId))];
+    const results = await db
+      .select({
+        post: meetingPosts,
+        author: {
+          username: users.username,
+          fullName: users.fullName,
+          status: users.status,
+        },
+      })
+      .from(meetingPosts)
+      .leftJoin(users, eq(meetingPosts.authorId, users.id))
+      .where(inArray(meetingPosts.id, uniquePostIds))
+      .orderBy(desc(meetingPosts.createdAt));
+
+    return results.map(r => ({
+      ...r.post,
+      author: r.author.status !== null ? r.author : undefined,
+    }));
+  }
+
+  async incrementMeetingPostViews(id: string): Promise<void> {
+    await db.update(meetingPosts)
+      .set({ views: sql`${meetingPosts.views} + 1` })
+      .where(eq(meetingPosts.id, id));
+  }
+
+  async incrementMeetingPostCommentsCount(id: string): Promise<void> {
+    await db.update(meetingPosts)
+      .set({ commentsCount: sql`${meetingPosts.commentsCount} + 1` })
+      .where(eq(meetingPosts.id, id));
+  }
+
+  async getPostComments(postId: string, postType: string = 'community'): Promise<CommentWithAuthor[]> {
     const results = await db
       .select({
         id: comments.id,
