@@ -595,6 +595,7 @@ export class DatabaseStorage implements IStorage {
       if (query.country === "기타") {
         whereConditions.push(
           and(
+            ne(communityPosts.country, "전체"),
             ne(communityPosts.country, mainCountries[0]),
             ne(communityPosts.country, mainCountries[1]),
             ne(communityPosts.country, mainCountries[2]),
@@ -836,6 +837,7 @@ export class DatabaseStorage implements IStorage {
       if (query.country === "기타") {
         whereConditions.push(
           and(
+            ne(meetingPosts.country, "전체"),
             ne(meetingPosts.country, mainCountries[0]),
             ne(meetingPosts.country, mainCountries[1]),
             ne(meetingPosts.country, mainCountries[2]),
