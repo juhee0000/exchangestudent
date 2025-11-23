@@ -589,8 +589,27 @@ export class DatabaseStorage implements IStorage {
   async getCommunityPostsByQuery(query: { category: string; country?: string; search?: string }): Promise<CommunityPostWithAuthor[]> {
     const whereConditions = [eq(communityPosts.category, query.category)];
 
+    const mainCountries = ["미국", "독일", "스페인", "프랑스", "영국", "호주", "일본", "중국", "이탈리아", "캐나다"];
+
     if (query.country) {
-      whereConditions.push(eq(communityPosts.country, query.country));
+      if (query.country === "기타") {
+        whereConditions.push(
+          and(
+            ne(communityPosts.country, mainCountries[0]),
+            ne(communityPosts.country, mainCountries[1]),
+            ne(communityPosts.country, mainCountries[2]),
+            ne(communityPosts.country, mainCountries[3]),
+            ne(communityPosts.country, mainCountries[4]),
+            ne(communityPosts.country, mainCountries[5]),
+            ne(communityPosts.country, mainCountries[6]),
+            ne(communityPosts.country, mainCountries[7]),
+            ne(communityPosts.country, mainCountries[8]),
+            ne(communityPosts.country, mainCountries[9])
+          )
+        );
+      } else {
+        whereConditions.push(eq(communityPosts.country, query.country));
+      }
     }
 
     if (query.search && query.search.trim()) {
@@ -811,8 +830,27 @@ export class DatabaseStorage implements IStorage {
   async getMeetingPostsByQuery(query: { country?: string; search?: string }): Promise<MeetingPostWithAuthor[]> {
     let whereConditions = [];
 
+    const mainCountries = ["미국", "독일", "스페인", "프랑스", "영국", "호주", "일본", "중국", "이탈리아", "캐나다"];
+
     if (query.country) {
-      whereConditions.push(eq(meetingPosts.country, query.country));
+      if (query.country === "기타") {
+        whereConditions.push(
+          and(
+            ne(meetingPosts.country, mainCountries[0]),
+            ne(meetingPosts.country, mainCountries[1]),
+            ne(meetingPosts.country, mainCountries[2]),
+            ne(meetingPosts.country, mainCountries[3]),
+            ne(meetingPosts.country, mainCountries[4]),
+            ne(meetingPosts.country, mainCountries[5]),
+            ne(meetingPosts.country, mainCountries[6]),
+            ne(meetingPosts.country, mainCountries[7]),
+            ne(meetingPosts.country, mainCountries[8]),
+            ne(meetingPosts.country, mainCountries[9])
+          )
+        );
+      } else {
+        whereConditions.push(eq(meetingPosts.country, query.country));
+      }
     }
 
     if (query.search && query.search.trim()) {

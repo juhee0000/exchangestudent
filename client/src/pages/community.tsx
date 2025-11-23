@@ -109,6 +109,16 @@ export default function Community() {
               {country}
             </button>
           ))}
+          <button
+            onClick={() => setSelectedCountry("기타")}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap transition-colors ${
+              selectedCountry === "기타" 
+                ? "bg-gray-900 text-white" 
+                : "bg-gray-100 text-gray-700"
+            }`}
+          >
+            기타
+          </button>
         </div>
       </div>
 
