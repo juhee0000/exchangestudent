@@ -174,7 +174,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
-        <h1 className="text-xl font-bold text-gray-900 mb-3">교환마켓</h1>
+        <h1 className="text-xl font-bold text-gray-900 mb-3">교환링크</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input

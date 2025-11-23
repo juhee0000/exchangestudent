@@ -20,7 +20,7 @@ export default function Privacy() {
 
       <h1 className="text-2xl font-bold mb-4">개인정보 처리방침</h1>
       <p className="text-sm text-gray-500 mb-8">
-        공고일자: 2025년 11월 15일 | 시행일자: 2025년 11월 22일
+        공고일자: 2025년 11월 15일 | 시행일자: 2025년 11월 16일
       </p>
 
       <h2 className="text-xl font-semibold mt-8">제1조 (개인정보의 수집 항목)</h2>
