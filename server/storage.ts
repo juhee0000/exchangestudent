@@ -495,6 +495,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(communityPosts)
       .leftJoin(users, eq(communityPosts.authorId, users.id))
+      .where(eq(communityPosts.category, '자유게시판'))
       .orderBy(desc(communityPosts.createdAt));
 
     return results.map(r => ({
