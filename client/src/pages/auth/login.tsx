@@ -95,16 +95,16 @@ export default function Login() {
       {/* 메인 컨텐츠 */}
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-6">
         {/* 로고 */}
-        <div className="mb-20">
+        <div className="mb-12">
           <img 
             src={logoImage} 
             alt="교환마켓 로고" 
-            className="w-64 h-auto"
+            className="w-80 h-auto"
           />
         </div>
 
         {/* SNS 로그인 안내 텍스트 */}
-        <p className="text-gray-600 text-center mb-8 text-base">
+        <p className="text-gray-600 text-center mb-6 text-base">
           간편하게 로그인하고 서비스를 이용해보세요 :)
         </p>
 
