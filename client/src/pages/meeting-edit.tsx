@@ -15,14 +15,12 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertCommunityPostSchema } from "@shared/schema";
 import { z } from "zod";
 
-const editMeetingPostSchema = insertCommunityPostSchema.omit({
-  id: true,
-  authorId: true,
-  views: true,
-  commentsCount: true,
-  createdAt: true,
-}).extend({
+const editMeetingPostSchema = z.object({
+  title: z.string().optional(),
+  content: z.string().optional(),
+  category: z.string().optional(),
   country: z.string().optional(),
+  school: z.string().optional(),
   images: z.array(z.string()).max(5, "최대 5장까지만 업로드할 수 있습니다").optional(),
   semester: z.string().optional(),
   openChatLink: z.string().optional(),
@@ -289,6 +287,25 @@ export default function MeetingEdit() {
                       placeholder="000 대학교로 교환가시는 분들 같이 준비해요!"
                       className="min-h-[200px] text-sm resize-none bg-gray-50 border-gray-300"
                       {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Open Chat Link */}
+            <FormField
+              control={form.control}
+              name="openChatLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-normal text-gray-900">오픈 카톡방 주소(선택)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://open.kakao.com/..."
+                      {...field} 
+                      className="bg-gray-50 border-gray-300"
                     />
                   </FormControl>
                   <FormMessage />
