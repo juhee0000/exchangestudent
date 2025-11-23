@@ -1548,6 +1548,17 @@ app.post('/api/meeting/posts/:id/comments', authenticateToken, async (req, res) 
   }
 });
 
+// 사용자가 작성한 댓글 목록 (게시글 정보 포함)
+app.get('/api/comments/my', authenticateToken, async (req, res) => {
+  try {
+    const comments = await storage.getUserCommentsWithPostInfo(req.user!.id);
+    res.json(comments);
+  } catch (error) {
+    console.error('Database error in GET /api/comments/my:', error);
+    res.status(500).json({ error: 'Failed to fetch user comments' });
+  }
+});
+
 // 캐시된 응답을 위한 메모리 저장소
 const responseCache = new Map<string, { data: any; expires: number }>();
 const RESPONSE_CACHE_DURATION = 30 * 1000; // 30초 캐시

@@ -103,6 +103,7 @@ export interface IStorage {
   getCommentById(commentId: string): Promise<Comment | undefined>;
   createComment(comment: InsertComment & { authorId: string }): Promise<Comment>;
   deleteComment(commentId: string, userId: string): Promise<boolean>;
+  getUserCommentsWithPostInfo(userId: string): Promise<any[]>;
 
   // Report methods
   createReport(insertReport: InsertReport & { reporterId: string }): Promise<Report>;
@@ -974,6 +975,64 @@ export class DatabaseStorage implements IStorage {
   }
 
   return false;
+  }
+
+  async getUserCommentsWithPostInfo(userId: string): Promise<any[]> {
+    // 사용자가 작성한 모든 댓글 가져오기
+    const userComments = await db.select()
+      .from(comments)
+      .where(eq(comments.authorId, userId))
+      .orderBy(desc(comments.createdAt));
+
+    const results = [];
+
+    // 각 댓글에 대해 게시글 정보 가져오기
+    for (const comment of userComments) {
+      let postInfo = null;
+
+      if (comment.postType === 'community') {
+        // 자유게시판 게시글 정보
+        const [post] = await db.select()
+          .from(communityPosts)
+          .where(eq(communityPosts.id, comment.postId))
+          .limit(1);
+        
+        if (post) {
+          postInfo = {
+            ...post,
+            category: post.category || '자유게시판'
+          };
+        }
+      } else if (comment.postType === 'meeting') {
+        // 모임방 게시글 정보
+        const [post] = await db.select()
+          .from(meetingPosts)
+          .where(eq(meetingPosts.id, comment.postId))
+          .limit(1);
+        
+        if (post) {
+          postInfo = {
+            ...post,
+            category: '모임방'
+          };
+        }
+      }
+
+      // 게시글 정보가 있는 경우만 결과에 추가
+      if (postInfo) {
+        results.push({
+          comment: {
+            id: comment.id,
+            content: comment.content,
+            createdAt: comment.createdAt,
+          },
+          post: postInfo,
+          postType: comment.postType
+        });
+      }
+    }
+
+    return results;
   }
 
   // Admin methods
