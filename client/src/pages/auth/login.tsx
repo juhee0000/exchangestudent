@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import logoImage from "@assets/Gemini_Generated_Image_wfh7dwfh7dwfh7dw_1763883255370.png";
+import logoImage from "@assets/image_1763885399175.png";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
