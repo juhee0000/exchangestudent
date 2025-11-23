@@ -859,6 +859,7 @@ export class DatabaseStorage implements IStorage {
 
     return results.map(r => ({
       ...r.post,
+      category: '모임방',
       author: r.author.status !== null ? r.author : undefined,
     }));
   }
@@ -893,6 +894,7 @@ export class DatabaseStorage implements IStorage {
 
     return results.map(r => ({
       ...r.post,
+      category: '모임방',
       author: r.author.status !== null ? r.author : undefined,
     }));
   }
