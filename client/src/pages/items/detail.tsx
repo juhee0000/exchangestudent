@@ -68,6 +68,8 @@ export default function ItemDetail() {
   const { data: item, isLoading } = useQuery<ItemWithSeller>({
     queryKey: ["/api/items", id],
     enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   // Image navigation functions

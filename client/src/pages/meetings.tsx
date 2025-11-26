@@ -11,6 +11,20 @@ import { COUNTRIES } from "@/lib/countries";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 
+function MeetingSkeleton() {
+  return (
+    <Card className="p-4 animate-pulse">
+      <div className="h-4 bg-gray-200 rounded w-16 mb-2" />
+      <div className="h-5 bg-gray-200 rounded w-3/4 mb-2" />
+      <div className="h-3 bg-gray-200 rounded w-1/2 mb-3" />
+      <div className="flex items-center space-x-3">
+        <div className="h-3 bg-gray-200 rounded w-12" />
+        <div className="h-3 bg-gray-200 rounded w-16" />
+      </div>
+    </Card>
+  );
+}
+
 export default function Meetings() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -50,13 +64,6 @@ export default function Meetings() {
     navigate("/meetings/create");
   };
 
-  if (isLoading && posts.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   const getCountryColor = (country: string) => {
     const colorMap: { [key: string]: string } = {
@@ -146,7 +153,16 @@ export default function Meetings() {
       </div>
 
       <main className="pb-20">
-        {posts.length === 0 ? (
+        {isLoading && posts.length === 0 ? (
+          <div className="px-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <MeetingSkeleton />
+              <MeetingSkeleton />
+              <MeetingSkeleton />
+              <MeetingSkeleton />
+            </div>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">

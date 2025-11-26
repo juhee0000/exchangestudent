@@ -57,7 +57,9 @@ export default function CommunityDetail() {
       if (!response.ok) throw new Error("Failed to fetch post");
       return response.json();
     },
-    enabled: !!postId, 
+    enabled: !!postId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   // 댓글 조회 (로그인 시만)

@@ -55,7 +55,9 @@ export default function MeetingDetail() {
       if (!response.ok) throw new Error("Failed to fetch post");
       return response.json();
     },
-    enabled: !!postId, 
+    enabled: !!postId,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
   const { data: comments = [], isLoading: commentsLoading } = useQuery<CommentWithAuthor[]>({

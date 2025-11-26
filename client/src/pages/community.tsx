@@ -9,6 +9,25 @@ import { useLocation } from "wouter";
 import type { CommunityPost } from "@shared/schema";
 import { COUNTRIES } from "@/lib/countries";
 
+function PostSkeleton() {
+  return (
+    <Card className="mx-4 mb-3 p-3 animate-pulse">
+      <div className="flex">
+        <div className="flex-1">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+          <div className="h-3 bg-gray-200 rounded w-full mb-2" />
+          <div className="h-3 bg-gray-200 rounded w-1/2" />
+        </div>
+        <div className="w-16 h-16 bg-gray-200 rounded-lg ml-3 flex-shrink-0" />
+      </div>
+      <div className="flex items-center mt-2 space-x-3">
+        <div className="h-3 bg-gray-200 rounded w-12" />
+        <div className="h-3 bg-gray-200 rounded w-16" />
+      </div>
+    </Card>
+  );
+}
+
 export default function Community() {
   const [selectedCountry, setSelectedCountry] = useState("전체");
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -58,14 +77,6 @@ export default function Community() {
   const handleCreatePost = () => {
     navigate("/community/create?category=자유게시판");
   };
-
-  if (isLoading && posts.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -125,7 +136,14 @@ export default function Community() {
       </div>
 
       <main className="pb-20">
-        {posts.length === 0 ? (
+        {isLoading && posts.length === 0 ? (
+          <div className="px-4 py-4 space-y-4">
+            <PostSkeleton />
+            <PostSkeleton />
+            <PostSkeleton />
+            <PostSkeleton />
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">
