@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 export default function BottomNav() {
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
 
   const navItems = [
     { path: "/", icon: Home, label: "홈" },
@@ -12,26 +12,39 @@ export default function BottomNav() {
     { path: "/my", icon: User, label: "MY" },
   ];
 
+  const isActivePath = (path: string) => {
+    if (path === "/") {
+      return location === "/" || location === "";
+    }
+    return location.startsWith(path);
+  };
+
   return (
     <nav className="marketplace-bottom-nav fixed bottom-0 w-full bg-white border-t border-gray-200 py-2">
       <div className="max-w-md mx-auto px-4">
         <div className="flex justify-around">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location === item.path;
+            const isActive = isActivePath(item.path);
 
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={() => window.location.href = item.path}
                 className={cn(
-                  "marketplace-nav-item flex flex-col items-center px-2 py-1 text-[10px] text-gray-700",
-                  isActive && "text-red-500"
+                  "flex flex-col items-center px-2 py-1",
+                  isActive ? "text-red-500" : "text-gray-400"
                 )}
                 data-testid={`nav-${item.label}`}
               >
-                <Icon className={cn("h-5 w-5 mb-1", isActive && "fill-red-500")} />
-                <span className="text-xs">{item.label}</span>
+                <Icon 
+                  className="h-5 w-5 mb-1" 
+                  fill={isActive ? "currentColor" : "none"}
+                  strokeWidth={isActive ? 1.5 : 2}
+                />
+                <span className={cn("text-xs", isActive ? "font-semibold" : "font-normal")}>
+                  {item.label}
+                </span>
               </button>
             );
           })}
