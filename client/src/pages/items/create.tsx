@@ -524,7 +524,7 @@ export default function CreateItem() {
                     <FormItem>
                       <FormLabel>제목 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input placeholder="상품 제목을 입력하세요" {...field} data-testid="input-title" />
+                        <Input placeholder="상품 제목을 입력하세요" className="placeholder:text-muted-foreground" {...field} data-testid="input-title" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -539,7 +539,8 @@ export default function CreateItem() {
                       <FormLabel>설명 <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Textarea 
-            placeholder="ex) 사용감은 중간 정도예요. 일괄 판매합니다 :)"
+                          placeholder="ex) 사용감은 중간 정도예요. 일괄 판매합니다 :)"
+                          className="placeholder:text-muted-foreground"
                           rows={8}
                           {...field}
                           data-testid="input-description"
@@ -637,6 +638,7 @@ export default function CreateItem() {
                       <FormControl>
                         <Input 
                           placeholder="오픈채팅 링크를 입력하세요"
+                          className="placeholder:text-muted-foreground"
                           {...field}
                           data-testid="input-openchat-link"
                         />
