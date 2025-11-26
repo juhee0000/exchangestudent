@@ -627,52 +627,6 @@ export default function CreateItem() {
                   </div>
                 )}
 
-
-
-                {/* Country Selection */}
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>해당 국가 <span className="text-red-500">*</span></FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-country">
-                            <SelectValue placeholder="거래할 국가를 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {COUNTRIES.map((country) => (
-                            <SelectItem key={country} value={country}>
-                              {country}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="school"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>해당 해외 학교</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="해당 학교명(국문)을 입력해주세요"
-                          {...field} 
-                          data-testid="input-school"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {/* Open Chat Link */}
                 <FormField
                   control={form.control}
@@ -765,6 +719,51 @@ export default function CreateItem() {
                     거래 가능 기간을 설정하지 않을 경우 계속 거래 가능한 상태로 유지됩니다.
                   </p>
                 </div>
+
+                {/* Country Selection - 거래가능기간 아래로 이동 */}
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>해당 국가 <span className="text-red-500">*</span></FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || user?.country || ""}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-country">
+                            <SelectValue placeholder="거래할 국가를 선택하세요" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="school"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>해당 해외학교</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="해당 학교명(국문)을 입력해주세요"
+                          {...field} 
+                          value={field.value || user?.school || ""}
+                          data-testid="input-school"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Button 
                   type="submit" 

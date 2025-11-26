@@ -505,26 +505,6 @@ export default function ItemDetail() {
             </div>
 
             <div className="border-t pt-4 mt-4 space-y-3 text-sm">
-              {/* ✅ 로그인한 사용자만 오픈채팅 링크 표시 */}
-              {user && (
-                <div className="flex">
-                  <span className="text-gray-500 w-32 flex-shrink-0">오픈채팅 링크</span>
-                  <p className="font-medium break-all">
-                    {item.openChatLink ? (
-                      <a
-                        href={item.openChatLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {item.openChatLink}
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </p>
-                </div>
-              )}
               <div className="flex">
                 <span className="text-gray-500 w-32 flex-shrink-0">거래 가능 기간</span>
                 <p className="font-medium">

@@ -73,6 +73,7 @@ export default function Home() {
     initialPageParam: 0,
     // Keep previous data while fetching to prevent flicker
     placeholderData: (previousData) => previousData,
+    staleTime: 1000 * 60 * 2, // 2분 동안 캐시 데이터 유지
   });
 
   // Flatten pages and deduplicate items by ID to prevent key conflicts
