@@ -25,12 +25,12 @@ export default function BottomNav() {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "marketplace-nav-item flex flex-col items-center px-2 py-1 text-[10px] text-gray-700",
-                  isActive && "text-blue-500"
+                  "marketplace-nav-item flex flex-col items-center px-2 py-1 text-[10px]",
+                  isActive ? "text-gray-900 font-semibold" : "text-gray-400"
                 )}
                 data-testid={`nav-${item.label}`}
               >
-                <Icon className="h-5 w-5 mb-1" />
+                <Icon className={cn("h-5 w-5 mb-1", isActive && "stroke-[2.5px]")} />
                 <span className="text-xs">{item.label}</span>
               </button>
             );
