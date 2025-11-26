@@ -10,6 +10,27 @@ import ItemCard from "@/components/items/item-card";
 import type { Item } from "@shared/schema";
 import { trackEvent } from "@/lib/amplitude";
 
+function ItemCardSkeleton() {
+  return (
+    <div className="bg-white mx-4 mb-3 rounded-lg overflow-hidden shadow-sm animate-pulse">
+      <div className="flex p-3">
+        <div className="w-28 h-28 bg-gray-200 rounded-lg flex-shrink-0" />
+        <div className="ml-3 flex-1 flex flex-col justify-between py-1">
+          <div>
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+            <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
+            <div className="h-5 bg-gray-200 rounded w-1/3" />
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="h-3 bg-gray-200 rounded w-16" />
+            <div className="h-3 bg-gray-200 rounded w-12" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [filter, setFilter] = useState("all");
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -157,22 +178,6 @@ export default function Home() {
     setShowSchoolPrompt(false);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-gray-500">상품을 불러오는 중 오류가 발생했습니다.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50">
@@ -200,7 +205,19 @@ export default function Home() {
       />
       
       <main className="pb-20 pt-4">
-        {showSchoolPrompt ? (
+        {isLoading ? (
+          <>
+            <ItemCardSkeleton />
+            <ItemCardSkeleton />
+            <ItemCardSkeleton />
+            <ItemCardSkeleton />
+            <ItemCardSkeleton />
+          </>
+        ) : isError ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">상품을 불러오는 중 오류가 발생했습니다.</p>
+          </div>
+        ) : showSchoolPrompt ? (
           <div className="text-center py-12 px-6">
             <p className="text-gray-700 text-lg mb-6">
               학교명을 입력하고<br />
@@ -230,7 +247,6 @@ export default function Home() {
               />
             ))}
             
-            {/* Loading indicator at bottom */}
             {isFetchingNextPage && (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />

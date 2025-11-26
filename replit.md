@@ -75,6 +75,13 @@ This is a modern mobile-first marketplace web application designed for students 
 - **UI/UX Improvements (November 19, 2025)**:
   - Profile page: Avatar fallback now displays first letter of username instead of fullName
   - Registration flow: Added helpful hint text below school input ("오타없이 작성 되어야 내 학교 물품 필터링이 정확해져요 :)") to ensure accurate school filtering
+- **Performance Optimization (November 26, 2025)**:
+  - Fixed mobile access issues: Updated service worker to use network-first strategy for navigation requests
+  - Service worker now properly handles SPA routing, preventing "not found" errors on mobile
+  - Implemented code splitting with React.lazy for all secondary pages to reduce initial bundle size
+  - Home page loads immediately with skeleton UI while data is being fetched
+  - Added ItemCardSkeleton component for visual loading feedback
+  - Only core pages (Home, Login, NotFound) are loaded synchronously for fastest first paint
 
 # User Preferences
 
