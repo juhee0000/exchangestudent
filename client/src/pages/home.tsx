@@ -248,9 +248,10 @@ export default function Home() {
 
       <Button 
         onClick={handleCreatePost}
-        className="fixed bottom-20 right-4 w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg z-50"
+        className="fixed bottom-20 right-4 px-5 py-3 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg z-50"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-5 w-5 mr-1" />
+        <span className="font-medium">글 작성</span>
       </Button>
     </div>
   );
