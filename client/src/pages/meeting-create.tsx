@@ -195,7 +195,7 @@ export default function MeetingCreate() {
                     <Input 
                       placeholder="ex)26-2 000대학교 준비방"
                       {...field} 
-                      className="bg-gray-50 border-gray-300"
+                      className="text-sm bg-gray-50 border-gray-300 placeholder:text-gray-400"
                     />
                   </FormControl>
                   <FormMessage />
@@ -245,7 +245,7 @@ export default function MeetingCreate() {
                   <FormControl>
                     <Textarea 
                       placeholder="ex)000 대학교로 교환가시는 분들 같이 준비해요!"
-                      className="min-h-[200px] text-sm resize-none bg-gray-50 border-gray-300"
+                      className="min-h-[200px] text-sm resize-none bg-gray-50 border-gray-300 placeholder:text-gray-400"
                       {...field} 
                     />
                   </FormControl>
@@ -265,11 +265,11 @@ export default function MeetingCreate() {
                     <Input 
                       placeholder="https://open.kakao.com/o/..."
                       {...field} 
-                      className="bg-gray-50 border-gray-300"
+                      className="text-sm bg-gray-50 border-gray-300 placeholder:text-gray-400"
                       data-testid="input-openchat-link"
                     />
                   </FormControl>
-                  <p className="text-sm text-gray-500 mt-1">모임방으로 이용할 오픈채팅방 링크를 입력하세요</p>
+                  <p className="text-xs text-gray-500 mt-1">모임방으로 이용할 오픈채팅방 링크를 입력하세요</p>
                   <FormMessage />
                 </FormItem>
               )}

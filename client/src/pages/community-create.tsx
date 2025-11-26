@@ -324,7 +324,7 @@ export default function CommunityCreate() {
                     <Input 
                       placeholder="제목을 입력하세요"
                       {...field} 
-                      className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400"
+                      className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400 placeholder:text-gray-400"
                     />
                   </FormControl>
                   <FormMessage />
@@ -338,11 +338,11 @@ export default function CommunityCreate() {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className={`text-base font-normal ${form.formState.errors.content ? 'text-red-600' : 'text-gray-700'}`}>내용</FormLabel>
+                  <FormLabel className={`text-base font-normal ${form.formState.errors.content ? 'text-red-600' : 'text-gray-700'}`}>글 내용</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="내용을 입력하세요"
-                      className="min-h-[250px] text-sm resize-none border-0 px-0 focus-visible:ring-0"
+                      className="text-base border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-gray-400 placeholder:text-gray-400"
                       {...field} 
                     />
                   </FormControl>
