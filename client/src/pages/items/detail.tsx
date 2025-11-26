@@ -494,7 +494,7 @@ export default function ItemDetail() {
             
             <div className="flex items-center text-gray-600 text-sm mb-4">
               <MapPin className="w-4 h-4 mr-1" />
-              <span>{item.country}, {item.location}</span>
+              <span>{item.country}, {item.school}</span>
               <span className="mx-2">•</span>
               <span>{formatTimeAgo(new Date(item.createdAt))}</span>
             </div>
@@ -504,9 +504,9 @@ export default function ItemDetail() {
               <p className="text-gray-700 whitespace-pre-wrap">{item.description}</p>
             </div>
 
-            <div className="border-t pt-4 mt-4 space-y-3 text-sm">
-              <div className="flex">
-                <span className="text-gray-500 w-32 flex-shrink-0">거래 가능 기간</span>
+            <div className="border-t pt-4 mt-4 text-sm">
+              <div className="flex items-center whitespace-nowrap">
+                <span className="text-gray-500 w-28 flex-shrink-0">거래 가능 기간</span>
                 <p className="font-medium">
                   {item.availableFrom && item.availableTo 
                     ? `${new Date(item.availableFrom).toLocaleDateString()} ~ ${new Date(item.availableTo).toLocaleDateString()}`
@@ -540,7 +540,7 @@ export default function ItemDetail() {
         <div className="max-w-md mx-auto">
           <Button 
             size="lg"
-            className="w-full h-12 marketplace-button-primary"
+            className="w-full h-12 bg-red-500 hover:bg-red-600 text-white"
             onClick={() => {
               // ✅ 1️⃣ 비로그인 상태일 경우 로그인 페이지로 이동
               if (!user) {
