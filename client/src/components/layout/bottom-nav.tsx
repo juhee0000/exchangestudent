@@ -34,20 +34,20 @@ export default function BottomNav() {
                 className={cn(
                   "flex flex-col items-center px-3 py-1 rounded-lg transition-colors",
                   isActive 
-                    ? "text-red-500" 
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "text-gray-900" 
+                    : "text-gray-400"
                 )}
                 data-testid={`nav-${item.label}`}
               >
                 <Icon 
                   className={cn(
-                    "h-6 w-6 mb-1 transition-all",
+                    "h-5 w-5 mb-1 transition-all",
                     isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
                   )} 
                 />
                 <span className={cn(
                   "text-xs",
-                  isActive && "font-semibold"
+                  isActive && "font-bold"
                 )}>{item.label}</span>
               </button>
             );
