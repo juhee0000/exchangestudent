@@ -540,7 +540,7 @@ export default function ItemDetail() {
         <div className="max-w-md mx-auto">
           <Button 
             size="lg"
-            className="w-full h-12 bg-red-500 hover:bg-red-600 text-white"
+            className="w-full h-12 bg-red-500 hover:bg-red-600 text-white rounded-full"
             onClick={() => {
               // ✅ 1️⃣ 비로그인 상태일 경우 로그인 페이지로 이동
               if (!user) {
