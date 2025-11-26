@@ -42,7 +42,8 @@ export default function Meetings() {
       return response.json();
     },
     placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 2, // 2분 동안 캐시 데이터 유지
+    staleTime: 1000 * 60 * 5, // 5분 동안 캐시 데이터 유지
+    gcTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
   });
 
   const handleCreatePost = () => {

@@ -97,7 +97,8 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 1000 * 60 * 5, // 5분 동안 데이터를 fresh로 유지
+      gcTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
       retry: false,
     },
     mutations: {
