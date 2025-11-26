@@ -540,7 +540,7 @@ export default function CreateItem() {
                       <FormControl>
                         <Textarea 
             placeholder="ex) 사용감은 중간 정도예요. 일괄 판매합니다 :)"
-                          rows={4}
+                          rows={8}
                           {...field}
                           data-testid="input-description"
                         />
@@ -672,86 +672,6 @@ export default function CreateItem() {
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>거래 희망 장소</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="거래를 희망하는 장소를 입력하세요"
-                          {...field} 
-                          data-testid="input-location"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Delivery Method */}
-                <FormField
-                  control={form.control}
-                  name="deliveryMethod"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>거래 방법</FormLabel>
-                      <Select 
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedDeliveryMethod(value);
-                          if (value !== "기타") {
-                            setCustomDeliveryMethod("");
-                            form.setValue("customDeliveryMethod", "");
-                          }
-                        }} 
-                        defaultValue={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="거래 방법을 선택하세요" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {deliveryMethods.map((method) => (
-                            <SelectItem key={method} value={method}>
-                              {method}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Custom Delivery Method Input */}
-                {selectedDeliveryMethod === "기타" && (
-                  <FormField
-                    control={form.control}
-                    name="customDeliveryMethod"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>기타 거래 방법 상세</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="기타 거래 방법을 입력하세요"
-                            {...field}
-                            value={customDeliveryMethod || ""}
-                            onChange={(e) => {
-                              setCustomDeliveryMethod(e.target.value);
-                              field.onChange(e.target.value);
-                            }}
-                            data-testid="input-custom-delivery"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
 
                 {/* Open Chat Link */}
                 <FormField

@@ -505,18 +505,6 @@ export default function ItemDetail() {
             </div>
 
             <div className="border-t pt-4 mt-4 space-y-3 text-sm">
-              <div className="flex">
-                <span className="text-gray-500 w-32 flex-shrink-0">거래 방법</span>
-                <p className="font-medium">
-                  {item.deliveryMethod === "기타" && item.customDeliveryMethod 
-                    ? item.customDeliveryMethod 
-                    : item.deliveryMethod || '-'}
-                </p>
-              </div>
-              <div className="flex">
-                <span className="text-gray-500 w-32 flex-shrink-0">거래 희망 장소</span>
-                <p className="font-medium">{item.location || '-'}</p>
-              </div>
               {/* ✅ 로그인한 사용자만 오픈채팅 링크 표시 */}
               {user && (
                 <div className="flex">
