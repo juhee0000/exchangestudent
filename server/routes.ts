@@ -135,8 +135,8 @@ return true;
 export async function registerRoutes(app: Express): Promise<Server> {
 const httpServer = createServer(app);
 
-// Serve uploaded images - explicit route to ensure it works before Vite catches all routes
-app.get('/attached_assets/:filename', (req, res) => {
+// Serve uploaded images via API route (Vite intercepts non-API routes)
+app.get('/api/images/:filename', (req, res) => {
   const filePath = path.join(process.cwd(), 'attached_assets', req.params.filename);
   res.sendFile(filePath, (err) => {
     if (err) {
@@ -1830,7 +1830,7 @@ app.post('/api/admin/upload-image', authenticateToken, requireAdmin, adminUpload
       return res.status(400).json({ error: 'No file uploaded' });
     }
     
-    const url = `/attached_assets/${req.file.filename}`;
+    const url = `/api/images/${req.file.filename}`;
     res.json({ url });
   } catch (error) {
     console.error('Error uploading image:', error);
