@@ -175,6 +175,19 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async getAllUsers(search?: string): Promise<User[]> {
+    let allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    if (search) {
+      const searchLower = search.toLowerCase();
+      allUsers = allUsers.filter(u => 
+        u.username?.toLowerCase().includes(searchLower) ||
+        u.email?.toLowerCase().includes(searchLower) ||
+        u.fullName?.toLowerCase().includes(searchLower)
+      );
+    }
+    return allUsers;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)

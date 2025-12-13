@@ -9,6 +9,9 @@ import passport from "./passport-config";
 import { storage } from "./storage";
 import { seedDatabase } from "./seed";
 import './exchange'; // Initialize exchange service
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import {
 registerSchema,
 insertItemSchema,
@@ -1641,7 +1644,223 @@ app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
   }
 });
 
-// ... (Admin, Chat, and other routes can be added here following the same pattern)
+// ==================== Admin Routes ====================
+
+// Admin middleware
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+};
+
+// Admin stats
+app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const stats = await storage.getAdminStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    res.status(500).json({ error: 'Failed to fetch admin stats' });
+  }
+});
+
+app.get('/api/admin/daily-stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const dailyStats = await storage.getDailyStats();
+    res.json(dailyStats);
+  } catch (error) {
+    console.error('Error fetching daily stats:', error);
+    res.status(500).json({ error: 'Failed to fetch daily stats' });
+  }
+});
+
+// Admin users
+app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const search = req.query.search as string | undefined;
+    const users = await storage.getAllUsers(search);
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.patch('/api/admin/users/:userId/status', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updatedUser = await storage.updateUserStatus(req.params.userId, status);
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ error: 'Failed to update user status' });
+  }
+});
+
+// Admin items
+app.get('/api/admin/items', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const search = req.query.search as string | undefined;
+    const allItems = await storage.getAllItems();
+    
+    let filteredItems = allItems;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredItems = allItems.filter(item => 
+        item.title.toLowerCase().includes(searchLower) ||
+        (item.description && item.description.toLowerCase().includes(searchLower)) ||
+        (item.category && item.category.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    res.json(filteredItems);
+  } catch (error) {
+    console.error('Error fetching admin items:', error);
+    res.status(500).json({ error: 'Failed to fetch items' });
+  }
+});
+
+app.post('/api/admin/items', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const itemData: InsertItem = {
+      title: req.body.title,
+      description: req.body.description || '',
+      price: req.body.price || '0',
+      currency: req.body.currency || 'EUR',
+      condition: req.body.condition || '중고',
+      images: req.body.images || [],
+      sellerId: req.body.sellerId,
+      school: req.body.school || '',
+      country: req.body.country || '',
+      category: req.body.category || '기타',
+      deliveryMethod: req.body.deliveryMethod || '직거래',
+      availableFrom: req.body.availableFrom ? new Date(req.body.availableFrom) : null,
+      availableTo: req.body.availableTo ? new Date(req.body.availableTo) : null,
+      status: req.body.status || '거래가능',
+      openChatLink: req.body.openChatLink || null,
+    };
+    
+    const item = await storage.createItem(itemData);
+    res.status(201).json(item);
+  } catch (error) {
+    console.error('Error creating admin item:', error);
+    res.status(500).json({ error: 'Failed to create item' });
+  }
+});
+
+app.put('/api/admin/items/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const updateData = {
+      title: req.body.title,
+      description: req.body.description,
+      price: req.body.price,
+      currency: req.body.currency,
+      condition: req.body.condition,
+      images: req.body.images,
+      school: req.body.school,
+      country: req.body.country,
+      category: req.body.category,
+      deliveryMethod: req.body.deliveryMethod,
+      availableFrom: req.body.availableFrom ? new Date(req.body.availableFrom) : null,
+      availableTo: req.body.availableTo ? new Date(req.body.availableTo) : null,
+      status: req.body.status,
+      openChatLink: req.body.openChatLink,
+    };
+    
+    const item = await storage.updateItem(req.params.id, updateData);
+    res.json(item);
+  } catch (error) {
+    console.error('Error updating admin item:', error);
+    res.status(500).json({ error: 'Failed to update item' });
+  }
+});
+
+app.delete('/api/admin/items/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    await storage.deleteItem(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting admin item:', error);
+    res.status(500).json({ error: 'Failed to delete item' });
+  }
+});
+
+// Admin image upload
+const uploadDir = path.join(process.cwd(), 'attached_assets');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const adminUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '_' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, `admin_upload_${uniqueSuffix}${ext}`);
+    }
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
+app.post('/api/admin/upload-image', authenticateToken, requireAdmin, adminUpload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const url = `/attached_assets/${req.file.filename}`;
+    res.json({ url });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+// Admin export
+app.get('/api/admin/export/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await storage.getAllUsers();
+    const csv = [
+      'ID,Username,Email,FullName,School,Country,Role,Status,CreatedAt',
+      ...users.map(u => `${u.id},${u.username},${u.email},${u.fullName || ''},${u.school || ''},${u.country || ''},${u.role},${u.status},${u.createdAt}`)
+    ].join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting users:', error);
+    res.status(500).json({ error: 'Failed to export users' });
+  }
+});
+
+app.get('/api/admin/export/items', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const allItems = await storage.getAllItems();
+    const csv = [
+      'ID,Title,Price,Currency,Category,Country,School,Status,SellerId,CreatedAt',
+      ...allItems.map(i => `${i.id},"${i.title}",${i.price},${i.currency || 'EUR'},${i.category || ''},${i.country || ''},${i.school || ''},${i.status || ''},${i.sellerId},${i.createdAt}`)
+    ].join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=items.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting items:', error);
+    res.status(500).json({ error: 'Failed to export items' });
+  }
+});
 
 return httpServer;
 }
