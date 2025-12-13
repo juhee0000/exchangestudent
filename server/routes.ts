@@ -135,8 +135,16 @@ return true;
 export async function registerRoutes(app: Express): Promise<Server> {
 const httpServer = createServer(app);
 
-// Serve uploaded images - must be registered here before Vite catches all routes
-app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
+// Serve uploaded images - explicit route to ensure it works before Vite catches all routes
+app.get('/attached_assets/:filename', (req, res) => {
+  const filePath = path.join(process.cwd(), 'attached_assets', req.params.filename);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error serving file:', err);
+      res.status(404).send('File not found');
+    }
+  });
+});
 
 app.set('trust proxy', 1);
 
