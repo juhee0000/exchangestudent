@@ -326,7 +326,7 @@ export default function ItemsManagement() {
     }
   };
 
-  const ItemFormContent = () => (
+  const formContent = (
     <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
       <div className="space-y-2">
         <Label>상품 사진</Label>
@@ -660,7 +660,7 @@ export default function ItemsManagement() {
             <DialogTitle>새 상품 등록</DialogTitle>
             <DialogDescription>관리자로서 새 상품을 직접 등록합니다.</DialogDescription>
           </DialogHeader>
-          <ItemFormContent />
+          {formContent}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               취소
@@ -678,7 +678,7 @@ export default function ItemsManagement() {
             <DialogTitle>상품 수정</DialogTitle>
             <DialogDescription>상품 정보를 수정합니다.</DialogDescription>
           </DialogHeader>
-          <ItemFormContent />
+          {formContent}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               취소
