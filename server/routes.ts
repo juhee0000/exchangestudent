@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import jwt from "jsonwebtoken";
@@ -134,6 +134,9 @@ return true;
 
 export async function registerRoutes(app: Express): Promise<Server> {
 const httpServer = createServer(app);
+
+// Serve uploaded images - must be registered here before Vite catches all routes
+app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
 app.set('trust proxy', 1);
 

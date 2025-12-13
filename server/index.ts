@@ -46,9 +46,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve attached_assets folder for uploaded images
-app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
-
 app.use((req, res, next) => {
   const start = Date.now();
   const reqPath = req.path;
